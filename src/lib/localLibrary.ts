@@ -62,12 +62,25 @@ function parseLocalLibrary(raw: string | null): LocalLibraryVideo[] {
   }
 }
 
+function getStorage(): Storage | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
+}
+
 function loadLibrary(): LocalLibraryVideo[] {
-  return parseLocalLibrary(window.localStorage.getItem(STORAGE_KEY));
+  const storage = getStorage();
+  if (!storage) return [];
+  return parseLocalLibrary(storage.getItem(STORAGE_KEY));
 }
 
 function persistLibrary(entries: LocalLibraryVideo[]): void {
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(entries.slice(-200)));
+  const storage = getStorage();
+  if (!storage) return;
+  storage.setItem(STORAGE_KEY, JSON.stringify(entries.slice(-200)));
 }
 
 export function listLocalLibraryVideos(): LocalLibraryVideo[] {
@@ -127,15 +140,19 @@ export async function hydrateLocalLibraryVideoMetadata(
   const oembed = await fetchYouTubeOEmbed(videoId);
   if (!oembed) return false;
 
-  entries[idx] = {
-    ...existing,
-    title: existing.title ?? oembed.title,
-    channelTitle: existing.channelTitle ?? oembed.channelTitle,
-    thumbnailUrl: existing.thumbnailUrl ?? oembed.thumbnailUrl,
+  const fresh = loadLibrary();
+  const freshIdx = fresh.findIndex((e) => e.platform === platform && e.videoId === videoId);
+  if (freshIdx < 0) return false;
+
+  fresh[freshIdx] = {
+    ...fresh[freshIdx],
+    title: fresh[freshIdx].title ?? oembed.title,
+    channelTitle: fresh[freshIdx].channelTitle ?? oembed.channelTitle,
+    thumbnailUrl: fresh[freshIdx].thumbnailUrl ?? oembed.thumbnailUrl,
     updatedAtMs: nowMs(),
   };
 
-  persistLibrary(entries);
+  persistLibrary(fresh);
 
   return true;
 }

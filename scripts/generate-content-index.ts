@@ -206,9 +206,11 @@ async function main(): Promise<void> {
     const analyticsAbs = path.join(base, 'analytics.json');
     const reportAbs = path.join(base, 'report.mdx');
 
-    const hasComments = await fileExists(commentsAbs);
-    const hasAnalytics = await fileExists(analyticsAbs);
-    const hasReport = await fileExists(reportAbs);
+    const [hasComments, hasAnalytics, hasReport] = await Promise.all([
+      fileExists(commentsAbs),
+      fileExists(analyticsAbs),
+      fileExists(reportAbs),
+    ]);
 
     const videoPath = relFromGenerated(videoAbs);
     const commentsPath = relFromGenerated(commentsAbs);

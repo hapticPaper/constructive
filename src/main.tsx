@@ -5,7 +5,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { App } from './App';
 import './styles.css';
 
-const redirectPath = new URLSearchParams(window.location.search).get('p');
+const redirectPath = new URLSearchParams(window.location.search).get('_redirect');
 if (redirectPath) {
   const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   const decoded = decodeURIComponent(redirectPath);

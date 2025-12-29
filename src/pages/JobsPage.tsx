@@ -46,6 +46,11 @@ function getJobStage(platform: Platform, videoId: string): JobStage {
   };
 }
 
+const FOCUSED_JOB_STYLE = {
+  borderColor: 'rgba(106, 169, 255, 0.8)',
+  boxShadow: '0 0 0 1px rgba(106, 169, 255, 0.35)',
+} as const;
+
 export function JobsPage(): JSX.Element {
   const [searchParams, setSearchParams] = useSearchParams();
   const focused = searchParams.get('video');
@@ -154,11 +159,7 @@ export function JobsPage(): JSX.Element {
               <div
                 key={`${video.platform}:${video.videoId}`}
                 className="panel"
-                style={
-                  isFocused
-                    ? { borderColor: 'rgba(106, 169, 255, 0.8)', boxShadow: '0 0 0 1px rgba(106, 169, 255, 0.35)' }
-                    : undefined
-                }
+                style={isFocused ? FOCUSED_JOB_STYLE : undefined}
               >
                 <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
                   {video.thumbnailUrl ? (
