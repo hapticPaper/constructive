@@ -39,7 +39,7 @@ function parseArgs(argv: string[]): Args {
   const normalized = videoRaw.trim();
   if (!normalized) {
     throw new Error(
-      'Invalid usage: --video requires a non-empty value (e.g. youtube:<videoId>).',
+      'Invalid usage: --video requires a non-empty value (e.g. youtube:<videoId> or <videoId>).',
     );
   }
 
@@ -49,7 +49,7 @@ function parseArgs(argv: string[]): Args {
   }
 
   if (parts.length !== 2) {
-    throw new Error('Invalid --video value. Use youtube:<videoId>');
+    throw new Error('Invalid --video value. Use youtube:<videoId> (or <videoId>).');
   }
 
   const [platformRaw, videoIdRaw] = parts;
@@ -344,7 +344,12 @@ const STOPWORDS = new Set([
 ]);
 
 function tokenize(text: string): string[] {
-  return text.toLowerCase().match(/[\p{L}\p{N}]+/gu) ?? [];
+  return text
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+    .split(/\s+/u)
+    .map((t) => t.trim())
+    .filter(Boolean);
 }
 
 function isToxicText(tokens: string[]): boolean {
@@ -505,21 +510,57 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
 
 function isCommentAnalytics(value: unknown): value is CommentAnalytics {
   if (!isRecord(value)) return false;
-  if (typeof value.commentCount !== 'number') return false;
+  if (typeof value.commentCount !== 'number' || value.commentCount < 0) return false;
   if (typeof value.analyzedAt !== 'string') return false;
 
   if (!isRecord(value.sentimentBreakdown)) return false;
-  if (typeof value.sentimentBreakdown.positive !== 'number') return false;
-  if (typeof value.sentimentBreakdown.neutral !== 'number') return false;
-  if (typeof value.sentimentBreakdown.negative !== 'number') return false;
+  if (
+    typeof value.sentimentBreakdown.positive !== 'number' ||
+    value.sentimentBreakdown.positive < 0
+  ) {
+    return false;
+  }
+  if (
+    typeof value.sentimentBreakdown.neutral !== 'number' ||
+    value.sentimentBreakdown.neutral < 0
+  ) {
+    return false;
+  }
+  if (
+    typeof value.sentimentBreakdown.negative !== 'number' ||
+    value.sentimentBreakdown.negative < 0
+  ) {
+    return false;
+  }
 
-  if (typeof value.toxicCount !== 'number') return false;
-  if (typeof value.questionCount !== 'number') return false;
-  if (typeof value.suggestionCount !== 'number') return false;
+  const totalSentiment =
+    value.sentimentBreakdown.positive +
+    value.sentimentBreakdown.neutral +
+    value.sentimentBreakdown.negative;
+  if (totalSentiment !== value.commentCount) return false;
+
+  if (typeof value.toxicCount !== 'number' || value.toxicCount < 0) return false;
+  if (typeof value.questionCount !== 'number' || value.questionCount < 0) return false;
+  if (typeof value.suggestionCount !== 'number' || value.suggestionCount < 0) {
+    return false;
+  }
 
   if (!Array.isArray(value.topThemes)) return false;
+  for (const theme of value.topThemes) {
+    if (!isRecord(theme)) return false;
+    if (typeof theme.label !== 'string') return false;
+    if (typeof theme.count !== 'number' || theme.count < 0) return false;
+  }
+
   if (!Array.isArray(value.safeQuotes)) return false;
+  for (const quote of value.safeQuotes) {
+    if (typeof quote !== 'string') return false;
+  }
+
   if (!Array.isArray(value.gentleCritiques)) return false;
+  for (const critique of value.gentleCritiques) {
+    if (typeof critique !== 'string') return false;
+  }
 
   return true;
 }
