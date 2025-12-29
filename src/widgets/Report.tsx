@@ -78,7 +78,7 @@ function HistogramList({ items }: { items: ThemeItem[] }): JSX.Element {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 }}>
       {items.map((item) => (
-        <div key={item.label} className="row">
+        <div key={`${item.label}:${item.count}`} className="row">
           <span style={{ fontWeight: 650 }}>{item.label}</span>
           <span className="muted">{item.count.toLocaleString()}</span>
         </div>
@@ -98,8 +98,8 @@ function BulletList({ items }: { items: string[] }): JSX.Element {
 
   return (
     <ul className="muted" style={{ margin: '10px 0 0 18px' }}>
-      {items.map((item) => (
-        <li key={item}>{item}</li>
+      {items.map((item, index) => (
+        <li key={`${index}:${item}`}>{item}</li>
       ))}
     </ul>
   );
@@ -117,7 +117,7 @@ function TakeawayList({ takeaways }: { takeaways: CreatorTakeaway[] }): JSX.Elem
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 }}>
       {takeaways.map((takeaway) => (
-        <div key={takeaway.title}>
+        <div key={`${takeaway.title}:${takeaway.detail}`}>
           <div style={{ fontWeight: 650 }}>{takeaway.title}</div>
           <div className="muted" style={{ marginTop: 4, lineHeight: 1.35 }}>
             {takeaway.detail}
@@ -245,8 +245,8 @@ export function Report({ report }: { report: CommentReport }): JSX.Element {
         <div style={{ marginTop: 14 }}>
           <WidgetPanel title="Representative quotes (safe)">
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 }}>
-              {quotes.map((quote) => (
-                <div key={quote} className="callout">
+              {quotes.map((quote, index) => (
+                <div key={`${index}:${quote}`} className="callout">
                   <div className="muted">“{quote}”</div>
                 </div>
               ))}
