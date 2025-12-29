@@ -11,6 +11,7 @@
     "lint": "eslint .",
     "format": "prettier -c .",
     "content:generate": "bun run scripts/generate-content-index.ts",
+    "content:analyze": "bun run scripts/analyze-content.ts",
     "ingest:youtube": "bun run scripts/ingest-youtube.ts"
   },
   "dependencies": {
