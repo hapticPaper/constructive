@@ -3,6 +3,9 @@ import { deleteCookie, getCookie, setCookie } from './cookies';
 const COOKIE_ANALYSIS = 'constructive_analysis_runs';
 const COOKIE_GOOGLE_ID_TOKEN = 'constructive_google_id_token';
 
+// Sliding 24-hour window (not calendar days).
+const USAGE_WINDOW_MS = 24 * 60 * 60 * 1000;
+
 type Tier =
   | { kind: 'anonymous'; label: 'Freemium'; maxPer24Hours: 3 }
   | { kind: 'google'; label: 'Registered'; maxPer24Hours: 7 };
@@ -21,12 +24,24 @@ function parseUsageCookie(raw: string | null): number[] {
   try {
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter(
-      (v): v is number => typeof v === 'number' && Number.isFinite(v) && v > 0,
-    );
+    // Structural validation plus basic numeric sanity (finite numbers only);
+    // windowing happens in `loadUsage`.
+    // Non-finite values (NaN/Infinity) are dropped to harden against malformed cookies.
+    return parsed.filter((v): v is number => typeof v === 'number' && Number.isFinite(v));
   } catch {
     return [];
   }
+}
+
+function loadUsage(now: number): { cutoff: number; timestamps: number[] } {
+  const cutoff = now - USAGE_WINDOW_MS;
+  // Discard timestamps outside the current window (including future values)
+  // to harden against malformed or tampered cookies.
+  const timestamps = parseUsageCookie(getCookie(COOKIE_ANALYSIS)).filter(
+    (t) => t >= cutoff && t <= now,
+  );
+
+  return { cutoff, timestamps };
 }
 
 function persistUsage(timestamps: number[]): void {
@@ -44,15 +59,11 @@ export function getUserTier(): Tier {
 export function getAnalysisUsage(): Usage {
   const tier = getUserTier();
   const now = nowMs();
-  const maxFutureSkewMs = 5 * 60 * 1000;
-  const cutoff = now - 24 * 60 * 60 * 1000;
-  const upperBound = now + maxFutureSkewMs;
-  const timestamps = parseUsageCookie(getCookie(COOKIE_ANALYSIS)).filter(
-    (t) => t >= cutoff && t <= upperBound,
-  );
+  const { cutoff, timestamps } = loadUsage(now);
   persistUsage(timestamps);
 
   return {
+    // `used` is capped for UX consistency; enforcement also happens in `canRunAnalysis()`.
     used: Math.min(timestamps.length, tier.maxPer24Hours),
     windowStartMs: cutoff,
   };
@@ -72,13 +83,9 @@ export function canRunAnalysis(): { ok: true } | { ok: false; reason: string } {
 }
 
 export function consumeAnalysisRun(): void {
+  // Callers should check `canRunAnalysis()` first; this records usage and does not enforce limits.
   const now = nowMs();
-  const maxFutureSkewMs = 5 * 60 * 1000;
-  const cutoff = now - 24 * 60 * 60 * 1000;
-  const upperBound = now + maxFutureSkewMs;
-  const timestamps = parseUsageCookie(getCookie(COOKIE_ANALYSIS)).filter(
-    (t) => t >= cutoff && t <= upperBound,
-  );
+  const { timestamps } = loadUsage(now);
   timestamps.push(now);
   persistUsage(timestamps);
 }
