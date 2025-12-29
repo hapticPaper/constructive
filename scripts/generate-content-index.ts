@@ -1,4 +1,4 @@
-import { readdir, stat } from 'node:fs/promises';
+import { readFile, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 
 import { writeTextFile } from './fs';
@@ -10,6 +10,91 @@ const OUT_DIR = path.resolve(process.cwd(), 'src', 'content', 'generated');
 
 function safeIdent(value: string): string {
   return value.replace(/[^a-zA-Z0-9_]/g, '_');
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
+async function readJsonFile<T = unknown>(absolutePath: string): Promise<T> {
+  const raw = await readFile(absolutePath, 'utf8');
+  try {
+    return JSON.parse(raw) as T;
+  } catch (error) {
+    const message = `Failed to parse JSON at ${absolutePath}: ${
+      error instanceof Error ? error.message : String(error)
+    }`;
+    const wrapped = new Error(message);
+    if (error instanceof Error) {
+      (wrapped as Error & { cause?: unknown }).cause = error;
+    }
+    throw wrapped;
+  }
+}
+
+async function readJsonObjectFile(absolutePath: string): Promise<Record<string, unknown>> {
+  const parsed = await readJsonFile(absolutePath);
+  if (!isRecord(parsed)) {
+    throw new Error(`Invalid JSON at ${absolutePath}: expected object.`);
+  }
+  return parsed;
+}
+
+function assertValidVideoChannel(
+  absolutePath: string,
+  platform: Platform,
+  channel: unknown,
+): void {
+  if (!isRecord(channel)) {
+    throw new Error(`Invalid video.json at ${absolutePath}: expected video.channel object.`);
+  }
+
+  if (channel.platform !== platform) {
+    throw new Error(
+      `Invalid video.json at ${absolutePath}: expected video.channel.platform '${platform}'.`,
+    );
+  }
+
+  if (typeof channel.channelId !== 'string' || !channel.channelId) {
+    throw new Error(
+      `Invalid video.json at ${absolutePath}: expected non-empty video.channel.channelId.`,
+    );
+  }
+
+  if (typeof channel.channelTitle !== 'string' || !channel.channelTitle) {
+    throw new Error(
+      `Invalid video.json at ${absolutePath}: expected non-empty video.channel.channelTitle.`,
+    );
+  }
+}
+
+async function assertValidVideoJson(
+  absolutePath: string,
+  platform: Platform,
+  videoId: string,
+): Promise<void> {
+  const raw = await readJsonObjectFile(absolutePath);
+
+  if (raw.platform !== platform) {
+    throw new Error(
+      `Invalid video.json at ${absolutePath}: expected platform '${platform}'.`,
+    );
+  }
+
+  // Invariant: video.json must match its on-disk location under content/platforms/{platform}/videos/{videoId}.
+  if (raw.videoId !== videoId) {
+    throw new Error(`Invalid video.json at ${absolutePath}: expected videoId '${videoId}'.`);
+  }
+
+  if (typeof raw.videoUrl !== 'string' || !raw.videoUrl) {
+    throw new Error(`Invalid video.json at ${absolutePath}: expected non-empty videoUrl.`);
+  }
+
+  if (typeof raw.title !== 'string' || !raw.title) {
+    throw new Error(`Invalid video.json at ${absolutePath}: expected non-empty title.`);
+  }
+
+  assertValidVideoChannel(absolutePath, platform, raw.channel);
 }
 
 async function listVideoIds(platform: Platform): Promise<string[]> {
@@ -49,12 +134,21 @@ async function main(): Promise<void> {
   }
 
   const contentImports: string[] = [
+    '// AUTO-GENERATED FILE. DO NOT EDIT.',
+    '// See scripts/generate-content-index.ts for the generation logic.',
+    '',
     "import type { VideoContent } from '../types';",
     '',
   ];
   const contentMapLines: string[] = ['export const VIDEO_CONTENT: Record<string, VideoContent> = {'];
 
-  const reportImports: string[] = ["import type { ComponentType } from 'react';", ''];
+  const reportImports: string[] = [
+    '// AUTO-GENERATED FILE. DO NOT EDIT.',
+    '// See scripts/generate-content-index.ts for the generation logic.',
+    '',
+    "import type { ComponentType } from 'react';",
+    '',
+  ];
   const reportMapLines: string[] = [
     'export const VIDEO_REPORTS: Record<string, ComponentType | undefined> = {',
   ];
@@ -68,6 +162,8 @@ async function main(): Promise<void> {
     const analyticsPath = relFromGenerated(path.join(base, 'analytics.json'));
     const reportPath = relFromGenerated(path.join(base, 'report.mdx'));
 
+    await assertValidVideoJson(path.join(base, 'video.json'), platform, videoId);
+
     contentImports.push(
       `import ${ident}_video from '${videoPath}';`,
       `import ${ident}_comments from '${commentsPath}';`,
@@ -79,16 +175,20 @@ async function main(): Promise<void> {
 
     contentMapLines.push(
       `  '${platform}:${videoId}': {`,
-      `    video: ${ident}_video as unknown as VideoContent['video'],`,
-      `    comments: ${ident}_comments as unknown as VideoContent['comments'],`,
-      `    analytics: ${ident}_analytics as unknown as VideoContent['analytics'],`,
+      '    video: {',
+      `      ...${ident}_video,`,
+      `      platform: '${platform}',`,
+      `      channel: { ...${ident}_video.channel, platform: '${platform}' },`,
+      '    },',
+      `    comments: ${ident}_comments,`,
+      `    analytics: ${ident}_analytics,`,
       '  },',
     );
 
     reportMapLines.push(`  '${platform}:${videoId}': ${ident}_report,`);
   }
 
-  contentMapLines.push('};', '');
+  contentMapLines.push('} satisfies Record<string, VideoContent>;', '');
   reportMapLines.push('};', '');
 
   await writeTextFile(

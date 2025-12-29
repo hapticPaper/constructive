@@ -11,9 +11,7 @@ export function listVideos(): VideoMetadata[] {
 
 export function getVideoContent(platform: Platform, videoId: string): VideoContent | null {
   const key = `${platform}:${videoId}`;
-  const entry: VideoContent | undefined = VIDEO_CONTENT[key];
-  if (!entry) return null;
-  return entry;
+  return VIDEO_CONTENT[key] ?? null;
 }
 
 export function getVideoReportComponent(
