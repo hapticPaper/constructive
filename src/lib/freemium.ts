@@ -48,6 +48,7 @@ function parseUnlockedCookie(raw: string | null): UnlockedEntry[] {
         const key = typeof maybe.key === 'string' ? maybe.key : null;
         const unlockedAtMs = typeof maybe.unlockedAtMs === 'number' ? maybe.unlockedAtMs : null;
         if (!key || unlockedAtMs === null) return null;
+        if (!Number.isFinite(unlockedAtMs) || unlockedAtMs <= 0) return null;
         return { key, unlockedAtMs };
       })
       .filter((v): v is UnlockedEntry => Boolean(v));
@@ -70,6 +71,20 @@ function persistUnlocked(entries: UnlockedEntry[]): void {
     value: JSON.stringify(entries.slice(-200)),
     maxAgeSeconds: 60 * 60 * 24 * 30,
   });
+}
+
+function getRecentUnlockedEntries(): UnlockedEntry[] {
+  const now = nowMs();
+  const maxFutureSkewMs = 5 * 60 * 1000;
+  const cutoff = now - 24 * 60 * 60 * 1000;
+  const upperBound = now + maxFutureSkewMs;
+
+  const entries = parseUnlockedCookie(getCookie(COOKIE_UNLOCKED)).filter(
+    (e) => e.unlockedAtMs >= cutoff && e.unlockedAtMs <= upperBound,
+  );
+  persistUnlocked(entries);
+
+  return entries;
 }
 
 export function getUserTier(): Tier {
@@ -119,13 +134,7 @@ export function consumeAnalysisRun(): void {
 }
 
 export function isVideoUnlocked(key: string): boolean {
-  const cutoff = nowMs() - 24 * 60 * 60 * 1000;
-  const entries = parseUnlockedCookie(getCookie(COOKIE_UNLOCKED)).filter(
-    (e) => e.unlockedAtMs >= cutoff,
-  );
-  persistUnlocked(entries);
-
-  return entries.some((e) => e.key === key);
+  return getRecentUnlockedEntries().some((e) => e.key === key);
 }
 
 export function unlockVideo(key: string): { ok: true } | { ok: false; reason: string } {
@@ -136,10 +145,7 @@ export function unlockVideo(key: string): { ok: true } | { ok: false; reason: st
 
   consumeAnalysisRun();
 
-  const cutoff = nowMs() - 24 * 60 * 60 * 1000;
-  const entries = parseUnlockedCookie(getCookie(COOKIE_UNLOCKED)).filter(
-    (e) => e.unlockedAtMs >= cutoff,
-  );
+  const entries = getRecentUnlockedEntries();
   entries.push({ key, unlockedAtMs: nowMs() });
   persistUnlocked(entries);
 

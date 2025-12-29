@@ -1,6 +1,6 @@
 import { MDXProvider } from '@mdx-js/react';
 import type { MDXComponents } from 'mdx/types';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import {
   Bar,
@@ -33,7 +33,8 @@ export function VideoAnalyticsPage(): JSX.Element {
   const key = `${platform}:${videoId}`;
 
   const [unlockError, setUnlockError] = useState<string | null>(null);
-  const [, setUnlockTick] = useState(0);
+  const [unlocking, setUnlocking] = useState(false);
+  const [unlocked, setUnlocked] = useState(() => isVideoUnlocked(key));
 
   const content = useMemo(() => getVideoContent(platform, videoId), [platform, videoId]);
   const Report = useMemo(
@@ -41,7 +42,11 @@ export function VideoAnalyticsPage(): JSX.Element {
     [platform, videoId],
   );
 
-  const unlocked = isVideoUnlocked(key);
+  useEffect(() => {
+    setUnlockError(null);
+    setUnlocking(false);
+    setUnlocked(isVideoUnlocked(key));
+  }, [key]);
 
   if (!content) {
     return (
@@ -77,15 +82,19 @@ export function VideoAnalyticsPage(): JSX.Element {
           <div style={{ marginTop: 12, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
             <Button
               variant="primary"
-              disabled={!gate.ok}
+              disabled={!gate.ok || unlocking}
               onClick={() => {
+                if (unlocking) return;
+                setUnlocking(true);
                 setUnlockError(null);
                 const unlockedNow = unlockVideo(key);
                 if (!unlockedNow.ok) {
                   setUnlockError(unlockedNow.reason);
+                  setUnlocking(false);
                   return;
                 }
-                setUnlockTick((v) => v + 1);
+                setUnlocked(true);
+                setUnlocking(false);
               }}
             >
               Unlock report
