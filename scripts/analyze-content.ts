@@ -29,8 +29,12 @@ function parseArgs(argv: string[]): Args {
   const overwrite = argv.includes('--overwrite');
 
   const videoIndex = argv.indexOf('--video');
-  const videoRaw = videoIndex >= 0 ? argv[videoIndex + 1] : undefined;
-  if (!videoRaw) return { overwrite };
+  if (videoIndex === -1) return { overwrite };
+
+  const videoRaw = argv[videoIndex + 1];
+  if (!videoRaw || videoRaw.startsWith('-')) {
+    throw new Error('Invalid usage: --video requires a value (e.g. youtube:<videoId>).');
+  }
 
   const normalized = videoRaw.trim();
   if (!normalized) return { overwrite };
