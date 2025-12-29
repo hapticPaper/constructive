@@ -1,0 +1,279 @@
+:root {
+  --bg: #070a13;
+  --panel: rgba(255, 255, 255, 0.06);
+  --panel-2: rgba(255, 255, 255, 0.09);
+  --text: rgba(255, 255, 255, 0.92);
+  --muted: rgba(255, 255, 255, 0.72);
+  --border: rgba(255, 255, 255, 0.12);
+  --brand: #6aa9ff;
+  --brand-2: #8cffcb;
+  --danger: #ff6376;
+  --warning: #f9c74f;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: radial-gradient(1000px 400px at 10% 10%, rgba(106, 169, 255, 0.22), transparent),
+    radial-gradient(900px 500px at 90% 20%, rgba(140, 255, 203, 0.18), transparent),
+    var(--bg);
+  color: var(--text);
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    sans-serif;
+}
+
+a {
+  color: inherit;
+}
+
+.app-shell {
+  min-height: 100%;
+}
+
+.main {
+  padding: 28px 16px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.nav {
+  position: sticky;
+  top: 0;
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+  background: rgba(7, 10, 19, 0.7);
+}
+
+.nav-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 14px 16px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.brand {
+  text-decoration: none;
+  font-weight: 650;
+  letter-spacing: 0.2px;
+}
+
+.nav-left {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.nav-links {
+  display: flex;
+  gap: 10px;
+}
+
+.nav-link {
+  text-decoration: none;
+  padding: 6px 10px;
+  border-radius: 999px;
+  color: var(--muted);
+}
+
+.nav-link.active,
+.nav-link:hover {
+  background: var(--panel);
+  color: var(--text);
+}
+
+.nav-right {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.btn {
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  border-color: rgba(106, 169, 255, 0.45);
+  background: linear-gradient(180deg, rgba(106, 169, 255, 0.22), rgba(106, 169, 255, 0.1));
+}
+
+.btn-ghost:hover {
+  background: var(--panel-2);
+}
+
+.btn-primary:hover {
+  border-color: rgba(106, 169, 255, 0.85);
+}
+
+.grid {
+  display: grid;
+  gap: 14px;
+}
+
+.grid-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 920px) {
+  .grid-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .grid-3 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+}
+
+.panel {
+  border: 1px solid var(--border);
+  background: var(--panel);
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.panel h2 {
+  margin: 0 0 6px;
+  font-size: 16px;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.hero {
+  padding: 22px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.08),
+    rgba(255, 255, 255, 0.04)
+  );
+}
+
+.hero h1 {
+  margin: 0 0 10px;
+  font-size: 26px;
+}
+
+.hero p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+@media (max-width: 900px) {
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .cards {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+}
+
+.card {
+  overflow: hidden;
+  padding: 0;
+}
+
+.card .card-body {
+  padding: 12px;
+}
+
+.thumb {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  display: block;
+  border-bottom: 1px solid var(--border);
+}
+
+.row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.kpi .value {
+  font-size: 22px;
+  font-weight: 680;
+}
+
+.kpi .label {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.mdx h1,
+.mdx h2,
+.mdx h3 {
+  margin-top: 20px;
+}
+
+.mdx p {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.callout {
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.06);
+  border-left: 4px solid var(--brand);
+  padding: 12px;
+  border-radius: 12px;
+}
+
+.callout strong {
+  color: var(--text);
+}

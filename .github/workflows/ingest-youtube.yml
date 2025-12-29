@@ -1,0 +1,68 @@
+name: Ingest YouTube comments (file-backed)
+
+on:
+  workflow_dispatch:
+    inputs:
+      video:
+        description: 'YouTube video URL or id'
+        required: true
+        type: string
+      maxComments:
+        description: 'Maximum comments to capture'
+        required: false
+        default: '200'
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.2.22
+
+      - run: bun install
+
+      - name: Ingest
+        run: bun run ingest:youtube -- '${{ inputs.video }}' --max-comments '${{ inputs.maxComments }}'
+
+      - name: Analyze
+        run: bun run analyze -- --platform youtube --video '${{ inputs.video }}'
+
+      - name: Generate index
+        run: bun run content:generate
+
+      - name: Commit + PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+
+          if git diff --quiet; then
+            echo 'No changes to commit.'
+            exit 0
+          fi
+
+          TS="$(date -u +%Y%m%d-%H%M%S)"
+          BRANCH="ingest/youtube/${TS}"
+          git checkout -b "$BRANCH"
+          git add -A
+          git commit -m "ingest(youtube): add comments + report"
+          git push -u origin "$BRANCH"
+
+          gh pr create \
+            --base develop \
+            --head "$BRANCH" \
+            --title "ingest(youtube): add comments + report" \
+            --body "Generated comment snapshot + analytics report via the ingest workflow." || true

@@ -1,0 +1,74 @@
+{
+  "commentCount": 200,
+  "analyzedAt": "2025-12-29T01:11:49.790Z",
+  "sentimentBreakdown": {
+    "positive": 39,
+    "neutral": 155,
+    "negative": 6
+  },
+  "toxicCount": 1,
+  "questionCount": 36,
+  "suggestionCount": 18,
+  "topThemes": [
+    {
+      "label": "mass",
+      "count": 42
+    },
+    {
+      "label": "infinity",
+      "count": 41
+    },
+    {
+      "label": "electron",
+      "count": 29
+    },
+    {
+      "label": "infinite",
+      "count": 24
+    },
+    {
+      "label": "negative",
+      "count": 17
+    },
+    {
+      "label": "higgs",
+      "count": 14
+    },
+    {
+      "label": "think",
+      "count": 13
+    },
+    {
+      "label": "universe",
+      "count": 13
+    }
+  ],
+  "safeQuotes": [
+    "Thanks to Radiacode for sponsoring this video! Use the promo code \"PBS\" to get an exclusive 10% discount at: https://103.radiacode.com/PBS",
+    "I love the \"You think your brain melted with electrons, just wait until we get to Higgs!\".",
+    "Yay, real readable subtitles, thank you PBS",
+    "Would be nice if they put the previous video they talk about in the description",
+    "this series is brilliant, nice one, more math's please. too many videos skip the details",
+    "Love ur videos, but can u leave some links of research paper related to the videos for nerds",
+    "Thank you PBS SpaceTime for your great videos! Happy Holidays!",
+    "I actually paused this episode and viewed the previous episode, upon your recommendation. Gold star, please and thank you. ⭐",
+    "I’ve learned so much from this channel - thank you.",
+    "Fantastic video, as always! Super great explanations here!",
+    "Pretty cool, I'm studying this at the moment and your videos are a nice recap when you haven't seen this stuff in a while",
+    "Thanks guys these last two episodes have been really insightful ❤"
+  ],
+  "gentleCritiques": [
+    "Clarify: viewers are asking “\"May you remove your self-energy mass so I can measure your bare mass?\" That should be a fun pickup line for parties.”",
+    "Clarify: viewers are asking “Entity 1: Our last hack blew up the mass of particles. Entity 2: Let's just set the internal mass to negative to counte…”",
+    "Clarify: viewers are asking “At 4:45, the parenthesis makes it confusing, since it would normally be negative 511 eV in the way you present it. You …”",
+    "Clarify: viewers are asking “Bare Negative Mass had a hit in the 90’s, didn’t they?”",
+    "Improve: consider addressing “\"May you remove your self-energy mass so I can measure your bare mass?\" That should be a fun pickup line for parties.”",
+    "Improve: consider addressing “Entity 1: Our last hack blew up the mass of particles. Entity 2: Let's just set the internal mass to negative to counte…”",
+    "Improve: consider addressing “this series is brilliant, nice one, more math's please. too many videos skip the details”",
+    "Improve: consider addressing “You mentioned that the electron's mass is \"protected by the chiral symmetry of the particle\" (14:30). This is my ignora…”",
+    "Improve: consider addressing “I actually paused this episode and viewed the previous episode, upon your recommendation. Gold star, please and thank y…”",
+    "Improve: consider addressing “Here is my, hand wavy, alternative approach. Actually I expect that this has been investigated before and proved wrong …”",
+    "Improve: consider addressing “I am coming to believe (possibly because I don't understand something) that the idea of measurement is itself flawed. I…”",
+    "Improve: consider addressing “0:51 are you saying the higgs mass should be MASSIVE?”"
+  ]
+}

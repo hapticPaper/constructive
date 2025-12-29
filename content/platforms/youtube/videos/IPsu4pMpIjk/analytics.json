@@ -1,0 +1,74 @@
+{
+  "commentCount": 200,
+  "analyzedAt": "2025-12-29T01:11:49.729Z",
+  "sentimentBreakdown": {
+    "positive": 69,
+    "neutral": 120,
+    "negative": 11
+  },
+  "toxicCount": 8,
+  "questionCount": 17,
+  "suggestionCount": 10,
+  "topThemes": [
+    {
+      "label": "scott",
+      "count": 61
+    },
+    {
+      "label": "ezra",
+      "count": 55
+    },
+    {
+      "label": "israel",
+      "count": 36
+    },
+    {
+      "label": "people",
+      "count": 25
+    },
+    {
+      "label": "great",
+      "count": 22
+    },
+    {
+      "label": "conversation",
+      "count": 18
+    },
+    {
+      "label": "thank",
+      "count": 17
+    },
+    {
+      "label": "brand",
+      "count": 15
+    }
+  ],
+  "safeQuotes": [
+    "I don't think I've ever seen Scott listen this hard before.🙂 What a great conversation. I think it might be a keeper. Thank you.",
+    "Loved this conversation!",
+    "Thank you. Real for those who have no agenda.",
+    "Great conversation. Thank you!",
+    "I listened to this on your podcast. So great",
+    "This is a very good conversation! Lots of insight!",
+    "Three in the morning in NZ and I loved this content . Ta",
+    "Another great conversation. Two thoughtful people with humility.",
+    "Ezra is a great thinker and communicator. And so well informed.",
+    "Love it! Huge fan of you both!",
+    "I love listening to smart and thoughtful people speak without ego.",
+    "What a great interviewee and interviewer. Scott asking a question and listening attentively and thoughtfully to Ezra. Brilliant from both of you"
+  ],
+  "gentleCritiques": [
+    "Clarify: viewers are asking “No aspirational view of Brand Israel here in Australia I would say. I am surprised to hear that possibility - why would…”",
+    "Clarify: viewers are asking “How is Ezra such a deep and eloquent communicator? Truely amazing”",
+    "Clarify: viewers are asking “Committing genocide is a brand problem? You got a way to go Scott to taking a human viewpoint on this.”",
+    "Clarify: viewers are asking “31:25 seriously? we're going to suggest that its OK if Israel does it because who are we to judge?”",
+    "Improve: consider addressing “Scott became melancholic when he could not find any argument to counter Ezra's points that Israel is straight up commit…”",
+    "Improve: consider addressing “Much respect to Ezra for calling things as they are. Gaza’s children are being deliberately starved by Isreal, and you’…”",
+    "Improve: consider addressing “Make intelligence great again! Thank you so so much for such a deep and meaningful conversation! I am a huge fan of bot…”",
+    "Improve: consider addressing “Excellent conversation. Ezra should be advising Netanyahu. Scott always does a great job of letting the interviewee spe…”",
+    "Improve: consider addressing “I am a huge Fan of both of you! I wish I could’ve seen more energy from Scott but maybe it was just a down day? No worr…”",
+    "Improve: consider addressing “By far two of the best voices in media. Thank you Scott and Ezra. Please keep your voices loud and clear. Hope Pete or …”",
+    "Improve: consider addressing “I'm amazed at how hesitant Americans are to condemn the clearly horrific atrocities being committed by Israel in Gaza. …”",
+    "Improve: consider addressing “Wow, great pod! Could you look into getting Allan Savory on the show re: ecology/mgmt?”"
+  ]
+}
