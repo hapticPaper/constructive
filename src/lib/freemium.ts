@@ -88,15 +88,19 @@ function persistUnlocked(entries: UnlockedEntry[]): void {
   });
 }
 
-function getRecentUnlockedEntries(): UnlockedEntry[] {
+function readRecentUnlockedEntries(): UnlockedEntry[] {
   const now = nowMs();
   const maxFutureSkewMs = 5 * 60 * 1000;
   const cutoff = now - 24 * 60 * 60 * 1000;
   const upperBound = now + maxFutureSkewMs;
 
-  const entries = parseUnlockedCookie(getCookie(COOKIE_UNLOCKED)).filter(
+  return parseUnlockedCookie(getCookie(COOKIE_UNLOCKED)).filter(
     (e) => e.unlockedAtMs >= cutoff && e.unlockedAtMs <= upperBound,
   );
+}
+
+function getRecentUnlockedEntries(): UnlockedEntry[] {
+  const entries = readRecentUnlockedEntries();
   persistUnlocked(entries);
 
   return entries;
@@ -151,10 +155,15 @@ export function unlockVideo(key: string): { ok: true } | { ok: false; reason: st
   const gate = canRunAnalysis();
   if (!gate.ok) return gate;
 
-  consumeAnalysisRun();
-
   entries.push({ key, unlockedAtMs: nowMs() });
   persistUnlocked(entries);
+
+  const persisted = readRecentUnlockedEntries().some((e) => e.key === key);
+  if (!persisted) {
+    return { ok: false, reason: 'Could not save unlock. Please enable cookies and try again.' };
+  }
+
+  consumeAnalysisRun();
 
   return { ok: true };
 }
