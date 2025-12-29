@@ -33,11 +33,15 @@ bun run dev
 # fetch metadata + comments
 bun run ingest:youtube -- https://www.youtube.com/watch?v=IPsu4pMpIjk --max-comments 200
 
+# generate analytics.json + report.mdx (creator-friendly)
+bun run content:analyze -- --video youtube:IPsu4pMpIjk
+
 # refresh the build-time index used by the frontend
 bun run content:generate
 ```
 
-Then run the playbook in `.charlie/playbooks/` to generate `analytics.json` + `report.mdx` for that video.
+The analysis script is designed to be idempotent: it only generates artifacts that are missing, unless
+`--overwrite` is passed.
 
 ## Deploy
 

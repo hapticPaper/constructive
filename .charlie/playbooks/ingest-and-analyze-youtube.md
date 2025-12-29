@@ -18,26 +18,22 @@ Ingest a YouTube video’s metadata + comment snapshot into `content/`, then gen
    ```
 
 2. Read:
-
    - `content/platforms/youtube/videos/<videoId>/video.json`
    - `content/platforms/youtube/videos/<videoId>/comments.json`
 
-3. Generate `content/platforms/youtube/videos/<videoId>/analytics.json` matching `CommentAnalytics` in `src/content/types.ts`.
+3. Generate analytics + report artifacts:
 
-4. Generate `content/platforms/youtube/videos/<videoId>/report.mdx`.
+   ```bash
+   bun run content:analyze -- --video youtube:<videoId>
+   ```
 
-   - Keep it short and creator-friendly.
-   - Prefer actionable takeaways.
-   - Use existing widgets from `src/widgets/*` when helpful (e.g. `<Callout />`).
-
-5. Refresh the build-time content index:
+4. Refresh the build-time content index:
 
    ```bash
    bun run content:generate
    ```
 
-6. Commit and open (or update) a PR with:
-
+5. Commit and open (or update) a PR with:
    - the new/updated `content/` artifacts
    - updated `src/content/generated/*`
 
