@@ -1,20 +1,17 @@
 import type { CSSProperties } from 'react';
 
+import type { CreatorTakeaway, Sentiment, ThemeBucket } from '../content/types';
+
 import { Callout } from './Callout';
 import { WidgetGrid } from './WidgetGrid';
 import { WidgetPanel } from './WidgetPanel';
 
-type Sentiment = 'positive' | 'neutral' | 'negative';
+type ThemeItem = ThemeBucket[number];
 
-type ThemeItem = { label: string; count: number };
-
-type CreatorTakeaway = {
-  title: string;
-  detail: string;
-};
+const REPORT_SCHEMA = 'constructive.comment-report@v2' as const;
 
 export type CommentReport = {
-  schema: string;
+  schema: typeof REPORT_SCHEMA;
   generatedAt: string;
   video: {
     platform: string;
@@ -68,6 +65,8 @@ function StatRow({
 }
 
 function HistogramList({ items }: { items: ThemeItem[] }): JSX.Element {
+  // Theme labels are derived from tokenized text and filtered by the analyzer
+  // (stopwords + toxic words), so they should be short and safe to render.
   if (items.length === 0) {
     return (
       <p className="muted" style={{ marginTop: 8 }}>
@@ -135,6 +134,14 @@ function formatPercent(value: number): string {
 }
 
 export function Report({ report }: { report: CommentReport }): JSX.Element {
+  if (report.schema !== REPORT_SCHEMA) {
+    return (
+      <Callout title="Unsupported report schema">
+        Expected <code>{REPORT_SCHEMA}</code>, got <code>{report.schema}</code>.
+      </Callout>
+    );
+  }
+
   const total = report.snapshot.commentCount;
   const denom = total > 0 ? total : 1;
 

@@ -17,6 +17,7 @@ import {
   videoJsonPath,
   videoRoot,
 } from './paths';
+import { COMMON_FIRST_NAMES } from './person-names';
 
 type Args = {
   overwrite: boolean;
@@ -343,148 +344,15 @@ const STOPWORDS = new Set([
   'your',
 ]);
 
-const COMMON_FIRST_NAMES = new Set([
-  'aaron',
-  'adam',
-  'adrian',
-  'alan',
-  'alex',
-  'alexander',
-  'amanda',
-  'amy',
-  'andrew',
-  'andy',
-  'angel',
-  'anna',
-  'anthony',
-  'ashley',
-  'austin',
-  'barbara',
-  'ben',
-  'benjamin',
-  'beth',
-  'brian',
-  'brittany',
-  'bruce',
-  'carlos',
-  'catherine',
-  'charles',
-  'chris',
-  'christian',
-  'christina',
-  'christine',
-  'cindy',
-  'claire',
-  'dan',
-  'daniel',
-  'david',
-  'deborah',
-  'diana',
-  'diego',
-  'don',
-  'donna',
-  'doug',
-  'ed',
-  'edward',
-  'elena',
-  'elizabeth',
-  'emily',
-  'emma',
-  'eric',
-  'ethan',
-  'eugene',
-  'eva',
-  'ezra',
-  'frank',
-  'gabriel',
-  'george',
-  'grace',
-  'greg',
-  'hannah',
-  'harry',
-  'heather',
-  'henry',
-  'ian',
-  'jack',
-  'jacob',
-  'james',
-  'jane',
-  'jason',
-  'jeff',
-  'jennifer',
-  'jessica',
-  'john',
-  'jon',
-  'jonathan',
-  'jordan',
-  'jose',
-  'joseph',
-  'josh',
-  'joshua',
-  'juan',
-  'judy',
-  'julia',
-  'julian',
-  'karen',
-  'kate',
-  'katherine',
-  'kevin',
-  'kim',
-  'kyle',
-  'laura',
-  'lauren',
-  'lisa',
-  'linda',
-  'luis',
-  'mark',
-  'maria',
-  'marie',
-  'matt',
-  'matthew',
-  'megan',
-  'michael',
-  'michelle',
-  'mike',
-  'nancy',
-  'natalie',
-  'nick',
-  'nicole',
-  'noah',
-  'olivia',
-  'pam',
-  'pat',
-  'patrick',
-  'paul',
-  'peter',
-  'rachel',
-  'ray',
-  'rebecca',
-  'richard',
-  'rob',
-  'robert',
-  'ryan',
-  'sam',
-  'samantha',
-  'sarah',
-  'scott',
-  'sean',
-  'sharon',
-  'sophia',
-  'stephanie',
-  'steve',
-  'steven',
-  'susan',
-  'taylor',
-  'thomas',
-  'tim',
-  'timothy',
-  'tom',
-  'victoria',
-  'will',
-  'william',
-  'zach',
-  'zachary',
-]);
+const LIKE_SCORE_CAP = 25;
+const THEME_BUCKET_SIZE = 8;
+const THEME_RANKED_CANDIDATES = 16;
+const HIGHLIGHT_LIMIT = 3;
+const TAKEAWAY_LIMIT = 3;
+const HIGHLIGHT_TEXT_LEN = 140;
+const QUOTE_TEXT_LEN = 160;
+const HIGHLIGHT_LEN_SCORE_DENOM = 200;
+const QUOTE_LEN_SCORE_DENOM = 220;
 
 function tokenize(text: string): string[] {
   return text
@@ -549,6 +417,8 @@ function formatPercent(value: number): string {
 }
 
 function isLikelyPersonToken(token: string): boolean {
+  // Intentionally small heuristic: we only classify single-word, lowercased tokens.
+  // Multi-word names and edge cases (e.g. last names) will be treated as topics.
   if (!/^[a-z]+$/u.test(token)) return false;
   return COMMON_FIRST_NAMES.has(token);
 }
@@ -598,8 +468,12 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
       questionCount += 1;
       if (!toxic) {
         const likeScore =
-          typeof comment.likeCount === 'number' ? Math.min(comment.likeCount, 25) : 0;
-        const lengthScore = Math.min(cleaned.length, 200) / 200;
+          typeof comment.likeCount === 'number'
+            ? Math.min(comment.likeCount, LIKE_SCORE_CAP)
+            : 0;
+        const lengthScore =
+          Math.min(cleaned.length, HIGHLIGHT_LEN_SCORE_DENOM) /
+          HIGHLIGHT_LEN_SCORE_DENOM;
         questionCandidates.push({ score: likeScore + lengthScore, text: cleaned });
       }
     }
@@ -609,8 +483,12 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
       suggestionCount += 1;
       if (!toxic) {
         const likeScore =
-          typeof comment.likeCount === 'number' ? Math.min(comment.likeCount, 25) : 0;
-        const lengthScore = Math.min(cleaned.length, 200) / 200;
+          typeof comment.likeCount === 'number'
+            ? Math.min(comment.likeCount, LIKE_SCORE_CAP)
+            : 0;
+        const lengthScore =
+          Math.min(cleaned.length, HIGHLIGHT_LEN_SCORE_DENOM) /
+          HIGHLIGHT_LEN_SCORE_DENOM;
         suggestionCandidates.push({ score: likeScore + lengthScore, text: cleaned });
       }
     }
@@ -624,8 +502,11 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
 
     if (!toxic) {
       const likeScore =
-        typeof comment.likeCount === 'number' ? Math.min(comment.likeCount, 25) : 0;
-      const lengthScore = Math.min(cleaned.length, 220) / 220;
+        typeof comment.likeCount === 'number'
+          ? Math.min(comment.likeCount, LIKE_SCORE_CAP)
+          : 0;
+      const lengthScore =
+        Math.min(cleaned.length, QUOTE_LEN_SCORE_DENOM) / QUOTE_LEN_SCORE_DENOM;
       const sentimentScore =
         sentiment === 'positive' ? 1 : sentiment === 'negative' ? -0.25 : 0;
       quoteCandidates.push({
@@ -639,7 +520,7 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
     .map(([label, count]) => ({ label, count }));
 
-  const themes = rankedThemes.slice(0, 16).reduce(
+  const themes = rankedThemes.slice(0, THEME_RANKED_CANDIDATES).reduce(
     (acc, theme) => {
       if (isLikelyPersonToken(theme.label)) {
         acc.people.push(theme);
@@ -658,22 +539,22 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
     .sort((a, b) => b.score - a.score)
     .map((q) => q.text)
     .filter((t, index, all) => all.indexOf(t) === index)
-    .slice(0, 3)
-    .map((t) => ellipsize(t, 160));
+    .slice(0, HIGHLIGHT_LIMIT)
+    .map((t) => ellipsize(t, QUOTE_TEXT_LEN));
 
   const questions = questionCandidates
     .sort((a, b) => b.score - a.score)
     .map((q) => q.text)
     .filter((t, index, all) => all.indexOf(t) === index)
-    .slice(0, 3)
-    .map((t) => ellipsize(t, 140));
+    .slice(0, HIGHLIGHT_LIMIT)
+    .map((t) => ellipsize(t, HIGHLIGHT_TEXT_LEN));
 
   const suggestions = suggestionCandidates
     .sort((a, b) => b.score - a.score)
     .map((s) => s.text)
     .filter((t, index, all) => all.indexOf(t) === index)
-    .slice(0, 3)
-    .map((t) => ellipsize(t, 140));
+    .slice(0, HIGHLIGHT_LIMIT)
+    .map((t) => ellipsize(t, HIGHLIGHT_TEXT_LEN));
 
   const topicsSummary = summarizeThemeLabels(themes.topics, 3);
   const peopleSummary = summarizeThemeLabels(themes.people, 3);
@@ -709,9 +590,7 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
       takeawayCandidates.push({
         priority: 0.75 + questionRate,
         title: 'Viewers want clarity',
-        detail:
-          `Questions make up ${formatPercent(questionRate)} of comments (${questionCount.toLocaleString()} total).` +
-          (questions[0] ? ` Example: “${questions[0]}”` : ''),
+        detail: `Questions make up ${formatPercent(questionRate)} of comments (${questionCount.toLocaleString()} total).`,
       });
     }
 
@@ -719,9 +598,7 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
       takeawayCandidates.push({
         priority: 0.7 + suggestionRate,
         title: 'There are clear improvement requests',
-        detail:
-          `Suggestions show up in ${formatPercent(suggestionRate)} of comments (${suggestionCount.toLocaleString()} total).` +
-          (suggestions[0] ? ` Example: “${suggestions[0]}”` : ''),
+        detail: `Suggestions show up in ${formatPercent(suggestionRate)} of comments (${suggestionCount.toLocaleString()} total).`,
       });
     }
 
@@ -747,9 +624,10 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
       (entry, index, all) =>
         all.findIndex((candidate) => candidate.title === entry.title) === index,
     )
-    .slice(0, 3);
+    .slice(0, TAKEAWAY_LIMIT);
 
   return {
+    schema: 'constructive.comment-analytics@v2',
     commentCount: analyzedCount,
     analyzedAt: new Date().toISOString(),
     sentimentBreakdown,
@@ -757,8 +635,8 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
     questionCount,
     suggestionCount,
     themes: {
-      topics: themes.topics.slice(0, 8),
-      people: themes.people.slice(0, 8),
+      topics: themes.topics.slice(0, THEME_BUCKET_SIZE),
+      people: themes.people.slice(0, THEME_BUCKET_SIZE),
     },
     highlights: {
       questions,
@@ -771,6 +649,7 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
 
 function isCommentAnalytics(value: unknown): value is CommentAnalytics {
   if (!isRecord(value)) return false;
+  if (value.schema !== 'constructive.comment-analytics@v2') return false;
   if (typeof value.commentCount !== 'number' || value.commentCount < 0) return false;
   if (typeof value.analyzedAt !== 'string') return false;
 
@@ -844,6 +723,7 @@ function isCommentAnalytics(value: unknown): value is CommentAnalytics {
   return true;
 }
 
+// The generated MDX expects `<Report />` to be injected via the app's `MDXProvider`.
 function buildReportMdx(video: VideoMetadata, analytics: CommentAnalytics): string {
   const report = {
     schema: 'constructive.comment-report@v2',

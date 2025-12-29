@@ -1,6 +1,7 @@
 {
+  "schema": "constructive.comment-analytics@v2",
   "commentCount": 200,
-  "analyzedAt": "2025-12-29T17:36:54.881Z",
+  "analyzedAt": "2025-12-29T17:44:44.267Z",
   "sentimentBreakdown": {
     "positive": 9,
     "neutral": 190,
@@ -66,11 +67,11 @@
   "takeaways": [
     {
       "title": "Viewers want clarity",
-      "detail": "Questions make up 19% of comments (38 total). Example: “Entity 1: Our last hack blew up the mass of particles. Entity 2: Let's just set the internal mass to negative to counter that. Entity 1:…”"
+      "detail": "Questions make up 19% of comments (38 total)."
     },
     {
       "title": "There are clear improvement requests",
-      "detail": "Suggestions show up in 10% of comments (19 total). Example: “Entity 1: Our last hack blew up the mass of particles. Entity 2: Let's just set the internal mass to negative to counter that. Entity 1:…”"
+      "detail": "Suggestions show up in 10% of comments (19 total)."
     },
     {
       "title": "What people latched onto",

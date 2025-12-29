@@ -45,6 +45,7 @@ Key fields (current schema):
 
 ```ts
 type CommentAnalytics = {
+  schema: 'constructive.comment-analytics@v2';
   commentCount: number;
   analyzedAt: string;
   sentimentBreakdown: { positive: number; neutral: number; negative: number };
@@ -69,6 +70,8 @@ type CommentAnalytics = {
   takeaways: Array<{ title: string; detail: string }>;
 };
 ```
+
+Note: the analyzer validates `schema` at runtime. If a cached `analytics.json` doesn’t match the current schema, re-run `bun run content:analyze -- --overwrite` to regenerate it.
 
 ### `report.mdx`
 

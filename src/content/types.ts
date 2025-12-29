@@ -48,6 +48,7 @@ export type CreatorTakeaway = {
 };
 
 export type CommentAnalytics = {
+  schema: 'constructive.comment-analytics@v2';
   commentCount: number;
   analyzedAt: string;
   sentimentBreakdown: Record<Sentiment, number>;

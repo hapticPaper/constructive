@@ -263,7 +263,7 @@ async function main(): Promise<void> {
       `  '${platform}:${videoId}': {`,
       `    video: ${ident}_video as VideoContent['video'],`,
       `    comments: ${hasComments ? `${ident}_comments` : 'undefined'},`,
-      `    analytics: ${hasAnalytics ? `${ident}_analytics` : 'undefined'},`,
+      `    analytics: ${hasAnalytics ? `${ident}_analytics as VideoContent['analytics']` : 'undefined'},`,
       '  },',
     );
 

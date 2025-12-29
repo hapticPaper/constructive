@@ -1,6 +1,7 @@
 {
+  "schema": "constructive.comment-analytics@v2",
   "commentCount": 200,
-  "analyzedAt": "2025-12-29T17:36:54.861Z",
+  "analyzedAt": "2025-12-29T17:44:44.247Z",
   "sentimentBreakdown": {
     "positive": 18,
     "neutral": 182,
@@ -79,11 +80,11 @@
     },
     {
       "title": "Viewers want clarity",
-      "detail": "Questions make up 10% of comments (19 total). Example: “I'm amazed at how hesitant Americans are to condemn the clearly horrific atrocities being committed by Israel in Gaza. How could there be…”"
+      "detail": "Questions make up 10% of comments (19 total)."
     },
     {
       "title": "There are clear improvement requests",
-      "detail": "Suggestions show up in 6% of comments (11 total). Example: “Much respect to Ezra for calling things as they are. Gaza’s children are being deliberately starved by Isreal, and you’re worried about…”"
+      "detail": "Suggestions show up in 6% of comments (11 total)."
     }
   ]
 }
