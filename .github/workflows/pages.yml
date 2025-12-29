@@ -2,7 +2,7 @@ name: Deploy GitHub Pages
 
 on:
   push:
-    branches: [main, develop, ai-1-create-our-content-creator-s-comment-analytic]
+    branches: [ai-1-create-our-content-creator-s-comment-analytic]
   workflow_dispatch: {}
 
 permissions:
