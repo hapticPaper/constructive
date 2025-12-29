@@ -145,14 +145,14 @@ export function isVideoUnlocked(key: string): boolean {
 }
 
 export function unlockVideo(key: string): { ok: true } | { ok: false; reason: string } {
-  if (isVideoUnlocked(key)) return { ok: true };
+  const entries = getRecentUnlockedEntries();
+  if (entries.some((e) => e.key === key)) return { ok: true };
 
   const gate = canRunAnalysis();
   if (!gate.ok) return gate;
 
   consumeAnalysisRun();
 
-  const entries = getRecentUnlockedEntries();
   entries.push({ key, unlockedAtMs: nowMs() });
   persistUnlocked(entries);
 

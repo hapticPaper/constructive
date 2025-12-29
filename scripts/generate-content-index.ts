@@ -125,6 +125,7 @@ function relFromGenerated(absolutePath: string): string {
 }
 
 async function main(): Promise<void> {
+  const strict = process.argv.includes('--strict');
   const platforms: Platform[] = ['youtube'];
   const videoEntries: Array<{ platform: Platform; videoId: string }> = [];
   for (const platform of platforms) {
@@ -132,6 +133,38 @@ async function main(): Promise<void> {
       videoEntries.push({ platform, videoId });
     }
   }
+
+  type Validation =
+    | { ok: true; platform: Platform; videoId: string }
+    | { ok: false; platform: Platform; videoId: string; error: unknown };
+
+  const validations: Validation[] = await Promise.all(
+    videoEntries.map(async ({ platform, videoId }) => {
+      const videoJsonPath = path.join(CONTENT_ROOT, platform, 'videos', videoId, 'video.json');
+      try {
+        await assertValidVideoJson(videoJsonPath, platform, videoId);
+        return { ok: true as const, platform, videoId };
+      } catch (error) {
+        return { ok: false as const, platform, videoId, error };
+      }
+    }),
+  );
+
+  const invalidEntries = validations.filter((v): v is Extract<Validation, { ok: false }> => !v.ok);
+  if (invalidEntries.length > 0) {
+    if (strict) {
+      const first = invalidEntries[0];
+      throw first.error;
+    }
+
+    for (const entry of invalidEntries) {
+      const message =
+        entry.error instanceof Error ? entry.error.message : String(entry.error);
+      process.stderr.write(`${message}\n`);
+    }
+  }
+
+  const validEntries = validations.filter((v): v is Extract<Validation, { ok: true }> => v.ok);
 
   const contentImports: string[] = [
     '// AUTO-GENERATED FILE. DO NOT EDIT.',
@@ -153,7 +186,7 @@ async function main(): Promise<void> {
     'export const VIDEO_REPORTS: Record<string, ComponentType | undefined> = {',
   ];
 
-  for (const { platform, videoId } of videoEntries) {
+  for (const { platform, videoId } of validEntries) {
     const ident = safeIdent(`${platform}_${videoId}`);
     const base = path.join(CONTENT_ROOT, platform, 'videos', videoId);
 
@@ -161,8 +194,6 @@ async function main(): Promise<void> {
     const commentsPath = relFromGenerated(path.join(base, 'comments.json'));
     const analyticsPath = relFromGenerated(path.join(base, 'analytics.json'));
     const reportPath = relFromGenerated(path.join(base, 'report.mdx'));
-
-    await assertValidVideoJson(path.join(base, 'video.json'), platform, videoId);
 
     contentImports.push(
       `import ${ident}_video from '${videoPath}';`,
@@ -175,11 +206,7 @@ async function main(): Promise<void> {
 
     contentMapLines.push(
       `  '${platform}:${videoId}': {`,
-      '    video: {',
-      `      ...${ident}_video,`,
-      `      platform: '${platform}',`,
-      `      channel: { ...${ident}_video.channel, platform: '${platform}' },`,
-      '    },',
+      `    video: ${ident}_video as VideoContent['video'],`,
       `    comments: ${ident}_comments,`,
       `    analytics: ${ident}_analytics,`,
       '  },',
@@ -188,7 +215,7 @@ async function main(): Promise<void> {
     reportMapLines.push(`  '${platform}:${videoId}': ${ident}_report,`);
   }
 
-  contentMapLines.push('} satisfies Record<string, VideoContent>;', '');
+  contentMapLines.push('};', '');
   reportMapLines.push('};', '');
 
   await writeTextFile(
@@ -201,7 +228,7 @@ async function main(): Promise<void> {
   );
 
   process.stdout.write(
-    `Generated content index for ${videoEntries.length} videos into src/content/generated/.\n`,
+    `Generated content index for ${validEntries.length} videos into src/content/generated/.\n`,
   );
 }
 

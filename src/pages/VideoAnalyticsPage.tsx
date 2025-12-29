@@ -92,6 +92,14 @@ export function VideoAnalyticsPage(): JSX.Element {
                   setUnlocking(false);
                   return;
                 }
+
+                const persisted = isVideoUnlocked(key);
+                if (!persisted) {
+                  setUnlockError('Could not save unlock. Please enable cookies and try again.');
+                  setUnlocking(false);
+                  return;
+                }
+
                 setUnlocked(true);
                 setUnlocking(false);
               }}

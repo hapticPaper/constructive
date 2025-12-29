@@ -13,21 +13,13 @@ import youtube_KXPhaAsnrfs_analytics from '../../../content/platforms/youtube/vi
 
 export const VIDEO_CONTENT: Record<string, VideoContent> = {
   'youtube:IPsu4pMpIjk': {
-    video: {
-      ...youtube_IPsu4pMpIjk_video,
-      platform: 'youtube',
-      channel: { ...youtube_IPsu4pMpIjk_video.channel, platform: 'youtube' },
-    },
+    video: youtube_IPsu4pMpIjk_video as VideoContent['video'],
     comments: youtube_IPsu4pMpIjk_comments,
     analytics: youtube_IPsu4pMpIjk_analytics,
   },
   'youtube:KXPhaAsnrfs': {
-    video: {
-      ...youtube_KXPhaAsnrfs_video,
-      platform: 'youtube',
-      channel: { ...youtube_KXPhaAsnrfs_video.channel, platform: 'youtube' },
-    },
+    video: youtube_KXPhaAsnrfs_video as VideoContent['video'],
     comments: youtube_KXPhaAsnrfs_comments,
     analytics: youtube_KXPhaAsnrfs_analytics,
   },
-} satisfies Record<string, VideoContent>;
+};
