@@ -1,6 +1,6 @@
 import { MDXProvider } from '@mdx-js/react';
 import type { MDXComponents } from 'mdx/types';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import {
   Bar,
@@ -16,7 +16,7 @@ import {
 
 import { getVideoContent, getVideoReportComponent } from '../content/content';
 import type { Platform } from '../content/types';
-import { canRunAnalysis, consumeAnalysisRun } from '../lib/freemium';
+import { canViewVideoAnalytics, consumeVideoAnalyticsView } from '../lib/freemium';
 import * as Widgets from '../widgets';
 
 const SENTIMENT_COLORS: Record<string, string> = {
@@ -24,49 +24,31 @@ const SENTIMENT_COLORS: Record<string, string> = {
   neutral: 'rgba(255,255,255,0.40)',
   negative: '#ff6376',
 };
-
-function useConsumeAnalysisOncePerSession({
-  key,
-  hasContent,
-}: {
-  key: string;
-  hasContent: boolean;
-}): void {
-  useEffect(() => {
-    if (!hasContent) return;
-
-    const storageKey = `constructive_viewed:${key}`;
-    try {
-      if (sessionStorage.getItem(storageKey)) return;
-    } catch {
-      // ignore
-    }
-
-    const gate = canRunAnalysis();
-    if (!gate.ok) return;
-
-    try {
-      sessionStorage.setItem(storageKey, String(Date.now()));
-    } catch {
-      // ignore
-    }
-
-    consumeAnalysisRun();
-  }, [hasContent, key]);
-}
-
 export function VideoAnalyticsPage(): JSX.Element {
   const params = useParams();
   const platform = (params.platform as Platform | undefined) ?? 'youtube';
   const videoId = params.videoId ?? '';
   const viewKey = `${platform}:${videoId}`;
 
+  const hasConsumedRef = useRef(false);
   const content = useMemo(() => getVideoContent(platform, videoId), [platform, videoId]);
   const Report = useMemo(
     () => getVideoReportComponent(platform, videoId),
     [platform, videoId],
   );
-  useConsumeAnalysisOncePerSession({ key: viewKey, hasContent: Boolean(content) });
+
+  const gate = canViewVideoAnalytics(viewKey);
+
+  useEffect(() => {
+    if (!content) return;
+    if (hasConsumedRef.current) return;
+
+    const currentGate = canViewVideoAnalytics(viewKey);
+    if (!currentGate.ok) return;
+
+    consumeVideoAnalyticsView(viewKey);
+    hasConsumedRef.current = true;
+  }, [content, viewKey]);
 
   if (!content) {
     return (
@@ -79,8 +61,6 @@ export function VideoAnalyticsPage(): JSX.Element {
       </div>
     );
   }
-
-  const gate = canRunAnalysis();
 
   if (!gate.ok) {
     return (

@@ -2,7 +2,6 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { listVideos } from '../content/content';
-import { canRunAnalysis } from '../lib/freemium';
 import { extractYouTubeVideoId } from '../lib/youtube';
 import { VideoCard } from '../components/VideoCard';
 import { Button } from '../components/ui/Button';
@@ -27,12 +26,6 @@ export function OnboardingPage(): JSX.Element {
       setError(
         'This build only ships with a small demo library. Add a new video by running the ingestion playbook in the repo.',
       );
-      return;
-    }
-
-    const gate = canRunAnalysis();
-    if (!gate.ok) {
-      setError(gate.reason);
       return;
     }
 
