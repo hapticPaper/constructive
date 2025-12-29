@@ -10,6 +10,9 @@ export function VideoCard({
 }: {
   video: VideoMetadata;
   ctaLabel?: string;
+  /**
+   * Optional CTA click handler. Callers may `event.preventDefault()` to gate navigation.
+   */
   onCtaClick?: (event: MouseEvent<HTMLAnchorElement>) => void;
 }): JSX.Element {
   return (
