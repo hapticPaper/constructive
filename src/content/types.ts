@@ -40,6 +40,13 @@ export type CommentSignals = {
   isSuggestion: boolean;
 };
 
+export type ThemeBucket = Array<{ label: string; count: number }>;
+
+export type CreatorTakeaway = {
+  title: string;
+  detail: string;
+};
+
 export type CommentAnalytics = {
   commentCount: number;
   analyzedAt: string;
@@ -47,9 +54,16 @@ export type CommentAnalytics = {
   toxicCount: number;
   questionCount: number;
   suggestionCount: number;
-  topThemes: Array<{ label: string; count: number }>;
-  safeQuotes: string[];
-  gentleCritiques: string[];
+  themes: {
+    topics: ThemeBucket;
+    people: ThemeBucket;
+  };
+  highlights: {
+    questions: string[];
+    suggestions: string[];
+    quotes: string[];
+  };
+  takeaways: CreatorTakeaway[];
 };
 
 /**

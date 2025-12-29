@@ -343,6 +343,149 @@ const STOPWORDS = new Set([
   'your',
 ]);
 
+const COMMON_FIRST_NAMES = new Set([
+  'aaron',
+  'adam',
+  'adrian',
+  'alan',
+  'alex',
+  'alexander',
+  'amanda',
+  'amy',
+  'andrew',
+  'andy',
+  'angel',
+  'anna',
+  'anthony',
+  'ashley',
+  'austin',
+  'barbara',
+  'ben',
+  'benjamin',
+  'beth',
+  'brian',
+  'brittany',
+  'bruce',
+  'carlos',
+  'catherine',
+  'charles',
+  'chris',
+  'christian',
+  'christina',
+  'christine',
+  'cindy',
+  'claire',
+  'dan',
+  'daniel',
+  'david',
+  'deborah',
+  'diana',
+  'diego',
+  'don',
+  'donna',
+  'doug',
+  'ed',
+  'edward',
+  'elena',
+  'elizabeth',
+  'emily',
+  'emma',
+  'eric',
+  'ethan',
+  'eugene',
+  'eva',
+  'ezra',
+  'frank',
+  'gabriel',
+  'george',
+  'grace',
+  'greg',
+  'hannah',
+  'harry',
+  'heather',
+  'henry',
+  'ian',
+  'jack',
+  'jacob',
+  'james',
+  'jane',
+  'jason',
+  'jeff',
+  'jennifer',
+  'jessica',
+  'john',
+  'jon',
+  'jonathan',
+  'jordan',
+  'jose',
+  'joseph',
+  'josh',
+  'joshua',
+  'juan',
+  'judy',
+  'julia',
+  'julian',
+  'karen',
+  'kate',
+  'katherine',
+  'kevin',
+  'kim',
+  'kyle',
+  'laura',
+  'lauren',
+  'lisa',
+  'linda',
+  'luis',
+  'mark',
+  'maria',
+  'marie',
+  'matt',
+  'matthew',
+  'megan',
+  'michael',
+  'michelle',
+  'mike',
+  'nancy',
+  'natalie',
+  'nick',
+  'nicole',
+  'noah',
+  'olivia',
+  'pam',
+  'pat',
+  'patrick',
+  'paul',
+  'peter',
+  'rachel',
+  'ray',
+  'rebecca',
+  'richard',
+  'rob',
+  'robert',
+  'ryan',
+  'sam',
+  'samantha',
+  'sarah',
+  'scott',
+  'sean',
+  'sharon',
+  'sophia',
+  'stephanie',
+  'steve',
+  'steven',
+  'susan',
+  'taylor',
+  'thomas',
+  'tim',
+  'timothy',
+  'tom',
+  'victoria',
+  'will',
+  'william',
+  'zach',
+  'zachary',
+]);
+
 function tokenize(text: string): string[] {
   return text
     .toLowerCase()
@@ -400,18 +543,24 @@ function ellipsize(text: string, maxLen: number): string {
   return `${trimmed.replace(/\s+$/g, '')}…`;
 }
 
-function escapeMdxText(text: string): string {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/\{/g, '&#123;')
-    .replace(/\}/g, '&#125;')
-    .replace(/`/g, '\\`')
-    .replace(/\*/g, '\\*')
-    .replace(/_/g, '\\_')
-    .replace(/\[/g, '\\[')
-    .replace(/\]/g, '\\]');
+function formatPercent(value: number): string {
+  const pct = Math.round(value * 100);
+  return `${pct}%`;
+}
+
+function isLikelyPersonToken(token: string): boolean {
+  if (!/^[a-z]+$/u.test(token)) return false;
+  return COMMON_FIRST_NAMES.has(token);
+}
+
+function summarizeThemeLabels(
+  themes: Array<{ label: string; count: number }>,
+  limit: number,
+): string {
+  return themes
+    .slice(0, limit)
+    .map((theme) => theme.label)
+    .join(', ');
 }
 
 function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
@@ -426,9 +575,9 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
   let suggestionCount = 0;
 
   const themeCounts = new Map<string, number>();
-  const safeQuoteCandidates: Array<{ score: number; text: string }> = [];
-  const questionCandidates: string[] = [];
-  const suggestionCandidates: string[] = [];
+  const quoteCandidates: Array<{ score: number; text: string }> = [];
+  const questionCandidates: Array<{ score: number; text: string }> = [];
+  const suggestionCandidates: Array<{ score: number; text: string }> = [];
 
   let analyzedCount = 0;
 
@@ -447,13 +596,23 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
     const isQuestion = isQuestionText(cleaned);
     if (isQuestion) {
       questionCount += 1;
-      if (!toxic) questionCandidates.push(cleaned);
+      if (!toxic) {
+        const likeScore =
+          typeof comment.likeCount === 'number' ? Math.min(comment.likeCount, 25) : 0;
+        const lengthScore = Math.min(cleaned.length, 200) / 200;
+        questionCandidates.push({ score: likeScore + lengthScore, text: cleaned });
+      }
     }
 
     const isSuggestion = isSuggestionText(cleaned);
     if (isSuggestion) {
       suggestionCount += 1;
-      if (!toxic) suggestionCandidates.push(cleaned);
+      if (!toxic) {
+        const likeScore =
+          typeof comment.likeCount === 'number' ? Math.min(comment.likeCount, 25) : 0;
+        const lengthScore = Math.min(cleaned.length, 200) / 200;
+        suggestionCandidates.push({ score: likeScore + lengthScore, text: cleaned });
+      }
     }
 
     for (const token of tokens) {
@@ -469,31 +628,126 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
       const lengthScore = Math.min(cleaned.length, 220) / 220;
       const sentimentScore =
         sentiment === 'positive' ? 1 : sentiment === 'negative' ? -0.25 : 0;
-      safeQuoteCandidates.push({
+      quoteCandidates.push({
         score: likeScore + lengthScore + sentimentScore,
         text: cleaned,
       });
     }
   }
 
-  const topThemes = [...themeCounts.entries()]
+  const rankedThemes = [...themeCounts.entries()]
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-    .slice(0, 8)
     .map(([label, count]) => ({ label, count }));
 
-  const safeQuotes = safeQuoteCandidates
+  const themes = rankedThemes.slice(0, 16).reduce(
+    (acc, theme) => {
+      if (isLikelyPersonToken(theme.label)) {
+        acc.people.push(theme);
+      } else {
+        acc.topics.push(theme);
+      }
+      return acc;
+    },
+    {
+      topics: [] as Array<{ label: string; count: number }>,
+      people: [] as Array<{ label: string; count: number }>,
+    },
+  );
+
+  const quotes = quoteCandidates
     .sort((a, b) => b.score - a.score)
     .map((q) => q.text)
     .filter((t, index, all) => all.indexOf(t) === index)
-    .slice(0, 12);
+    .slice(0, 3)
+    .map((t) => ellipsize(t, 160));
 
-  const gentleCritiques: string[] = [];
-  for (const text of questionCandidates.slice(0, 6)) {
-    gentleCritiques.push(`Clarify: viewers are asking “${ellipsize(text, 120)}”`);
+  const questions = questionCandidates
+    .sort((a, b) => b.score - a.score)
+    .map((q) => q.text)
+    .filter((t, index, all) => all.indexOf(t) === index)
+    .slice(0, 3)
+    .map((t) => ellipsize(t, 140));
+
+  const suggestions = suggestionCandidates
+    .sort((a, b) => b.score - a.score)
+    .map((s) => s.text)
+    .filter((t, index, all) => all.indexOf(t) === index)
+    .slice(0, 3)
+    .map((t) => ellipsize(t, 140));
+
+  const topicsSummary = summarizeThemeLabels(themes.topics, 3);
+  const peopleSummary = summarizeThemeLabels(themes.people, 3);
+
+  type TakeawayCandidate = { priority: number; title: string; detail: string };
+  const takeawayCandidates: TakeawayCandidate[] = [];
+
+  if (analyzedCount > 0) {
+    const questionRate = questionCount / analyzedCount;
+    const suggestionRate = suggestionCount / analyzedCount;
+    const negativeRate = sentimentBreakdown.negative / analyzedCount;
+    const positiveRate = sentimentBreakdown.positive / analyzedCount;
+
+    takeawayCandidates.push({
+      priority: 0.55,
+      title: 'What people latched onto',
+      detail: topicsSummary
+        ? `Most discussion clusters around: ${topicsSummary}.`
+        : 'No strong topic cluster stood out in this snapshot.',
+    });
+
+    if (themes.people.length > 0) {
+      takeawayCandidates.push({
+        priority: 0.7 + Math.min(themes.people[0].count / analyzedCount, 0.25),
+        title: 'The conversation is partly about the people',
+        detail: peopleSummary
+          ? `A meaningful slice of comments mention: ${peopleSummary}. Treat those as “host/guest” feedback, not topic feedback.`
+          : 'A meaningful slice of comments focus on the host/guest rather than the topic.',
+      });
+    }
+
+    if (questionCount >= 3) {
+      takeawayCandidates.push({
+        priority: 0.75 + questionRate,
+        title: 'Viewers want clarity',
+        detail:
+          `Questions make up ${formatPercent(questionRate)} of comments (${questionCount.toLocaleString()} total).` +
+          (questions[0] ? ` Example: “${questions[0]}”` : ''),
+      });
+    }
+
+    if (suggestionCount >= 2) {
+      takeawayCandidates.push({
+        priority: 0.7 + suggestionRate,
+        title: 'There are clear improvement requests',
+        detail:
+          `Suggestions show up in ${formatPercent(suggestionRate)} of comments (${suggestionCount.toLocaleString()} total).` +
+          (suggestions[0] ? ` Example: “${suggestions[0]}”` : ''),
+      });
+    }
+
+    if (negativeRate >= 0.25) {
+      takeawayCandidates.push({
+        priority: 0.6 + negativeRate,
+        title: 'Sentiment is meaningfully negative',
+        detail: `Negative sentiment appears in ${formatPercent(negativeRate)} of comments. Consider a pinned comment or follow-up to address the most common friction.`,
+      });
+    } else if (positiveRate >= 0.45) {
+      takeawayCandidates.push({
+        priority: 0.6 + positiveRate,
+        title: 'Sentiment is strongly positive',
+        detail: `Positive sentiment appears in ${formatPercent(positiveRate)} of comments. Lean into the angle that’s resonating (and repeat the format).`,
+      });
+    }
   }
-  for (const text of suggestionCandidates.slice(0, 8)) {
-    gentleCritiques.push(`Improve: consider addressing “${ellipsize(text, 120)}”`);
-  }
+
+  const takeaways = takeawayCandidates
+    .sort((a, b) => b.priority - a.priority)
+    .map((entry) => ({ title: entry.title, detail: entry.detail }))
+    .filter(
+      (entry, index, all) =>
+        all.findIndex((candidate) => candidate.title === entry.title) === index,
+    )
+    .slice(0, 3);
 
   return {
     commentCount: analyzedCount,
@@ -502,9 +756,16 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
     toxicCount,
     questionCount,
     suggestionCount,
-    topThemes,
-    safeQuotes,
-    gentleCritiques,
+    themes: {
+      topics: themes.topics.slice(0, 8),
+      people: themes.people.slice(0, 8),
+    },
+    highlights: {
+      questions,
+      suggestions,
+      quotes,
+    },
+    takeaways,
   };
 }
 
@@ -545,69 +806,77 @@ function isCommentAnalytics(value: unknown): value is CommentAnalytics {
     return false;
   }
 
-  if (!Array.isArray(value.topThemes)) return false;
-  for (const theme of value.topThemes) {
+  if (!isRecord(value.themes)) return false;
+  if (!Array.isArray(value.themes.topics)) return false;
+  for (const theme of value.themes.topics) {
+    if (!isRecord(theme)) return false;
+    if (typeof theme.label !== 'string') return false;
+    if (typeof theme.count !== 'number' || theme.count < 0) return false;
+  }
+  if (!Array.isArray(value.themes.people)) return false;
+  for (const theme of value.themes.people) {
     if (!isRecord(theme)) return false;
     if (typeof theme.label !== 'string') return false;
     if (typeof theme.count !== 'number' || theme.count < 0) return false;
   }
 
-  if (!Array.isArray(value.safeQuotes)) return false;
-  for (const quote of value.safeQuotes) {
+  if (!isRecord(value.highlights)) return false;
+  if (!Array.isArray(value.highlights.questions)) return false;
+  for (const question of value.highlights.questions) {
+    if (typeof question !== 'string') return false;
+  }
+  if (!Array.isArray(value.highlights.suggestions)) return false;
+  for (const suggestion of value.highlights.suggestions) {
+    if (typeof suggestion !== 'string') return false;
+  }
+  if (!Array.isArray(value.highlights.quotes)) return false;
+  for (const quote of value.highlights.quotes) {
     if (typeof quote !== 'string') return false;
   }
 
-  if (!Array.isArray(value.gentleCritiques)) return false;
-  for (const critique of value.gentleCritiques) {
-    if (typeof critique !== 'string') return false;
+  if (!Array.isArray(value.takeaways)) return false;
+  for (const takeaway of value.takeaways) {
+    if (!isRecord(takeaway)) return false;
+    if (typeof takeaway.title !== 'string') return false;
+    if (typeof takeaway.detail !== 'string') return false;
   }
 
   return true;
 }
 
 function buildReportMdx(video: VideoMetadata, analytics: CommentAnalytics): string {
+  const report = {
+    schema: 'constructive.comment-report@v2',
+    generatedAt: analytics.analyzedAt,
+    video: {
+      platform: video.platform,
+      videoId: video.videoId,
+      title: video.title,
+      channelTitle: video.channel.channelTitle,
+      videoUrl: video.videoUrl,
+    },
+    snapshot: {
+      commentCount: analytics.commentCount,
+      sentimentBreakdown: analytics.sentimentBreakdown,
+      toxicCount: analytics.toxicCount,
+      questionCount: analytics.questionCount,
+      suggestionCount: analytics.suggestionCount,
+    },
+    core: {
+      takeaways: analytics.takeaways,
+      topics: analytics.themes.topics,
+      questions: analytics.highlights.questions,
+      suggestions: analytics.highlights.suggestions,
+    },
+    optional: {
+      people: analytics.themes.people,
+      quotes: analytics.highlights.quotes,
+    },
+  };
+
   const lines: string[] = [];
-  lines.push('# Comment report', '');
-  lines.push(
-    `This report was generated from a snapshot of YouTube comments for **${escapeMdxText(video.title)}**.`,
-    '',
-  );
-  lines.push('<Callout title="Tone filter">');
-  lines.push(
-    '  We focus on actionable signal. Harsh/insulting language is excluded from quotes and softened in summaries.',
-  );
-  lines.push('</Callout>', '');
-
-  lines.push('## What people are talking about', '');
-  if (analytics.topThemes.length === 0) {
-    lines.push('No strong themes yet.', '');
-  } else {
-    for (const theme of analytics.topThemes) {
-      lines.push(`- **${escapeMdxText(theme.label)}** (${theme.count})`);
-    }
-    lines.push('');
-  }
-
-  lines.push('## Creator-friendly takeaways', '');
-  if (analytics.gentleCritiques.length === 0) {
-    lines.push('No strong asks stood out in this snapshot.', '');
-  } else {
-    for (const item of analytics.gentleCritiques) {
-      lines.push(`- ${escapeMdxText(item)}`);
-    }
-    lines.push('');
-  }
-
-  lines.push('## Quotes (safe)', '');
-  if (analytics.safeQuotes.length === 0) {
-    lines.push('No safe quotes stood out in this snapshot.', '');
-  } else {
-    for (const quote of analytics.safeQuotes) {
-      lines.push(`- “${escapeMdxText(quote)}”`);
-    }
-    lines.push('');
-  }
-
+  lines.push(`export const report = ${JSON.stringify(report, null, 2)}`, '');
+  lines.push('<Report report={report} />', '');
   return lines.join('\n');
 }
 
