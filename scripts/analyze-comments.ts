@@ -261,6 +261,8 @@ function buildMdxReport({
   videoTitle: string;
   analytics: CommentAnalytics;
 }): string {
+  // `analytics.*` strings are expected to already be tone-filtered (via `sanitize` / `shorten`).
+  // This function is responsible for MDX/JSX safety via `escapeMdxText`.
   const safeTitle = escapeMdxText(videoTitle);
   const themes = analytics.topThemes
     .map((t) => `- **${escapeMdxText(t.label)}** (${t.count})`)
