@@ -152,14 +152,15 @@ async function main(): Promise<void> {
 
   const invalidEntries = validations.filter((v): v is Extract<Validation, { ok: false }> => !v.ok);
   if (invalidEntries.length > 0) {
+    const messages = invalidEntries.map((entry) =>
+      entry.error instanceof Error ? entry.error.message : String(entry.error),
+    );
+
     if (strict) {
-      const first = invalidEntries[0];
-      throw first.error;
+      throw new Error(messages.join('\n'));
     }
 
-    for (const entry of invalidEntries) {
-      const message =
-        entry.error instanceof Error ? entry.error.message : String(entry.error);
+    for (const message of messages) {
       process.stderr.write(`${message}\n`);
     }
   }
