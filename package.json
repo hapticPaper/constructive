@@ -11,8 +11,7 @@
     "lint": "eslint .",
     "format": "prettier -c .",
     "content:generate": "bun run scripts/generate-content-index.ts",
-    "ingest:youtube": "bun run scripts/ingest-youtube.ts",
-    "analyze": "bun run scripts/analyze-comments.ts"
+    "ingest:youtube": "bun run scripts/ingest-youtube.ts"
   },
   "dependencies": {
     "@mdx-js/react": "^3.1.1",

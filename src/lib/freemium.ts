@@ -2,6 +2,7 @@ import { deleteCookie, getCookie, setCookie } from './cookies';
 
 const COOKIE_ANALYSIS = 'constructive_analysis_runs';
 const COOKIE_GOOGLE_ID_TOKEN = 'constructive_google_id_token';
+const COOKIE_UNLOCKED = 'constructive_unlocked_videos';
 
 type Tier =
   | { kind: 'anonymous'; label: 'Freemium'; maxPer24Hours: 3 }
@@ -10,6 +11,11 @@ type Tier =
 type Usage = {
   used: number;
   windowStartMs: number;
+};
+
+type UnlockedEntry = {
+  key: string;
+  unlockedAtMs: number;
 };
 
 function nowMs(): number {
@@ -29,10 +35,39 @@ function parseUsageCookie(raw: string | null): number[] {
   }
 }
 
+function parseUnlockedCookie(raw: string | null): UnlockedEntry[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return [];
+
+    return parsed
+      .map((entry) => {
+        if (!entry || typeof entry !== 'object') return null;
+        const maybe = entry as Record<string, unknown>;
+        const key = typeof maybe.key === 'string' ? maybe.key : null;
+        const unlockedAtMs = typeof maybe.unlockedAtMs === 'number' ? maybe.unlockedAtMs : null;
+        if (!key || unlockedAtMs === null) return null;
+        return { key, unlockedAtMs };
+      })
+      .filter((v): v is UnlockedEntry => Boolean(v));
+  } catch {
+    return [];
+  }
+}
+
 function persistUsage(timestamps: number[]): void {
   setCookie({
     name: COOKIE_ANALYSIS,
     value: JSON.stringify(timestamps.slice(-200)),
+    maxAgeSeconds: 60 * 60 * 24 * 30,
+  });
+}
+
+function persistUnlocked(entries: UnlockedEntry[]): void {
+  setCookie({
+    name: COOKIE_UNLOCKED,
+    value: JSON.stringify(entries.slice(-200)),
     maxAgeSeconds: 60 * 60 * 24 * 30,
   });
 }
@@ -81,6 +116,34 @@ export function consumeAnalysisRun(): void {
   );
   timestamps.push(now);
   persistUsage(timestamps);
+}
+
+export function isVideoUnlocked(key: string): boolean {
+  const cutoff = nowMs() - 24 * 60 * 60 * 1000;
+  const entries = parseUnlockedCookie(getCookie(COOKIE_UNLOCKED)).filter(
+    (e) => e.unlockedAtMs >= cutoff,
+  );
+  persistUnlocked(entries);
+
+  return entries.some((e) => e.key === key);
+}
+
+export function unlockVideo(key: string): { ok: true } | { ok: false; reason: string } {
+  if (isVideoUnlocked(key)) return { ok: true };
+
+  const gate = canRunAnalysis();
+  if (!gate.ok) return gate;
+
+  consumeAnalysisRun();
+
+  const cutoff = nowMs() - 24 * 60 * 60 * 1000;
+  const entries = parseUnlockedCookie(getCookie(COOKIE_UNLOCKED)).filter(
+    (e) => e.unlockedAtMs >= cutoff,
+  );
+  entries.push({ key, unlockedAtMs: nowMs() });
+  persistUnlocked(entries);
+
+  return { ok: true };
 }
 
 export function isGoogleAuthEnabled(): boolean {

@@ -6,8 +6,8 @@ It’s intentionally file-backed: the ingestion + analytics steps persist struct
 
 1. **Backend (file DB + connectors)**
    - `scripts/ingest-youtube.ts` connects to YouTube, fetches video metadata + a comment snapshot, and writes JSON into `content/platforms/youtube/videos/<videoId>/`.
-2. **Analytics (playbook-style)**
-   - `scripts/analyze-comments.ts` reads `comments.json` and writes:
+2. **Analytics (Charlie playbook)**
+   - A Charlie playbook generates:
      - `analytics.json` (aggregations)
      - `report.mdx` (creator-friendly summary; harsh language is excluded from quotes)
 3. **API/Middleware (future-facing)**
@@ -33,12 +33,11 @@ bun run dev
 # fetch metadata + comments
 bun run ingest:youtube -- https://www.youtube.com/watch?v=IPsu4pMpIjk --max-comments 200
 
-# run the analytics “playbook”
-bun run analyze -- --platform youtube --video IPsu4pMpIjk
-
 # refresh the build-time index used by the frontend
 bun run content:generate
 ```
+
+Then run the playbook in `.charlie/playbooks/` to generate `analytics.json` + `report.mdx` for that video.
 
 ## Deploy
 
