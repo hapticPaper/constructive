@@ -62,7 +62,9 @@ async function listVideoDirs(
 function relFromGenerated(absolutePath: string): string {
   const rel = path.relative(OUT_DIR, absolutePath);
   if (!rel) {
-    throw new Error(`Expected a file path under ${OUT_DIR}, got ${absolutePath}.`);
+    throw new Error(
+      `Expected a file path under ${OUT_DIR} (not ${OUT_DIR} itself), got ${absolutePath}.`,
+    );
   }
   const spec = rel.split(path.sep).join('/');
   return spec.startsWith('.') ? spec : `./${spec}`;
