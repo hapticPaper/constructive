@@ -16,7 +16,7 @@ const VIDEO_CONTENT_DATA = {
       ...youtube_IPsu4pMpIjk_video,
       platform: 'youtube',
       channel: {
-        ...youtube_IPsu4pMpIjk_video.channel,
+        ...(youtube_IPsu4pMpIjk_video.channel ?? {}),
         platform: 'youtube',
       },
     },
@@ -28,7 +28,7 @@ const VIDEO_CONTENT_DATA = {
       ...youtube_KXPhaAsnrfs_video,
       platform: 'youtube',
       channel: {
-        ...youtube_KXPhaAsnrfs_video.channel,
+        ...(youtube_KXPhaAsnrfs_video.channel ?? {}),
         platform: 'youtube',
       },
     },

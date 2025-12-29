@@ -179,25 +179,29 @@ function sanitize(text: string): string {
     .trim();
 }
 
+const MDX_ESCAPE_RE = /[\\&<>"'*_\[\]()!{}|`]/g;
+const MDX_ESCAPE_MAP: Record<string, string> = {
+  '\\': '\\\\',
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;',
+  '*': '\\*',
+  _: '\\_',
+  '[': '\\[',
+  ']': '\\]',
+  '(': '\\(',
+  ')': '\\)',
+  '!': '\\!',
+  '{': '\\{',
+  '}': '\\}',
+  '`': '\\`',
+  '|': '\\|',
+};
+
 function escapeMdxText(text: string): string {
-  return text
-    .replace(/\\/g, '\\\\')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
-    .replace(/`/g, '\\`')
-    .replace(/\{/g, '\\{')
-    .replace(/\}/g, '\\}')
-    .replace(/\*/g, '\\*')
-    .replace(/_/g, '\\_')
-    .replace(/\[/g, '\\[')
-    .replace(/\]/g, '\\]')
-    .replace(/\(/g, '\\(')
-    .replace(/\)/g, '\\)')
-    .replace(/!/g, '\\!')
-    .replace(/\|/g, '\\|');
+  return text.replace(MDX_ESCAPE_RE, (ch) => MDX_ESCAPE_MAP[ch] ?? ch);
 }
 
 function dedupeStable(items: string[]): string[] {

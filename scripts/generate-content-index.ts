@@ -118,7 +118,7 @@ async function main(): Promise<void> {
       `      ...${ident}_video,`,
       `      platform: '${platform}',`,
       '      channel: {',
-      `        ...${ident}_video.channel,`,
+      `        ...(${ident}_video.channel ?? {}),`,
       `        platform: '${platform}',`,
       '      },',
       '    },',
