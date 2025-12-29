@@ -1,13 +1,14 @@
 import { readFile } from 'node:fs/promises';
 
 import type { CommentAnalytics, CommentRecord, Platform, Sentiment } from '../src/content/types';
+import { extractYouTubeVideoId } from '../src/lib/youtube';
 
 import { writeJsonFile, writeTextFile } from './fs';
 import {
-  analyticsJsonPath,
-  commentsJsonPath,
-  reportMdxPath,
-  videoJsonPath,
+  resolveAnalyticsJsonPath,
+  resolveCommentsJsonPath,
+  resolveReportMdxPath,
+  resolveVideoJsonPath,
 } from './paths';
 
 const POSITIVE = new Set([
@@ -124,30 +125,6 @@ function parseArgs(argv: string[]): { platform: Platform; videoId: string } {
   return { platform, videoId };
 }
 
-function extractYouTubeVideoId(input: string): string | null {
-  const trimmed = input.trim();
-  if (!trimmed) return null;
-
-  if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) return trimmed;
-
-  try {
-    const url = new URL(trimmed);
-    if (url.hostname === 'youtu.be') {
-      const id = url.pathname.slice(1);
-      return /^[a-zA-Z0-9_-]{11}$/.test(id) ? id : null;
-    }
-
-    if (url.hostname.endsWith('youtube.com')) {
-      const v = url.searchParams.get('v');
-      if (v && /^[a-zA-Z0-9_-]{11}$/.test(v)) return v;
-    }
-  } catch {
-    // ignore
-  }
-
-  return null;
-}
-
 function isToxic(text: string): boolean {
   return TOXIC.some((re) => re.test(text));
 }
@@ -202,6 +179,31 @@ function sanitize(text: string): string {
     .trim();
 }
 
+const MDX_ESCAPE_RE = /[\\&<>"'*_\[\]()!{}|`]/g;
+const MDX_ESCAPE_MAP: Record<string, string> = {
+  '\\': '\\\\',
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;',
+  '*': '\\*',
+  _: '\\_',
+  '[': '\\[',
+  ']': '\\]',
+  '(': '\\(',
+  ')': '\\)',
+  '!': '\\!',
+  '{': '\\{',
+  '}': '\\}',
+  '`': '\\`',
+  '|': '\\|',
+};
+
+function escapeMdxText(text: string): string {
+  return text.replace(MDX_ESCAPE_RE, (ch) => MDX_ESCAPE_MAP[ch] ?? ch);
+}
+
 function dedupeStable(items: string[]): string[] {
   const seen = new Set<string>();
   const out: string[] = [];
@@ -251,11 +253,18 @@ function buildMdxReport({
   videoTitle: string;
   analytics: CommentAnalytics;
 }): string {
-  const themes = analytics.topThemes.map((t) => `- **${t.label}** (${t.count})`).join('\n');
-  const critiques = analytics.gentleCritiques.map((c) => `- ${c}`).join('\n');
-  const quotes = analytics.safeQuotes.map((q) => `- “${q}”`).join('\n');
+  // `analytics.*` strings are expected to already be tone-filtered (via `sanitize` / `shorten`).
+  // This function is responsible for MDX/JSX safety via `escapeMdxText`.
+  const safeTitle = escapeMdxText(videoTitle);
+  const themes = analytics.topThemes
+    .map((t) => `- **${escapeMdxText(t.label)}** (${t.count})`)
+    .join('\n');
+  const critiques = analytics.gentleCritiques
+    .map((c) => `- ${escapeMdxText(c)}`)
+    .join('\n');
+  const quotes = analytics.safeQuotes.map((q) => `- “${escapeMdxText(q)}”`).join('\n');
 
-  return `# Comment report\n\nThis report was generated from a snapshot of YouTube comments for **${videoTitle}**.\n\n<Callout title="Tone filter">
+  return `# Comment report\n\nThis report was generated from a snapshot of YouTube comments for **${safeTitle}**.\n\n<Callout title="Tone filter">
   We focus on actionable signal. Harsh/insulting language is excluded from quotes and softened in summaries.
 </Callout>\n\n## What people are talking about\n\n${themes || '- (Not enough signal yet)'}\n\n## Creator-friendly takeaways\n\n${critiques || '- (No constructive critiques detected in the captured comments)'}\n\n## Quotes (safe)\n\n${quotes || '- (No safe quotes detected in the captured comments)'}\n`;
 }
@@ -267,8 +276,8 @@ async function readJsonFile<T>(filePath: string): Promise<T> {
 
 async function main(): Promise<void> {
   const { platform, videoId } = parseArgs(process.argv.slice(2));
-  const comments = await readJsonFile<CommentRecord[]>(commentsJsonPath(platform, videoId));
-  const video = await readJsonFile<{ title: string }>(videoJsonPath(platform, videoId));
+  const comments = await readJsonFile<CommentRecord[]>(resolveCommentsJsonPath(platform, videoId));
+  const video = await readJsonFile<{ title: string }>(resolveVideoJsonPath(platform, videoId));
 
   const signals = comments.map((c) => {
     const toxic = isToxic(c.text);
@@ -324,9 +333,9 @@ async function main(): Promise<void> {
     gentleCritiques: buildGentleCritiques(signals),
   };
 
-  await writeJsonFile(analyticsJsonPath(platform, videoId), analytics);
+  await writeJsonFile(resolveAnalyticsJsonPath(platform, videoId), analytics);
   await writeTextFile(
-    reportMdxPath(platform, videoId),
+    resolveReportMdxPath(platform, videoId),
     buildMdxReport({ videoTitle: video.title, analytics }),
   );
 

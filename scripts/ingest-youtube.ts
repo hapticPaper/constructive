@@ -1,33 +1,15 @@
 import { Innertube } from 'youtubei.js';
 
 import type { CommentRecord, VideoMetadata } from '../src/content/types';
+import { extractYouTubeVideoId } from '../src/lib/youtube';
 
 import { writeJsonFile } from './fs';
-import { commentsJsonPath, ingestionMetaPath, videoJsonPath } from './paths';
-
-function extractVideoId(input: string): string | null {
-  const trimmed = input.trim();
-  if (!trimmed) return null;
-
-  if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) return trimmed;
-
-  try {
-    const url = new URL(trimmed);
-    if (url.hostname === 'youtu.be') {
-      const id = url.pathname.slice(1);
-      return /^[a-zA-Z0-9_-]{11}$/.test(id) ? id : null;
-    }
-
-    if (url.hostname.endsWith('youtube.com')) {
-      const v = url.searchParams.get('v');
-      if (v && /^[a-zA-Z0-9_-]{11}$/.test(v)) return v;
-    }
-  } catch {
-    // ignore
-  }
-
-  return null;
-}
+import {
+  channelJsonPath,
+  commentsJsonPath,
+  ingestionMetaPath,
+  videoJsonPath,
+} from './paths';
 
 function parseArgs(argv: string[]): { input: string; maxComments: number } {
   const maxIndex = argv.indexOf('--max-comments');
@@ -47,9 +29,14 @@ function parseArgs(argv: string[]): { input: string; maxComments: number } {
 
 function toStringSafe(value: unknown): string {
   if (typeof value === 'string') return value;
-  if (value && typeof value === 'object' && 'toString' in value && typeof value.toString === 'function') {
-    return value.toString();
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+
+  if (value && typeof value === 'object') {
+    const record = value as Record<string, unknown>;
+    if (typeof record.text === 'string') return record.text;
+    if (typeof record.simpleText === 'string') return record.simpleText;
   }
+
   return '';
 }
 
@@ -83,7 +70,7 @@ type CommentsCursor = {
 
 async function main(): Promise<void> {
   const { input, maxComments } = parseArgs(process.argv.slice(2));
-  const videoId = extractVideoId(input);
+  const videoId = extractYouTubeVideoId(input);
   if (!videoId) throw new Error('Could not parse a YouTube video id from input.');
 
   const yt = await Innertube.create();
@@ -97,6 +84,12 @@ async function main(): Promise<void> {
   const channelId = typeof author?.id === 'string' ? author.id : '';
   const channelTitle = typeof author?.name === 'string' ? author.name : '';
   const channelUrl = typeof author?.url === 'string' ? author.url : undefined;
+
+  if (!channelId) {
+    throw new Error(
+      `Could not resolve a channel id for ${videoId} (input: ${input}). This is required for channel-scoped storage.`,
+    );
+  }
 
   const video: VideoMetadata = {
     platform: 'youtube',
@@ -149,9 +142,10 @@ async function main(): Promise<void> {
     cursor = (await cursor.getContinuation()) as unknown as CommentsCursor;
   }
 
-  await writeJsonFile(videoJsonPath('youtube', videoId), video);
-  await writeJsonFile(commentsJsonPath('youtube', videoId), commentRecords);
-  await writeJsonFile(ingestionMetaPath('youtube', videoId), {
+  await writeJsonFile(channelJsonPath('youtube', channelId), video.channel);
+  await writeJsonFile(videoJsonPath('youtube', channelId, videoId), video);
+  await writeJsonFile(commentsJsonPath('youtube', channelId, videoId), commentRecords);
+  await writeJsonFile(ingestionMetaPath('youtube', channelId, videoId), {
     ingestedAt: new Date().toISOString(),
     maxComments,
     commentCount: commentRecords.length,

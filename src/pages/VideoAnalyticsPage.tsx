@@ -27,43 +27,46 @@ const SENTIMENT_COLORS: Record<string, string> = {
 
 function useConsumeAnalysisOncePerSession({
   key,
-  enabled,
+  hasContent,
 }: {
   key: string;
-  enabled: boolean;
+  hasContent: boolean;
 }): void {
   useEffect(() => {
-    if (!enabled) return;
+    if (!hasContent) return;
 
     const storageKey = `constructive_viewed:${key}`;
     try {
       if (sessionStorage.getItem(storageKey)) return;
+    } catch {
+      // ignore
+    }
+
+    const gate = canRunAnalysis();
+    if (!gate.ok) return;
+
+    try {
       sessionStorage.setItem(storageKey, String(Date.now()));
     } catch {
       // ignore
     }
 
     consumeAnalysisRun();
-  }, [enabled, key]);
+  }, [hasContent, key]);
 }
 
 export function VideoAnalyticsPage(): JSX.Element {
   const params = useParams();
   const platform = (params.platform as Platform | undefined) ?? 'youtube';
   const videoId = params.videoId ?? '';
+  const viewKey = `${platform}:${videoId}`;
 
   const content = useMemo(() => getVideoContent(platform, videoId), [platform, videoId]);
   const Report = useMemo(
     () => getVideoReportComponent(platform, videoId),
     [platform, videoId],
   );
-
-  const gate = canRunAnalysis();
-
-  useConsumeAnalysisOncePerSession({
-    key: `${platform}:${videoId}`,
-    enabled: Boolean(content) && gate.ok,
-  });
+  useConsumeAnalysisOncePerSession({ key: viewKey, hasContent: Boolean(content) });
 
   if (!content) {
     return (
@@ -76,6 +79,8 @@ export function VideoAnalyticsPage(): JSX.Element {
       </div>
     );
   }
+
+  const gate = canRunAnalysis();
 
   if (!gate.ok) {
     return (

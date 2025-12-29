@@ -5,7 +5,8 @@ It’s intentionally file-backed: the ingestion + analytics steps persist struct
 ## Architecture (modular services)
 
 1. **Backend (file DB + connectors)**
-   - `scripts/ingest-youtube.ts` connects to YouTube, fetches video metadata + a comment snapshot, and writes JSON into `content/platforms/youtube/videos/<videoId>/`.
+   - `scripts/ingest-youtube.ts` connects to YouTube, fetches video metadata + a comment snapshot, and writes JSON into `content/platforms/youtube/channels/<channelId>/videos/<videoId>/`.
+   - Legacy content at `content/platforms/youtube/videos/<videoId>/` remains readable via the `resolve*` helpers in `scripts/paths.ts`.
 2. **Analytics (playbook-style)**
    - `scripts/analyze-comments.ts` reads `comments.json` and writes:
      - `analytics.json` (aggregations)
