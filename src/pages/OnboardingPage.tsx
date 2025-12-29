@@ -25,7 +25,7 @@ export function OnboardingPage(): JSX.Element {
     const known = videos.find((v) => v.videoId === videoId);
     if (!known) {
       setError(
-        'This build only ships with a small demo library. Add a new video by running the ingestion playbook in the repo.',
+        'This build only ships with a small built-in library. Add a new video by running the ingestion playbook in the repo.',
       );
       return;
     }
@@ -66,7 +66,7 @@ export function OnboardingPage(): JSX.Element {
       <div style={{ marginTop: 18 }} className="panel">
         <h2>Analyze a YouTube video</h2>
         <p className="muted" style={{ marginTop: 6 }}>
-          Paste a link to jump straight to analytics (works for the included demo videos).
+          Paste a link to jump straight to analytics (works for the included videos in this build).
         </p>
         <div style={{ marginTop: 12, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
           <input
@@ -102,7 +102,7 @@ export function OnboardingPage(): JSX.Element {
           <VideoCard
             key={video.videoId}
             video={video}
-            ctaLabel="See demo analytics"
+            ctaLabel="See analytics"
             onCtaClick={(event) => {
               setError(null);
               const unlocked = unlockVideo(`${video.platform}:${video.videoId}`);

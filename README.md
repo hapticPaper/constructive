@@ -1,4 +1,4 @@
-This repo is a GitHub-Pages-friendly “comment analytics” demo targeted at creators and social media managers.
+This repo is a GitHub-Pages-friendly “comment analytics” site targeted at creators and social media managers.
 
 It’s intentionally file-backed: the ingestion + analytics steps persist structured artifacts into `content/` (git as the database), and the frontend renders those artifacts as widgets + MDX.
 

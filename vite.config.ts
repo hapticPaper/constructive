@@ -10,7 +10,7 @@ export default defineConfig(() => {
     base: isPages && repo ? `/${repo}/` : '/',
     plugins: [
       // MDX needs to run before React.
-      mdx(),
+      mdx({ providerImportSource: '@mdx-js/react' }),
       react(),
     ],
   };

@@ -53,8 +53,8 @@ export function VideoAnalyticsPage(): JSX.Element {
       <div className="panel">
         <h2>Video not found</h2>
         <p className="muted" style={{ marginTop: 6 }}>
-          This build only includes a small demo library. Add more videos by running the ingestion
-          playbook in the repo.
+          This build only includes a small built-in library. Add more videos by running the
+          ingestion playbook in the repo.
         </p>
       </div>
     );
