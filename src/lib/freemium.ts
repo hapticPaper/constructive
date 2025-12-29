@@ -98,8 +98,7 @@ function persistUsage(timestamps: number[]): void {
   });
 }
 
-function persistViewedVideos(entries: ViewedVideos): void {
-  const cutoff = nowMs() - USAGE_WINDOW_MS;
+function persistViewedVideos(entries: ViewedVideos, cutoff: number): void {
   const pruned = pruneViewedVideos(entries, cutoff);
   setCookie({
     name: COOKIE_VIEWED_VIDEOS,
@@ -149,7 +148,9 @@ export function consumeAnalysisRun(): void {
 /**
 * Returns whether video analytics can be viewed.
 *
-* A video can be re-viewed within 24h if it has already been charged.
+* Behavior:
+* - If the video was already viewed (charged) within the sliding 24h window, viewing is allowed.
+* - Otherwise, this defers to `canRunAnalysis()`, so changes to analysis quotas also affect viewing.
 */
 export function canViewVideoAnalytics(videoKey: string): { ok: true } | { ok: false; reason: string } {
   const now = nowMs();
@@ -164,7 +165,8 @@ export function canViewVideoAnalytics(videoKey: string): { ok: true } | { ok: fa
 /**
 * Records a video analytics view.
 *
-* This is idempotent per video within 24h; first-time views consume an analysis run.
+* This is idempotent per video within the sliding 24h window; first-time views consume an analysis
+* run via `consumeAnalysisRun()`.
 */
 export function consumeVideoAnalyticsView(videoKey: string): void {
   const now = nowMs();
@@ -176,7 +178,7 @@ export function consumeVideoAnalyticsView(videoKey: string): void {
   if (!hadEntry) {
     const gate = canRunAnalysis();
     if (!gate.ok) {
-      if (!viewedVideosEqual(viewed, pruned)) persistViewedVideos(pruned);
+      if (!viewedVideosEqual(viewed, pruned)) persistViewedVideos(pruned, cutoff);
       return;
     }
 
@@ -184,7 +186,7 @@ export function consumeVideoAnalyticsView(videoKey: string): void {
     pruned[videoKey] = now;
   }
 
-  if (!viewedVideosEqual(viewed, pruned)) persistViewedVideos(pruned);
+  if (!viewedVideosEqual(viewed, pruned)) persistViewedVideos(pruned, cutoff);
 }
 
 export function isGoogleAuthEnabled(): boolean {

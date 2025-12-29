@@ -1,6 +1,6 @@
 import { MDXProvider } from '@mdx-js/react';
 import type { MDXComponents } from 'mdx/types';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import {
   Bar,
@@ -30,6 +30,7 @@ export function VideoAnalyticsPage(): JSX.Element {
   const videoId = params.videoId ?? '';
   const viewKey = `${platform}:${videoId}`;
 
+  const hasConsumedRef = useRef(false);
   const content = useMemo(() => getVideoContent(platform, videoId), [platform, videoId]);
   const Report = useMemo(
     () => getVideoReportComponent(platform, videoId),
@@ -40,9 +41,14 @@ export function VideoAnalyticsPage(): JSX.Element {
 
   useEffect(() => {
     if (!content) return;
-    if (!gate.ok) return;
+    if (hasConsumedRef.current) return;
+
+    const currentGate = canViewVideoAnalytics(viewKey);
+    if (!currentGate.ok) return;
+
     consumeVideoAnalyticsView(viewKey);
-  }, [content, gate.ok, viewKey]);
+    hasConsumedRef.current = true;
+  }, [content, viewKey]);
 
   if (!content) {
     return (
