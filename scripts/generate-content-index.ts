@@ -61,7 +61,8 @@ async function listVideoDirs(
 
 function relFromGenerated(absolutePath: string): string {
   const rel = path.relative(OUT_DIR, absolutePath);
-  return rel.startsWith('.') ? rel : `./${rel}`;
+  const spec = rel.split(path.sep).join('/');
+  return spec.startsWith('.') ? spec : `./${spec}`;
 }
 
 async function main(): Promise<void> {

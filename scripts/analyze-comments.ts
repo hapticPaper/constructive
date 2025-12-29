@@ -202,6 +202,16 @@ function sanitize(text: string): string {
     .trim();
 }
 
+function escapeMdxText(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\{/g, '\\{')
+    .replace(/\}/g, '\\}')
+    .replace(/`/g, '\\`');
+}
+
 function dedupeStable(items: string[]): string[] {
   const seen = new Set<string>();
   const out: string[] = [];
@@ -251,11 +261,16 @@ function buildMdxReport({
   videoTitle: string;
   analytics: CommentAnalytics;
 }): string {
-  const themes = analytics.topThemes.map((t) => `- **${t.label}** (${t.count})`).join('\n');
-  const critiques = analytics.gentleCritiques.map((c) => `- ${c}`).join('\n');
-  const quotes = analytics.safeQuotes.map((q) => `- “${q}”`).join('\n');
+  const safeTitle = escapeMdxText(videoTitle);
+  const themes = analytics.topThemes
+    .map((t) => `- **${escapeMdxText(t.label)}** (${t.count})`)
+    .join('\n');
+  const critiques = analytics.gentleCritiques
+    .map((c) => `- ${escapeMdxText(c)}`)
+    .join('\n');
+  const quotes = analytics.safeQuotes.map((q) => `- “${escapeMdxText(q)}”`).join('\n');
 
-  return `# Comment report\n\nThis report was generated from a snapshot of YouTube comments for **${videoTitle}**.\n\n<Callout title="Tone filter">
+  return `# Comment report\n\nThis report was generated from a snapshot of YouTube comments for **${safeTitle}**.\n\n<Callout title="Tone filter">
   We focus on actionable signal. Harsh/insulting language is excluded from quotes and softened in summaries.
 </Callout>\n\n## What people are talking about\n\n${themes || '- (Not enough signal yet)'}\n\n## Creator-friendly takeaways\n\n${critiques || '- (No constructive critiques detected in the captured comments)'}\n\n## Quotes (safe)\n\n${quotes || '- (No safe quotes detected in the captured comments)'}\n`;
 }
