@@ -1,6 +1,7 @@
 import { Innertube } from 'youtubei.js';
 
 import type { CommentRecord, VideoMetadata } from '../src/content/types';
+import { extractYouTubeVideoId } from '../src/lib/youtube';
 
 import { writeJsonFile } from './fs';
 import {
@@ -9,30 +10,6 @@ import {
   ingestionMetaPath,
   videoJsonPath,
 } from './paths';
-
-function extractVideoId(input: string): string | null {
-  const trimmed = input.trim();
-  if (!trimmed) return null;
-
-  if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) return trimmed;
-
-  try {
-    const url = new URL(trimmed);
-    if (url.hostname === 'youtu.be') {
-      const id = url.pathname.slice(1);
-      return /^[a-zA-Z0-9_-]{11}$/.test(id) ? id : null;
-    }
-
-    if (url.hostname.endsWith('youtube.com')) {
-      const v = url.searchParams.get('v');
-      if (v && /^[a-zA-Z0-9_-]{11}$/.test(v)) return v;
-    }
-  } catch {
-    // ignore
-  }
-
-  return null;
-}
 
 function parseArgs(argv: string[]): { input: string; maxComments: number } {
   const maxIndex = argv.indexOf('--max-comments');
@@ -93,7 +70,7 @@ type CommentsCursor = {
 
 async function main(): Promise<void> {
   const { input, maxComments } = parseArgs(process.argv.slice(2));
-  const videoId = extractVideoId(input);
+  const videoId = extractYouTubeVideoId(input);
   if (!videoId) throw new Error('Could not parse a YouTube video id from input.');
 
   const yt = await Innertube.create();

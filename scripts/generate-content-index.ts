@@ -82,13 +82,18 @@ async function main(): Promise<void> {
   const contentImports: string[] = [
     "import type { VideoContent } from '../types';",
     '',
+    'type VideoContentMap = Record<string, VideoContent>;',
+    '',
   ];
-  const contentMapLines: string[] = ['const VIDEO_CONTENT_LITERAL = {'];
+  const contentMapLines: string[] = ['const VIDEO_CONTENT_DATA = {'];
 
-  const reportImports: string[] = ["import type { ComponentType } from 'react';", ''];
-  const reportMapLines: string[] = [
-    'export const VIDEO_REPORTS: Record<string, ComponentType | undefined> = {',
+  const reportImports: string[] = [
+    "import type { ComponentType } from 'react';",
+    '',
+    'type VideoReportsMap = Record<string, ComponentType | undefined>;',
+    '',
   ];
+  const reportMapLines: string[] = ['const VIDEO_REPORTS_DATA = {'];
 
   for (const { platform, videoId, baseDir } of videoEntries) {
     const ident = safeIdent(`${platform}_${videoId}`);
@@ -126,12 +131,17 @@ async function main(): Promise<void> {
   }
 
   contentMapLines.push(
-    '} satisfies Record<string, VideoContent>;',
+    '} satisfies VideoContentMap;',
     '',
-    'export const VIDEO_CONTENT: Record<string, VideoContent> = VIDEO_CONTENT_LITERAL;',
+    'export const VIDEO_CONTENT: VideoContentMap = VIDEO_CONTENT_DATA;',
     '',
   );
-  reportMapLines.push('};', '');
+  reportMapLines.push(
+    '} satisfies VideoReportsMap;',
+    '',
+    'export const VIDEO_REPORTS: VideoReportsMap = VIDEO_REPORTS_DATA;',
+    '',
+  );
 
   await writeTextFile(
     path.join(OUT_DIR, 'contentIndex.ts'),
