@@ -8,15 +8,31 @@ import youtube_KXPhaAsnrfs_video from '../../../content/platforms/youtube/channe
 import youtube_KXPhaAsnrfs_comments from '../../../content/platforms/youtube/channels/UC7_gcs09iThXybpVgjHZ_7g/videos/KXPhaAsnrfs/comments.json';
 import youtube_KXPhaAsnrfs_analytics from '../../../content/platforms/youtube/channels/UC7_gcs09iThXybpVgjHZ_7g/videos/KXPhaAsnrfs/analytics.json';
 
-export const VIDEO_CONTENT: Record<string, VideoContent> = {
+const VIDEO_CONTENT_LITERAL = {
   'youtube:IPsu4pMpIjk': {
-    video: youtube_IPsu4pMpIjk_video as unknown as VideoContent['video'],
-    comments: youtube_IPsu4pMpIjk_comments as unknown as VideoContent['comments'],
-    analytics: youtube_IPsu4pMpIjk_analytics as unknown as VideoContent['analytics'],
+    video: {
+      ...youtube_IPsu4pMpIjk_video,
+      platform: 'youtube',
+      channel: {
+        ...youtube_IPsu4pMpIjk_video.channel,
+        platform: 'youtube',
+      },
+    },
+    comments: youtube_IPsu4pMpIjk_comments,
+    analytics: youtube_IPsu4pMpIjk_analytics,
   },
   'youtube:KXPhaAsnrfs': {
-    video: youtube_KXPhaAsnrfs_video as unknown as VideoContent['video'],
-    comments: youtube_KXPhaAsnrfs_comments as unknown as VideoContent['comments'],
-    analytics: youtube_KXPhaAsnrfs_analytics as unknown as VideoContent['analytics'],
+    video: {
+      ...youtube_KXPhaAsnrfs_video,
+      platform: 'youtube',
+      channel: {
+        ...youtube_KXPhaAsnrfs_video.channel,
+        platform: 'youtube',
+      },
+    },
+    comments: youtube_KXPhaAsnrfs_comments,
+    analytics: youtube_KXPhaAsnrfs_analytics,
   },
-};
+} satisfies Record<string, VideoContent>;
+
+export const VIDEO_CONTENT: Record<string, VideoContent> = VIDEO_CONTENT_LITERAL;

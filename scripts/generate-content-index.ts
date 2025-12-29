@@ -77,7 +77,7 @@ async function main(): Promise<void> {
     "import type { VideoContent } from '../types';",
     '',
   ];
-  const contentMapLines: string[] = ['export const VIDEO_CONTENT: Record<string, VideoContent> = {'];
+  const contentMapLines: string[] = ['const VIDEO_CONTENT_LITERAL = {'];
 
   const reportImports: string[] = ["import type { ComponentType } from 'react';", ''];
   const reportMapLines: string[] = [
@@ -103,16 +103,28 @@ async function main(): Promise<void> {
 
     contentMapLines.push(
       `  '${platform}:${videoId}': {`,
-      `    video: ${ident}_video as unknown as VideoContent['video'],`,
-      `    comments: ${ident}_comments as unknown as VideoContent['comments'],`,
-      `    analytics: ${ident}_analytics as unknown as VideoContent['analytics'],`,
+      '    video: {',
+      `      ...${ident}_video,`,
+      `      platform: '${platform}',`,
+      '      channel: {',
+      `        ...${ident}_video.channel,`,
+      `        platform: '${platform}',`,
+      '      },',
+      '    },',
+      `    comments: ${ident}_comments,`,
+      `    analytics: ${ident}_analytics,`,
       '  },',
     );
 
     reportMapLines.push(`  '${platform}:${videoId}': ${ident}_report,`);
   }
 
-  contentMapLines.push('};', '');
+  contentMapLines.push(
+    '} satisfies Record<string, VideoContent>;',
+    '',
+    'export const VIDEO_CONTENT: Record<string, VideoContent> = VIDEO_CONTENT_LITERAL;',
+    '',
+  );
   reportMapLines.push('};', '');
 
   await writeTextFile(
