@@ -1,0 +1,141 @@
+import type { Platform } from '../content/types';
+import { fetchYouTubeOEmbed } from './youtube';
+
+const STORAGE_KEY = 'constructive_local_library_v1';
+
+export type LocalLibraryVideo = {
+  platform: Platform;
+  videoId: string;
+  videoUrl: string;
+  addedAtMs: number;
+  updatedAtMs: number;
+  title?: string;
+  channelTitle?: string;
+  thumbnailUrl?: string;
+};
+
+function nowMs(): number {
+  return Date.now();
+}
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  return value as Record<string, unknown>;
+}
+
+function parseLocalLibrary(raw: string | null): LocalLibraryVideo[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return [];
+
+    return parsed
+      .map((entry) => {
+        const rec = asRecord(entry);
+        if (!rec) return null;
+        const platform = rec.platform === 'youtube' ? 'youtube' : null;
+        const videoId = typeof rec.videoId === 'string' ? rec.videoId : null;
+        const videoUrl = typeof rec.videoUrl === 'string' ? rec.videoUrl : null;
+        const addedAtMs = typeof rec.addedAtMs === 'number' ? rec.addedAtMs : null;
+        const updatedAtMs = typeof rec.updatedAtMs === 'number' ? rec.updatedAtMs : null;
+        if (!platform || !videoId || !videoUrl) return null;
+        if (addedAtMs === null || updatedAtMs === null) return null;
+        if (!Number.isFinite(addedAtMs) || !Number.isFinite(updatedAtMs)) return null;
+
+        const out: LocalLibraryVideo = {
+          platform,
+          videoId,
+          videoUrl,
+          addedAtMs,
+          updatedAtMs,
+        };
+
+        if (typeof rec.title === 'string') out.title = rec.title;
+        if (typeof rec.channelTitle === 'string') out.channelTitle = rec.channelTitle;
+        if (typeof rec.thumbnailUrl === 'string') out.thumbnailUrl = rec.thumbnailUrl;
+
+        return out;
+      })
+      .filter((v): v is LocalLibraryVideo => v !== null);
+  } catch {
+    return [];
+  }
+}
+
+function loadLibrary(): LocalLibraryVideo[] {
+  return parseLocalLibrary(window.localStorage.getItem(STORAGE_KEY));
+}
+
+function persistLibrary(entries: LocalLibraryVideo[]): void {
+  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(entries.slice(-200)));
+}
+
+export function listLocalLibraryVideos(): LocalLibraryVideo[] {
+  return loadLibrary().sort((a, b) => b.updatedAtMs - a.updatedAtMs);
+}
+
+export function upsertLocalLibraryVideo({
+  platform,
+  videoId,
+  videoUrl,
+}: {
+  platform: Platform;
+  videoId: string;
+  videoUrl: string;
+}): void {
+  const entries = loadLibrary();
+  const now = nowMs();
+  const idx = entries.findIndex((e) => e.platform === platform && e.videoId === videoId);
+  const existing = idx >= 0 ? entries[idx] : null;
+
+  const next: LocalLibraryVideo = {
+    platform,
+    videoId,
+    videoUrl,
+    addedAtMs: existing?.addedAtMs ?? now,
+    updatedAtMs: now,
+    title: existing?.title,
+    channelTitle: existing?.channelTitle,
+    thumbnailUrl: existing?.thumbnailUrl,
+  };
+
+  if (idx >= 0) {
+    entries[idx] = next;
+  } else {
+    entries.push(next);
+  }
+
+  persistLibrary(entries);
+}
+
+export function removeLocalLibraryVideo(platform: Platform, videoId: string): void {
+  persistLibrary(loadLibrary().filter((e) => !(e.platform === platform && e.videoId === videoId)));
+}
+
+export async function hydrateLocalLibraryVideoMetadata(
+  platform: Platform,
+  videoId: string,
+): Promise<boolean> {
+  if (platform !== 'youtube') return false;
+
+  const entries = loadLibrary();
+  const idx = entries.findIndex((e) => e.platform === platform && e.videoId === videoId);
+  const existing = idx >= 0 ? entries[idx] : null;
+  if (!existing) return false;
+  if (existing.title && existing.channelTitle && existing.thumbnailUrl) return false;
+
+  const oembed = await fetchYouTubeOEmbed(videoId);
+  if (!oembed) return false;
+
+  entries[idx] = {
+    ...existing,
+    title: existing.title ?? oembed.title,
+    channelTitle: existing.channelTitle ?? oembed.channelTitle,
+    thumbnailUrl: existing.thumbnailUrl ?? oembed.thumbnailUrl,
+    updatedAtMs: nowMs(),
+  };
+
+  persistLibrary(entries);
+
+  return true;
+}

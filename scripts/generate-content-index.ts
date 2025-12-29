@@ -119,6 +119,15 @@ async function listVideoIds(platform: Platform): Promise<string[]> {
   return out.sort();
 }
 
+async function fileExists(absolutePath: string): Promise<boolean> {
+  try {
+    await stat(absolutePath);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function relFromGenerated(absolutePath: string): string {
   const rel = path.relative(OUT_DIR, absolutePath);
   return rel.startsWith('.') ? rel : `./${rel}`;
@@ -192,29 +201,42 @@ async function main(): Promise<void> {
     const ident = safeIdent(`${platform}_${videoId}`);
     const base = path.join(CONTENT_ROOT, platform, 'videos', videoId);
 
-    const videoPath = relFromGenerated(path.join(base, 'video.json'));
-    const commentsPath = relFromGenerated(path.join(base, 'comments.json'));
-    const analyticsPath = relFromGenerated(path.join(base, 'analytics.json'));
-    const reportPath = relFromGenerated(path.join(base, 'report.mdx'));
+    const videoAbs = path.join(base, 'video.json');
+    const commentsAbs = path.join(base, 'comments.json');
+    const analyticsAbs = path.join(base, 'analytics.json');
+    const reportAbs = path.join(base, 'report.mdx');
+
+    const hasComments = await fileExists(commentsAbs);
+    const hasAnalytics = await fileExists(analyticsAbs);
+    const hasReport = await fileExists(reportAbs);
+
+    const videoPath = relFromGenerated(videoAbs);
+    const commentsPath = relFromGenerated(commentsAbs);
+    const analyticsPath = relFromGenerated(analyticsAbs);
+    const reportPath = relFromGenerated(reportAbs);
 
     contentImports.push(
       `import ${ident}_video from '${videoPath}';`,
-      `import ${ident}_comments from '${commentsPath}';`,
-      `import ${ident}_analytics from '${analyticsPath}';`,
+      ...(hasComments ? [`import ${ident}_comments from '${commentsPath}';`] : []),
+      ...(hasAnalytics ? [`import ${ident}_analytics from '${analyticsPath}';`] : []),
       '',
     );
 
-    reportImports.push(`import ${ident}_report from '${reportPath}';`, '');
+    if (hasReport) {
+      reportImports.push(`import ${ident}_report from '${reportPath}';`, '');
+    }
 
     contentMapLines.push(
       `  '${platform}:${videoId}': {`,
       `    video: ${ident}_video as VideoContent['video'],`,
-      `    comments: ${ident}_comments,`,
-      `    analytics: ${ident}_analytics,`,
+      `    comments: ${hasComments ? `${ident}_comments` : 'undefined'},`,
+      `    analytics: ${hasAnalytics ? `${ident}_analytics` : 'undefined'},`,
       '  },',
     );
 
-    reportMapLines.push(`  '${platform}:${videoId}': ${ident}_report,`);
+    reportMapLines.push(
+      `  '${platform}:${videoId}': ${hasReport ? `${ident}_report` : 'undefined'},`,
+    );
   }
 
   contentMapLines.push('};', '');

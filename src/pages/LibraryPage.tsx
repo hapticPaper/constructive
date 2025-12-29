@@ -81,7 +81,8 @@ export function LibraryPage(): JSX.Element {
               <div className="cards">
                 {channelVideos.map((video) => {
                   const content = getVideoContent(video.platform, video.videoId);
-                  const commentCount = content?.analytics.commentCount ?? content?.comments.length;
+                  const commentCount =
+                    content?.analytics?.commentCount ?? content?.comments?.length;
 
                   return (
                     <div key={video.videoId} style={{ display: 'flex', flexDirection: 'column' }}>

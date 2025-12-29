@@ -54,6 +54,6 @@ export type CommentAnalytics = {
 
 export type VideoContent = {
   video: VideoMetadata;
-  comments: CommentRecord[];
-  analytics: CommentAnalytics;
+  comments?: CommentRecord[];
+  analytics?: CommentAnalytics;
 };
