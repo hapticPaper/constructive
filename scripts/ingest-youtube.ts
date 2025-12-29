@@ -53,6 +53,13 @@ function parseArgs(argv: string[]): { input: string; maxComments: number } {
 function toStringSafe(value: unknown): string {
   if (typeof value === 'string') return value;
   if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+
+  if (value && typeof value === 'object') {
+    const record = value as Record<string, unknown>;
+    if (typeof record.text === 'string') return record.text;
+    if (typeof record.simpleText === 'string') return record.simpleText;
+  }
+
   return '';
 }
 
