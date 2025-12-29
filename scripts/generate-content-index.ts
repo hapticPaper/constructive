@@ -32,7 +32,9 @@ async function readJsonFile<T = unknown>(absolutePath: string): Promise<T> {
   }
 }
 
-async function readJsonObjectFile(absolutePath: string): Promise<Record<string, unknown>> {
+async function readJsonObjectFile(
+  absolutePath: string,
+): Promise<Record<string, unknown>> {
   const parsed = await readJsonFile(absolutePath);
   if (!isRecord(parsed)) {
     throw new Error(`Invalid JSON at ${absolutePath}: expected object.`);
@@ -46,7 +48,9 @@ function assertValidVideoChannel(
   channel: unknown,
 ): void {
   if (!isRecord(channel)) {
-    throw new Error(`Invalid video.json at ${absolutePath}: expected video.channel object.`);
+    throw new Error(
+      `Invalid video.json at ${absolutePath}: expected video.channel object.`,
+    );
   }
 
   if (channel.platform !== platform) {
@@ -83,11 +87,15 @@ async function assertValidVideoJson(
 
   // Invariant: video.json must match its on-disk location under content/platforms/{platform}/videos/{videoId}.
   if (raw.videoId !== videoId) {
-    throw new Error(`Invalid video.json at ${absolutePath}: expected videoId '${videoId}'.`);
+    throw new Error(
+      `Invalid video.json at ${absolutePath}: expected videoId '${videoId}'.`,
+    );
   }
 
   if (typeof raw.videoUrl !== 'string' || !raw.videoUrl) {
-    throw new Error(`Invalid video.json at ${absolutePath}: expected non-empty videoUrl.`);
+    throw new Error(
+      `Invalid video.json at ${absolutePath}: expected non-empty videoUrl.`,
+    );
   }
 
   if (typeof raw.title !== 'string' || !raw.title) {
@@ -119,6 +127,25 @@ async function listVideoIds(platform: Platform): Promise<string[]> {
   return out.sort();
 }
 
+async function listFileNames(absoluteDir: string): Promise<Set<string>> {
+  // 1 readdir per video directory (faster than multiple per-file stats).
+  try {
+    const entries = await readdir(absoluteDir, { withFileTypes: true });
+    const out = new Set<string>();
+    for (const entry of entries) {
+      if (entry.isFile()) out.add(entry.name);
+    }
+    return out;
+  } catch (error) {
+    process.stderr.write(
+      `Warning: Failed to read content directory ${absoluteDir}: ${
+        error instanceof Error ? error.message : String(error)
+      }\n`,
+    );
+    return new Set();
+  }
+}
+
 function relFromGenerated(absolutePath: string): string {
   const rel = path.relative(OUT_DIR, absolutePath);
   return rel.startsWith('.') ? rel : `./${rel}`;
@@ -140,7 +167,13 @@ async function main(): Promise<void> {
 
   const validations: Validation[] = await Promise.all(
     videoEntries.map(async ({ platform, videoId }) => {
-      const videoJsonPath = path.join(CONTENT_ROOT, platform, 'videos', videoId, 'video.json');
+      const videoJsonPath = path.join(
+        CONTENT_ROOT,
+        platform,
+        'videos',
+        videoId,
+        'video.json',
+      );
       try {
         await assertValidVideoJson(videoJsonPath, platform, videoId);
         return { ok: true as const, platform, videoId };
@@ -150,10 +183,13 @@ async function main(): Promise<void> {
     }),
   );
 
-  const invalidEntries = validations.filter((v): v is Extract<Validation, { ok: false }> => !v.ok);
+  const invalidEntries = validations.filter(
+    (v): v is Extract<Validation, { ok: false }> => !v.ok,
+  );
   if (invalidEntries.length > 0) {
     const messages = invalidEntries.map((entry) => {
-      const detail = entry.error instanceof Error ? entry.error.message : String(entry.error);
+      const detail =
+        entry.error instanceof Error ? entry.error.message : String(entry.error);
       return `[${entry.platform}:${entry.videoId}] ${detail}`;
     });
 
@@ -166,7 +202,9 @@ async function main(): Promise<void> {
     }
   }
 
-  const validEntries = validations.filter((v): v is Extract<Validation, { ok: true }> => v.ok);
+  const validEntries = validations.filter(
+    (v): v is Extract<Validation, { ok: true }> => v.ok,
+  );
 
   const contentImports: string[] = [
     '// AUTO-GENERATED FILE. DO NOT EDIT.',
@@ -175,7 +213,9 @@ async function main(): Promise<void> {
     "import type { VideoContent } from '../types';",
     '',
   ];
-  const contentMapLines: string[] = ['export const VIDEO_CONTENT: Record<string, VideoContent> = {'];
+  const contentMapLines: string[] = [
+    'export const VIDEO_CONTENT: Record<string, VideoContent> = {',
+  ];
 
   const reportImports: string[] = [
     '// AUTO-GENERATED FILE. DO NOT EDIT.',
@@ -192,29 +232,44 @@ async function main(): Promise<void> {
     const ident = safeIdent(`${platform}_${videoId}`);
     const base = path.join(CONTENT_ROOT, platform, 'videos', videoId);
 
-    const videoPath = relFromGenerated(path.join(base, 'video.json'));
-    const commentsPath = relFromGenerated(path.join(base, 'comments.json'));
-    const analyticsPath = relFromGenerated(path.join(base, 'analytics.json'));
-    const reportPath = relFromGenerated(path.join(base, 'report.mdx'));
+    const files = await listFileNames(base);
+
+    const videoAbs = path.join(base, 'video.json');
+    const commentsAbs = path.join(base, 'comments.json');
+    const analyticsAbs = path.join(base, 'analytics.json');
+    const reportAbs = path.join(base, 'report.mdx');
+
+    const hasComments = files.has('comments.json');
+    const hasAnalytics = files.has('analytics.json');
+    const hasReport = files.has('report.mdx');
+
+    const videoPath = relFromGenerated(videoAbs);
+    const commentsPath = relFromGenerated(commentsAbs);
+    const analyticsPath = relFromGenerated(analyticsAbs);
+    const reportPath = relFromGenerated(reportAbs);
 
     contentImports.push(
       `import ${ident}_video from '${videoPath}';`,
-      `import ${ident}_comments from '${commentsPath}';`,
-      `import ${ident}_analytics from '${analyticsPath}';`,
+      ...(hasComments ? [`import ${ident}_comments from '${commentsPath}';`] : []),
+      ...(hasAnalytics ? [`import ${ident}_analytics from '${analyticsPath}';`] : []),
       '',
     );
 
-    reportImports.push(`import ${ident}_report from '${reportPath}';`, '');
+    if (hasReport) {
+      reportImports.push(`import ${ident}_report from '${reportPath}';`, '');
+    }
 
     contentMapLines.push(
       `  '${platform}:${videoId}': {`,
       `    video: ${ident}_video as VideoContent['video'],`,
-      `    comments: ${ident}_comments,`,
-      `    analytics: ${ident}_analytics,`,
+      `    comments: ${hasComments ? `${ident}_comments` : 'undefined'},`,
+      `    analytics: ${hasAnalytics ? `${ident}_analytics` : 'undefined'},`,
       '  },',
     );
 
-    reportMapLines.push(`  '${platform}:${videoId}': ${ident}_report,`);
+    reportMapLines.push(
+      `  '${platform}:${videoId}': ${hasReport ? `${ident}_report` : 'undefined'},`,
+    );
   }
 
   contentMapLines.push('};', '');

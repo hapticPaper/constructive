@@ -52,8 +52,14 @@ export type CommentAnalytics = {
   gentleCritiques: string[];
 };
 
+/**
+ * Build-time content for a video.
+ *
+ * `comments` and `analytics` are optional to support partial ingestion states
+ * (e.g. comments are captured, but analysis/report haven't run yet).
+ */
 export type VideoContent = {
   video: VideoMetadata;
-  comments: CommentRecord[];
-  analytics: CommentAnalytics;
+  comments?: CommentRecord[];
+  analytics?: CommentAnalytics;
 };

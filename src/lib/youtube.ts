@@ -26,3 +26,33 @@ export function extractYouTubeVideoId(input: string): string | null {
 
   return null;
 }
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  return value as Record<string, unknown>;
+}
+
+export async function fetchYouTubeOEmbed(
+  videoId: string,
+  signal?: AbortSignal,
+): Promise<{ title: string; channelTitle: string; thumbnailUrl?: string } | null> {
+  try {
+    const url = `https://www.youtube.com/oembed?url=${encodeURIComponent(
+      `https://www.youtube.com/watch?v=${videoId}`,
+    )}&format=json`;
+    const res = await fetch(url, { signal });
+    if (!res.ok) return null;
+    const parsed = (await res.json()) as unknown;
+    const raw = asRecord(parsed) ?? {};
+
+    const title = typeof raw.title === 'string' ? raw.title : '';
+    const channelTitle = typeof raw.author_name === 'string' ? raw.author_name : '';
+    const thumbnailUrl =
+      typeof raw.thumbnail_url === 'string' ? raw.thumbnail_url : undefined;
+
+    if (!title || !channelTitle) return null;
+    return { title, channelTitle, thumbnailUrl };
+  } catch {
+    return null;
+  }
+}

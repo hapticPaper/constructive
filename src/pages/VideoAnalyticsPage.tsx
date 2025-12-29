@@ -1,7 +1,7 @@
 import { MDXProvider } from '@mdx-js/react';
 import type { MDXComponents } from 'mdx/types';
 import { useEffect, useMemo, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import {
   Bar,
   BarChart,
@@ -51,14 +51,57 @@ export function VideoAnalyticsPage(): JSX.Element {
   if (!content) {
     return (
       <div className="panel">
-        <h2>Video not found</h2>
+        <h2>Not ready yet</h2>
         <p className="muted" style={{ marginTop: 6 }}>
-          This build only includes a small demo library. Add more videos by running the ingestion
-          playbook in the repo.
+          This video isn’t in this build yet. If you added it via the UI, check the Jobs
+          dashboard for capture + analysis status.
         </p>
+        <div style={{ marginTop: 12 }}>
+          <Link to="/jobs" className="btn btn-primary" style={{ textDecoration: 'none' }}>
+            Open Jobs
+          </Link>
+        </div>
       </div>
     );
   }
+
+  if (!content.analytics) {
+    const commentCount = content.comments?.length;
+
+    return (
+      <div>
+        <div className="hero">
+          <h1>{content.video.title}</h1>
+          <p>
+            {content.video.channel.channelTitle} ·{' '}
+            <a href={content.video.videoUrl} target="_blank" rel="noreferrer">
+              Open on YouTube
+            </a>
+          </p>
+        </div>
+
+        <div className="panel" style={{ marginTop: 18 }}>
+          <h2>Analysis pending</h2>
+          <p className="muted" style={{ marginTop: 6 }}>
+            {typeof commentCount === 'number'
+              ? `${commentCount.toLocaleString()} comments captured. Analytics + report will show up after the next playbook run.`
+              : 'This video has been requested but comments aren’t captured yet.'}
+          </p>
+          <div style={{ marginTop: 12 }}>
+            <Link
+              to="/jobs"
+              className="btn btn-primary"
+              style={{ textDecoration: 'none' }}
+            >
+              Open Jobs
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const analytics = content.analytics;
 
   if (!unlocked) {
     const gate = canRunAnalysis();
@@ -109,7 +152,7 @@ export function VideoAnalyticsPage(): JSX.Element {
     );
   }
 
-  const sentimentData = Object.entries(content.analytics.sentimentBreakdown).map(
+  const sentimentData = Object.entries(analytics.sentimentBreakdown).map(
     ([name, value]) => ({ name, value }),
   );
 
@@ -127,15 +170,15 @@ export function VideoAnalyticsPage(): JSX.Element {
 
       <div style={{ marginTop: 18 }} className="grid grid-3">
         <section className="panel kpi">
-          <div className="value">{content.analytics.commentCount.toLocaleString()}</div>
+          <div className="value">{analytics.commentCount.toLocaleString()}</div>
           <div className="label">Comments captured</div>
         </section>
         <section className="panel kpi">
-          <div className="value">{content.analytics.questionCount.toLocaleString()}</div>
+          <div className="value">{analytics.questionCount.toLocaleString()}</div>
           <div className="label">Questions</div>
         </section>
         <section className="panel kpi">
-          <div className="value">{content.analytics.suggestionCount.toLocaleString()}</div>
+          <div className="value">{analytics.suggestionCount.toLocaleString()}</div>
           <div className="label">Suggestions</div>
         </section>
       </div>
@@ -172,8 +215,8 @@ export function VideoAnalyticsPage(): JSX.Element {
             </ResponsiveContainer>
           </div>
           <p className="muted" style={{ marginTop: 6 }}>
-            This is a fast heuristic pass (lexicon + tone filter), not a fully-trained sentiment
-            model.
+            This is a fast heuristic pass (lexicon + tone filter), not a fully-trained
+            sentiment model.
           </p>
         </section>
 
@@ -181,9 +224,18 @@ export function VideoAnalyticsPage(): JSX.Element {
           <h2>Top themes</h2>
           <div style={{ height: 220 }}>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={content.analytics.topThemes} layout="vertical" margin={{ left: 18 }}>
+              <BarChart
+                data={analytics.topThemes}
+                layout="vertical"
+                margin={{ left: 18 }}
+              >
                 <XAxis type="number" hide />
-                <YAxis type="category" dataKey="label" width={80} tick={{ fill: '#cfd5ff' }} />
+                <YAxis
+                  type="category"
+                  dataKey="label"
+                  width={80}
+                  tick={{ fill: '#cfd5ff' }}
+                />
                 <Tooltip
                   contentStyle={{
                     background: 'rgba(7, 10, 19, 0.95)',
@@ -191,7 +243,11 @@ export function VideoAnalyticsPage(): JSX.Element {
                     borderRadius: 10,
                   }}
                 />
-                <Bar dataKey="count" fill="rgba(106, 169, 255, 0.75)" radius={[6, 6, 6, 6]} />
+                <Bar
+                  dataKey="count"
+                  fill="rgba(106, 169, 255, 0.75)"
+                  radius={[6, 6, 6, 6]}
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -205,16 +261,18 @@ export function VideoAnalyticsPage(): JSX.Element {
           <p className="muted" style={{ marginTop: 6 }}>
             We don’t need to re-traumatize creators to find signal.
           </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 }}>
+          <div
+            style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 }}
+          >
             <div className="row">
               <span className="muted">Toxic / harsh</span>
               <span style={{ color: 'var(--danger)', fontWeight: 650 }}>
-                {content.analytics.toxicCount.toLocaleString()}
+                {analytics.toxicCount.toLocaleString()}
               </span>
             </div>
             <div className="row">
               <span className="muted">Shown quotes</span>
-              <span style={{ fontWeight: 650 }}>{content.analytics.safeQuotes.length}</span>
+              <span style={{ fontWeight: 650 }}>{analytics.safeQuotes.length}</span>
             </div>
           </div>
         </section>
@@ -224,7 +282,7 @@ export function VideoAnalyticsPage(): JSX.Element {
         <section className="panel">
           <h2>Constructive takeaways</h2>
           <ul className="muted" style={{ margin: '10px 0 0 18px' }}>
-            {content.analytics.gentleCritiques.slice(0, 6).map((item) => (
+            {analytics.gentleCritiques.slice(0, 6).map((item) => (
               <li key={item}>{item}</li>
             ))}
           </ul>
@@ -232,8 +290,10 @@ export function VideoAnalyticsPage(): JSX.Element {
 
         <section className="panel" style={{ gridColumn: 'span 2' }}>
           <h2>Notable quotes (safe)</h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 }}>
-            {content.analytics.safeQuotes.slice(0, 6).map((quote) => (
+          <div
+            style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 }}
+          >
+            {analytics.safeQuotes.slice(0, 6).map((quote) => (
               <div key={quote} className="callout">
                 <div className="muted">“{quote}”</div>
               </div>
@@ -246,7 +306,8 @@ export function VideoAnalyticsPage(): JSX.Element {
         <div style={{ marginTop: 14 }} className="panel">
           <h2>Playbook report (MDX)</h2>
           <p className="muted" style={{ marginTop: 6 }}>
-            This section is rendered from an MDX artifact generated by the analytics playbook.
+            This section is rendered from an MDX artifact generated by the analytics
+            playbook.
           </p>
           <div className="mdx" style={{ marginTop: 12 }}>
             <MDXProvider components={Widgets as unknown as MDXComponents}>
