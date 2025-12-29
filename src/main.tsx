@@ -22,7 +22,10 @@ if (redirectPath) {
   const segments = pathPart.split('/').filter(Boolean);
   const hasTraversal = segments.some((segment) => segment === '.' || segment === '..');
 
-  if (!target.startsWith('//') && !target.includes('://') && !hasTraversal) {
+  const hasScheme = pathPart.includes('://');
+  const isProtocolRelative = pathPart.startsWith('//');
+
+  if (!isProtocolRelative && !hasScheme && !hasTraversal) {
     window.history.replaceState(null, '', `${base}${target}`);
   }
 }

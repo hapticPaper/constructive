@@ -54,6 +54,7 @@ export default defineConfig(() => {
   const repo = process.env.GITHUB_REPOSITORY?.split('/')[1];
   const isPages = process.env.GITHUB_PAGES === 'true';
 
+  // GitHub user/org Pages repositories are conventionally named `*.github.io` and are hosted at `/`.
   const isUserOrOrgPages = Boolean(repo && repo.endsWith('.github.io'));
   const base = isPages && repo && !isUserOrOrgPages ? `/${repo}/` : '/';
 

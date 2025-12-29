@@ -136,7 +136,12 @@ async function listFileNames(absoluteDir: string): Promise<Set<string>> {
       if (entry.isFile()) out.add(entry.name);
     }
     return out;
-  } catch {
+  } catch (error) {
+    process.stderr.write(
+      `Warning: Failed to read content directory ${absoluteDir}: ${
+        error instanceof Error ? error.message : String(error)
+      }\n`,
+    );
     return new Set();
   }
 }
