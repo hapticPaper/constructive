@@ -37,19 +37,29 @@ function parseArgs(argv: string[]): Args {
   }
 
   const normalized = videoRaw.trim();
-  if (!normalized) return { overwrite };
-
-  if (!normalized.includes(':')) {
-    return { overwrite, video: { platform: 'youtube', videoId: normalized } };
+  if (!normalized) {
+    throw new Error(
+      'Invalid usage: --video requires a non-empty value (e.g. youtube:<videoId>).',
+    );
   }
 
-  const [platformRaw, videoIdRaw] = normalized.split(':');
-  const platform = platformRaw === 'youtube' ? 'youtube' : null;
-  if (!platform || !videoIdRaw) {
+  const parts = normalized.split(':');
+  if (parts.length === 1) {
+    return { overwrite, video: { platform: 'youtube', videoId: parts[0] } };
+  }
+
+  if (parts.length !== 2) {
     throw new Error('Invalid --video value. Use youtube:<videoId>');
   }
 
-  return { overwrite, video: { platform, videoId: videoIdRaw } };
+  const [platformRaw, videoIdRaw] = parts;
+  const platform = platformRaw.trim() === 'youtube' ? 'youtube' : null;
+  const videoId = videoIdRaw.trim();
+  if (!platform || !videoId) {
+    throw new Error('Invalid --video value. Use youtube:<videoId>');
+  }
+
+  return { overwrite, video: { platform, videoId } };
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -64,11 +74,10 @@ async function readJsonFile<T = unknown>(absolutePath: string): Promise<T> {
     const message = `Failed to parse JSON at ${absolutePath}: ${
       error instanceof Error ? error.message : String(error)
     }`;
-    const wrapped = new Error(message);
     if (error instanceof Error) {
-      (wrapped as Error & { cause?: unknown }).cause = error;
+      throw new Error(message, { cause: error });
     }
-    throw wrapped;
+    throw new Error(message);
   }
 }
 
@@ -335,12 +344,7 @@ const STOPWORDS = new Set([
 ]);
 
 function tokenize(text: string): string[] {
-  return text
-    .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, ' ')
-    .split(/\s+/)
-    .map((t) => t.trim())
-    .filter(Boolean);
+  return text.toLowerCase().match(/[\p{L}\p{N}]+/gu) ?? [];
 }
 
 function isToxicText(tokens: string[]): boolean {
@@ -392,7 +396,17 @@ function ellipsize(text: string, maxLen: number): string {
 }
 
 function escapeMdxText(text: string): string {
-  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\{/g, '&#123;')
+    .replace(/\}/g, '&#125;')
+    .replace(/`/g, '\\`')
+    .replace(/\*/g, '\\*')
+    .replace(/_/g, '\\_')
+    .replace(/\[/g, '\\[')
+    .replace(/\]/g, '\\]');
 }
 
 function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
@@ -411,9 +425,12 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
   const questionCandidates: string[] = [];
   const suggestionCandidates: string[] = [];
 
+  let analyzedCount = 0;
+
   for (const comment of comments) {
     const cleaned = normalizeText(comment.text);
     if (!cleaned) continue;
+    analyzedCount += 1;
     const tokens = tokenize(cleaned);
 
     const toxic = isToxicText(tokens);
@@ -474,7 +491,7 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
   }
 
   return {
-    commentCount: comments.length,
+    commentCount: analyzedCount,
     analyzedAt: new Date().toISOString(),
     sentimentBreakdown,
     toxicCount,
@@ -484,6 +501,27 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
     safeQuotes,
     gentleCritiques,
   };
+}
+
+function isCommentAnalytics(value: unknown): value is CommentAnalytics {
+  if (!isRecord(value)) return false;
+  if (typeof value.commentCount !== 'number') return false;
+  if (typeof value.analyzedAt !== 'string') return false;
+
+  if (!isRecord(value.sentimentBreakdown)) return false;
+  if (typeof value.sentimentBreakdown.positive !== 'number') return false;
+  if (typeof value.sentimentBreakdown.neutral !== 'number') return false;
+  if (typeof value.sentimentBreakdown.negative !== 'number') return false;
+
+  if (typeof value.toxicCount !== 'number') return false;
+  if (typeof value.questionCount !== 'number') return false;
+  if (typeof value.suggestionCount !== 'number') return false;
+
+  if (!Array.isArray(value.topThemes)) return false;
+  if (!Array.isArray(value.safeQuotes)) return false;
+  if (!Array.isArray(value.gentleCritiques)) return false;
+
+  return true;
 }
 
 function buildReportMdx(video: VideoMetadata, analytics: CommentAnalytics): string {
@@ -546,8 +584,8 @@ async function listDirs(dirPath: string): Promise<string[]> {
 
 async function fileExists(filePath: string): Promise<boolean> {
   try {
-    await stat(filePath);
-    return true;
+    const fileStat = await stat(filePath);
+    return fileStat.isFile();
   } catch {
     return false;
   }
@@ -594,7 +632,13 @@ async function main(): Promise<void> {
 
     let analytics: CommentAnalytics;
     if (!args.overwrite && hasAnalytics) {
-      analytics = (await readJsonFile(analyticsPath)) as CommentAnalytics;
+      const existing = await readJsonFile(analyticsPath);
+      if (isCommentAnalytics(existing)) {
+        analytics = existing;
+      } else {
+        analytics = analyzeComments(comments);
+        await writeJsonFile(analyticsPath, analytics);
+      }
     } else {
       analytics = analyzeComments(comments);
       await writeJsonFile(analyticsPath, analytics);
