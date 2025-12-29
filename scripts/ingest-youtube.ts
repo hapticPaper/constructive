@@ -3,7 +3,12 @@ import { Innertube } from 'youtubei.js';
 import type { CommentRecord, VideoMetadata } from '../src/content/types';
 
 import { writeJsonFile } from './fs';
-import { commentsJsonPath, ingestionMetaPath, videoJsonPath } from './paths';
+import {
+  channelJsonPath,
+  commentsJsonPath,
+  ingestionMetaPath,
+  videoJsonPath,
+} from './paths';
 
 function extractVideoId(input: string): string | null {
   const trimmed = input.trim();
@@ -98,6 +103,12 @@ async function main(): Promise<void> {
   const channelTitle = typeof author?.name === 'string' ? author.name : '';
   const channelUrl = typeof author?.url === 'string' ? author.url : undefined;
 
+  if (!channelId) {
+    throw new Error(
+      `Could not resolve a channel id for ${videoId} (input: ${input}). This is required for channel-scoped storage.`,
+    );
+  }
+
   const video: VideoMetadata = {
     platform: 'youtube',
     videoId,
@@ -149,9 +160,10 @@ async function main(): Promise<void> {
     cursor = (await cursor.getContinuation()) as unknown as CommentsCursor;
   }
 
-  await writeJsonFile(videoJsonPath('youtube', videoId), video);
-  await writeJsonFile(commentsJsonPath('youtube', videoId), commentRecords);
-  await writeJsonFile(ingestionMetaPath('youtube', videoId), {
+  await writeJsonFile(channelJsonPath('youtube', channelId), video.channel);
+  await writeJsonFile(videoJsonPath('youtube', channelId, videoId), video);
+  await writeJsonFile(commentsJsonPath('youtube', channelId, videoId), commentRecords);
+  await writeJsonFile(ingestionMetaPath('youtube', channelId, videoId), {
     ingestedAt: new Date().toISOString(),
     maxComments,
     commentCount: commentRecords.length,

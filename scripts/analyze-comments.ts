@@ -4,10 +4,10 @@ import type { CommentAnalytics, CommentRecord, Platform, Sentiment } from '../sr
 
 import { writeJsonFile, writeTextFile } from './fs';
 import {
-  analyticsJsonPath,
-  commentsJsonPath,
-  reportMdxPath,
-  videoJsonPath,
+  resolveAnalyticsJsonPath,
+  resolveCommentsJsonPath,
+  resolveReportMdxPath,
+  resolveVideoJsonPath,
 } from './paths';
 
 const POSITIVE = new Set([
@@ -267,8 +267,8 @@ async function readJsonFile<T>(filePath: string): Promise<T> {
 
 async function main(): Promise<void> {
   const { platform, videoId } = parseArgs(process.argv.slice(2));
-  const comments = await readJsonFile<CommentRecord[]>(commentsJsonPath(platform, videoId));
-  const video = await readJsonFile<{ title: string }>(videoJsonPath(platform, videoId));
+  const comments = await readJsonFile<CommentRecord[]>(resolveCommentsJsonPath(platform, videoId));
+  const video = await readJsonFile<{ title: string }>(resolveVideoJsonPath(platform, videoId));
 
   const signals = comments.map((c) => {
     const toxic = isToxic(c.text);
@@ -324,9 +324,9 @@ async function main(): Promise<void> {
     gentleCritiques: buildGentleCritiques(signals),
   };
 
-  await writeJsonFile(analyticsJsonPath(platform, videoId), analytics);
+  await writeJsonFile(resolveAnalyticsJsonPath(platform, videoId), analytics);
   await writeTextFile(
-    reportMdxPath(platform, videoId),
+    resolveReportMdxPath(platform, videoId),
     buildMdxReport({ videoTitle: video.title, analytics }),
   );
 

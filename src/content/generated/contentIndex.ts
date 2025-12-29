@@ -1,12 +1,12 @@
 import type { VideoContent } from '../types';
 
-import youtube_IPsu4pMpIjk_video from '../../../content/platforms/youtube/videos/IPsu4pMpIjk/video.json';
-import youtube_IPsu4pMpIjk_comments from '../../../content/platforms/youtube/videos/IPsu4pMpIjk/comments.json';
-import youtube_IPsu4pMpIjk_analytics from '../../../content/platforms/youtube/videos/IPsu4pMpIjk/analytics.json';
+import youtube_IPsu4pMpIjk_video from '../../../content/platforms/youtube/channels/UC1E1SVcVyU3ntWMSQEp38Yw/videos/IPsu4pMpIjk/video.json';
+import youtube_IPsu4pMpIjk_comments from '../../../content/platforms/youtube/channels/UC1E1SVcVyU3ntWMSQEp38Yw/videos/IPsu4pMpIjk/comments.json';
+import youtube_IPsu4pMpIjk_analytics from '../../../content/platforms/youtube/channels/UC1E1SVcVyU3ntWMSQEp38Yw/videos/IPsu4pMpIjk/analytics.json';
 
-import youtube_KXPhaAsnrfs_video from '../../../content/platforms/youtube/videos/KXPhaAsnrfs/video.json';
-import youtube_KXPhaAsnrfs_comments from '../../../content/platforms/youtube/videos/KXPhaAsnrfs/comments.json';
-import youtube_KXPhaAsnrfs_analytics from '../../../content/platforms/youtube/videos/KXPhaAsnrfs/analytics.json';
+import youtube_KXPhaAsnrfs_video from '../../../content/platforms/youtube/channels/UC7_gcs09iThXybpVgjHZ_7g/videos/KXPhaAsnrfs/video.json';
+import youtube_KXPhaAsnrfs_comments from '../../../content/platforms/youtube/channels/UC7_gcs09iThXybpVgjHZ_7g/videos/KXPhaAsnrfs/comments.json';
+import youtube_KXPhaAsnrfs_analytics from '../../../content/platforms/youtube/channels/UC7_gcs09iThXybpVgjHZ_7g/videos/KXPhaAsnrfs/analytics.json';
 
 export const VIDEO_CONTENT: Record<string, VideoContent> = {
   'youtube:IPsu4pMpIjk': {

@@ -1,4 +1,4 @@
-import { readdir, stat } from 'node:fs/promises';
+import { readdir } from 'node:fs/promises';
 import path from 'node:path';
 
 import { writeTextFile } from './fs';
@@ -12,26 +12,51 @@ function safeIdent(value: string): string {
   return value.replace(/[^a-zA-Z0-9_]/g, '_');
 }
 
-async function listVideoIds(platform: Platform): Promise<string[]> {
-  const dir = path.join(CONTENT_ROOT, platform, 'videos');
-  let entries: string[];
+async function listSubdirs(dirPath: string): Promise<string[]> {
   try {
-    entries = await readdir(dir);
+    const entries = await readdir(dirPath, { withFileTypes: true });
+    return entries.filter((e) => e.isDirectory()).map((e) => e.name);
   } catch {
     return [];
   }
+}
 
-  const out: string[] = [];
-  for (const entry of entries) {
-    const full = path.join(dir, entry);
-    try {
-      const s = await stat(full);
-      if (s.isDirectory()) out.push(entry);
-    } catch {
-      // ignore
+async function listVideoDirs(
+  platform: Platform,
+): Promise<Array<{ videoId: string; baseDir: string }>> {
+  const byVideoId = new Map<string, string>();
+
+  const channelsDir = path.join(CONTENT_ROOT, platform, 'channels');
+  const channelEntries = await listSubdirs(channelsDir);
+
+  for (const channelId of channelEntries) {
+    const videosDir = path.join(channelsDir, channelId, 'videos');
+    const videoEntries = await listSubdirs(videosDir);
+
+    for (const videoId of videoEntries) {
+      const baseDir = path.join(videosDir, videoId);
+      if (byVideoId.has(videoId)) {
+        const existing = byVideoId.get(videoId);
+        throw new Error(
+          `Duplicate video id detected for ${platform}:${videoId} in channels tree (check platforms/${platform}/channels/*/videos): ${existing} and ${baseDir}.`,
+        );
+      }
+      byVideoId.set(videoId, baseDir);
     }
   }
-  return out.sort();
+
+  const legacyDir = path.join(CONTENT_ROOT, platform, 'videos');
+  const legacyEntries = await listSubdirs(legacyDir);
+
+  for (const videoId of legacyEntries) {
+    if (byVideoId.has(videoId)) continue;
+    const baseDir = path.join(legacyDir, videoId);
+    byVideoId.set(videoId, baseDir);
+  }
+
+  return Array.from(byVideoId.entries())
+    .map(([videoId, baseDir]) => ({ videoId, baseDir }))
+    .sort((a, b) => a.videoId.localeCompare(b.videoId));
 }
 
 function relFromGenerated(absolutePath: string): string {
@@ -41,10 +66,10 @@ function relFromGenerated(absolutePath: string): string {
 
 async function main(): Promise<void> {
   const platforms: Platform[] = ['youtube'];
-  const videoEntries: Array<{ platform: Platform; videoId: string }> = [];
+  const videoEntries: Array<{ platform: Platform; videoId: string; baseDir: string }> = [];
   for (const platform of platforms) {
-    for (const videoId of await listVideoIds(platform)) {
-      videoEntries.push({ platform, videoId });
+    for (const entry of await listVideoDirs(platform)) {
+      videoEntries.push({ platform, ...entry });
     }
   }
 
@@ -59,14 +84,13 @@ async function main(): Promise<void> {
     'export const VIDEO_REPORTS: Record<string, ComponentType | undefined> = {',
   ];
 
-  for (const { platform, videoId } of videoEntries) {
+  for (const { platform, videoId, baseDir } of videoEntries) {
     const ident = safeIdent(`${platform}_${videoId}`);
-    const base = path.join(CONTENT_ROOT, platform, 'videos', videoId);
 
-    const videoPath = relFromGenerated(path.join(base, 'video.json'));
-    const commentsPath = relFromGenerated(path.join(base, 'comments.json'));
-    const analyticsPath = relFromGenerated(path.join(base, 'analytics.json'));
-    const reportPath = relFromGenerated(path.join(base, 'report.mdx'));
+    const videoPath = relFromGenerated(path.join(baseDir, 'video.json'));
+    const commentsPath = relFromGenerated(path.join(baseDir, 'comments.json'));
+    const analyticsPath = relFromGenerated(path.join(baseDir, 'analytics.json'));
+    const reportPath = relFromGenerated(path.join(baseDir, 'report.mdx'));
 
     contentImports.push(
       `import ${ident}_video from '${videoPath}';`,
