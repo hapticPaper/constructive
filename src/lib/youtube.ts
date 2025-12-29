@@ -33,6 +33,11 @@ type YouTubeOEmbedResponse = {
   thumbnail_url?: string;
 };
 
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  return value as Record<string, unknown>;
+}
+
 export async function fetchYouTubeOEmbed(
   videoId: string,
   signal?: AbortSignal,
@@ -43,11 +48,13 @@ export async function fetchYouTubeOEmbed(
     )}&format=json`;
     const res = await fetch(url, { signal });
     if (!res.ok) return null;
-    const raw = (await res.json()) as unknown as YouTubeOEmbedResponse;
+    const parsed = (await res.json()) as unknown;
+    const raw = (asRecord(parsed) ?? {}) as YouTubeOEmbedResponse;
 
     const title = typeof raw.title === 'string' ? raw.title : '';
     const channelTitle = typeof raw.author_name === 'string' ? raw.author_name : '';
-    const thumbnailUrl = typeof raw.thumbnail_url === 'string' ? raw.thumbnail_url : undefined;
+    const thumbnailUrl =
+      typeof raw.thumbnail_url === 'string' ? raw.thumbnail_url : undefined;
 
     if (!title || !channelTitle) return null;
     return { title, channelTitle, thumbnailUrl };

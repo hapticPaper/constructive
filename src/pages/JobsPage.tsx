@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 
 import { getVideoContent } from '../content/content';
@@ -28,7 +28,11 @@ function getJobStage(platform: Platform, videoId: string): JobStage {
   }
 
   if (content.analytics) {
-    return { kind: 'ready', label: 'Analysis ready', detail: 'Open the report when you’re ready.' };
+    return {
+      kind: 'ready',
+      label: 'Analysis ready',
+      detail: 'Open the report when you’re ready.',
+    };
   }
 
   if (content.comments) {
@@ -55,6 +59,8 @@ export function JobsPage(): JSX.Element {
   const [searchParams, setSearchParams] = useSearchParams();
   const focused = searchParams.get('video');
 
+  const oembedInFlight = useRef(new Set<string>());
+
   const [refreshTick, setRefreshTick] = useState(0);
   const [input, setInput] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -66,20 +72,34 @@ export function JobsPage(): JSX.Element {
   }, [refreshTick]);
 
   useEffect(() => {
-    let cancelled = false;
-    const missing = videos.filter((v) => v.platform === 'youtube' && (!v.title || !v.channelTitle));
-    if (missing.length === 0) return;
+    const controller = new AbortController();
+    const missing = videos.filter(
+      (v) => v.platform === 'youtube' && (!v.title || !v.channelTitle),
+    );
+    const batch = missing
+      .filter((v) => !oembedInFlight.current.has(`${v.platform}:${v.videoId}`))
+      .slice(0, 5);
+    if (batch.length === 0) return () => controller.abort();
+
+    for (const v of batch) {
+      oembedInFlight.current.add(`${v.platform}:${v.videoId}`);
+    }
 
     void Promise.all(
-      missing.slice(0, 5).map((v) => hydrateLocalLibraryVideoMetadata(v.platform, v.videoId)),
+      batch.map((v) =>
+        hydrateLocalLibraryVideoMetadata(
+          v.platform,
+          v.videoId,
+          controller.signal,
+        ).finally(() => {
+          oembedInFlight.current.delete(`${v.platform}:${v.videoId}`);
+        }),
+      ),
     ).then((results) => {
-      if (cancelled) return;
       if (results.some(Boolean)) setRefreshTick((v) => v + 1);
     });
 
-    return () => {
-      cancelled = true;
-    };
+    return () => controller.abort();
   }, [videos]);
 
   function addByInput(): void {
@@ -93,9 +113,6 @@ export function JobsPage(): JSX.Element {
     const platform: Platform = 'youtube';
     const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
     upsertLocalLibraryVideo({ platform, videoId, videoUrl });
-    void hydrateLocalLibraryVideoMetadata(platform, videoId).then((updated) => {
-      if (updated) setRefreshTick((v) => v + 1);
-    });
     setRefreshTick((v) => v + 1);
     setInput('');
     setSearchParams({ video: `${platform}:${videoId}` });
@@ -106,9 +123,9 @@ export function JobsPage(): JSX.Element {
       <div className="hero">
         <h1>Jobs</h1>
         <p>
-          This browser keeps a local library of the videos you’ve requested. Ingestion and analysis
-          are idempotent (keyed by video id): comments get captured first, then playbook runs fill
-          in analytics + MDX reports.
+          This browser keeps a local library of the videos you’ve requested. Ingestion and
+          analysis are idempotent (keyed by video id): comments get captured first, then
+          playbook runs fill in analytics + MDX reports.
         </p>
       </div>
 
@@ -161,26 +178,52 @@ export function JobsPage(): JSX.Element {
                 className="panel"
                 style={isFocused ? FOCUSED_JOB_STYLE : undefined}
               >
-                <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: 12,
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                  }}
+                >
                   {video.thumbnailUrl ? (
                     <img
                       src={video.thumbnailUrl}
                       alt=""
                       loading="lazy"
-                      style={{ width: 120, borderRadius: 10, border: '1px solid var(--border)' }}
+                      style={{
+                        width: 120,
+                        borderRadius: 10,
+                        border: '1px solid var(--border)',
+                      }}
                     />
                   ) : null}
                   <div style={{ flex: '1 1 260px' }}>
                     <div style={{ fontWeight: 650 }}>{title}</div>
                     <div className="muted" style={{ marginTop: 4, fontSize: 13 }}>
-                      {channel} · <span style={{ color: 'rgba(255,255,255,0.55)' }}>{video.videoId}</span>
+                      {channel} ·{' '}
+                      <span style={{ color: 'rgba(255,255,255,0.55)' }}>
+                        {video.videoId}
+                      </span>
                     </div>
                     <div className="muted" style={{ marginTop: 8 }}>
                       <strong>{stage.label}:</strong> {stage.detail}
                     </div>
                   </div>
-                  <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-                    <a className="muted" href={video.videoUrl} target="_blank" rel="noreferrer">
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: 10,
+                      alignItems: 'center',
+                      flexWrap: 'wrap',
+                    }}
+                  >
+                    <a
+                      className="muted"
+                      href={video.videoUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
                       Open on YouTube
                     </a>
                     {stage.kind === 'ready' ? (

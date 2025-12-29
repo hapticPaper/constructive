@@ -39,7 +39,9 @@ export function NavBar(): JSX.Element {
             </Link>
             <Link
               to="/jobs"
-              className={location.pathname.startsWith('/jobs') ? 'nav-link active' : 'nav-link'}
+              className={
+                location.pathname.startsWith('/jobs') ? 'nav-link active' : 'nav-link'
+              }
             >
               Jobs
             </Link>

@@ -25,7 +25,8 @@ export function LibraryPage(): JSX.Element {
 
     return all.filter(
       (v) =>
-        v.title.toLowerCase().includes(q) || v.channel.channelTitle.toLowerCase().includes(q),
+        v.title.toLowerCase().includes(q) ||
+        v.channel.channelTitle.toLowerCase().includes(q),
     );
   }, [query]);
 
@@ -36,8 +37,8 @@ export function LibraryPage(): JSX.Element {
       <div className="hero">
         <h1>Pick content to analyze</h1>
         <p>
-          The “backend” for this MVP is just structured files in git. Each video has its own
-          metadata, comments snapshot, computed analytics, and a report in MDX.
+          The “backend” for this MVP is just structured files in git. Each video has its
+          own metadata, comments snapshot, computed analytics, and a report in MDX.
         </p>
       </div>
 
@@ -85,12 +86,17 @@ export function LibraryPage(): JSX.Element {
                     content?.analytics?.commentCount ?? content?.comments?.length;
 
                   return (
-                    <div key={video.videoId} style={{ display: 'flex', flexDirection: 'column' }}>
+                    <div
+                      key={video.videoId}
+                      style={{ display: 'flex', flexDirection: 'column' }}
+                    >
                       <VideoCard
                         video={video}
                         onCtaClick={(event) => {
                           setError(null);
-                          const unlocked = unlockVideo(`${video.platform}:${video.videoId}`);
+                          const unlocked = unlockVideo(
+                            `${video.platform}:${video.videoId}`,
+                          );
                           if (!unlocked.ok) {
                             event.preventDefault();
                             setError(unlocked.reason);

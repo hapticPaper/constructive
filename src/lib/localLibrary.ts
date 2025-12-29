@@ -74,13 +74,21 @@ function getStorage(): Storage | null {
 function loadLibrary(): LocalLibraryVideo[] {
   const storage = getStorage();
   if (!storage) return [];
-  return parseLocalLibrary(storage.getItem(STORAGE_KEY));
+  try {
+    return parseLocalLibrary(storage.getItem(STORAGE_KEY));
+  } catch {
+    return [];
+  }
 }
 
 function persistLibrary(entries: LocalLibraryVideo[]): void {
   const storage = getStorage();
   if (!storage) return;
-  storage.setItem(STORAGE_KEY, JSON.stringify(entries.slice(-200)));
+  try {
+    storage.setItem(STORAGE_KEY, JSON.stringify(entries.slice(-200)));
+  } catch {
+    // ignore: local library is best-effort
+  }
 }
 
 export function listLocalLibraryVideos(): LocalLibraryVideo[] {
@@ -122,12 +130,15 @@ export function upsertLocalLibraryVideo({
 }
 
 export function removeLocalLibraryVideo(platform: Platform, videoId: string): void {
-  persistLibrary(loadLibrary().filter((e) => !(e.platform === platform && e.videoId === videoId)));
+  persistLibrary(
+    loadLibrary().filter((e) => !(e.platform === platform && e.videoId === videoId)),
+  );
 }
 
 export async function hydrateLocalLibraryVideoMetadata(
   platform: Platform,
   videoId: string,
+  signal?: AbortSignal,
 ): Promise<boolean> {
   if (platform !== 'youtube') return false;
 
@@ -137,11 +148,13 @@ export async function hydrateLocalLibraryVideoMetadata(
   if (!existing) return false;
   if (existing.title && existing.channelTitle && existing.thumbnailUrl) return false;
 
-  const oembed = await fetchYouTubeOEmbed(videoId);
+  const oembed = await fetchYouTubeOEmbed(videoId, signal);
   if (!oembed) return false;
 
   const fresh = loadLibrary();
-  const freshIdx = fresh.findIndex((e) => e.platform === platform && e.videoId === videoId);
+  const freshIdx = fresh.findIndex(
+    (e) => e.platform === platform && e.videoId === videoId,
+  );
   if (freshIdx < 0) return false;
 
   fresh[freshIdx] = {
