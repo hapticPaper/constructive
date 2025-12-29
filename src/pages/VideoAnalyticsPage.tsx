@@ -76,8 +76,7 @@ export function VideoAnalyticsPage(): JSX.Element {
         <div className="panel" style={{ marginTop: 18 }}>
           <h2>Access</h2>
           <p className="muted" style={{ marginTop: 6 }}>
-            The freemium gate is intentionally cookie-based so the demo can run entirely on GitHub
-            Pages.
+            Unlocks are stored in your browser for this device.
           </p>
           <div style={{ marginTop: 12, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
             <Button
