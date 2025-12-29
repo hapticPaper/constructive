@@ -152,16 +152,17 @@ async function main(): Promise<void> {
 
   const invalidEntries = validations.filter((v): v is Extract<Validation, { ok: false }> => !v.ok);
   if (invalidEntries.length > 0) {
-    const messages = invalidEntries.map((entry) =>
-      entry.error instanceof Error ? entry.error.message : String(entry.error),
-    );
+    const messages = invalidEntries.map((entry) => {
+      const detail = entry.error instanceof Error ? entry.error.message : String(entry.error);
+      return `[${entry.platform}:${entry.videoId}] ${detail}`;
+    });
 
     if (strict) {
       throw new Error(messages.join('\n'));
     }
 
     for (const message of messages) {
-      process.stderr.write(`${message}\n`);
+      process.stderr.write(`${message} (video and report skipped)\n`);
     }
   }
 
