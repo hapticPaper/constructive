@@ -21,10 +21,8 @@ function parseUsageCookie(raw: string | null): number[] {
   try {
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return [];
-    const maxFutureSkewMs = 5 * 60 * 1000;
-    const upperBound = nowMs() + maxFutureSkewMs;
     return parsed.filter(
-      (v): v is number => typeof v === 'number' && Number.isFinite(v) && v > 0 && v <= upperBound,
+      (v): v is number => typeof v === 'number' && Number.isFinite(v) && v > 0,
     );
   } catch {
     return [];
@@ -45,8 +43,13 @@ export function getUserTier(): Tier {
 
 export function getAnalysisUsage(): Usage {
   const tier = getUserTier();
-  const cutoff = nowMs() - 24 * 60 * 60 * 1000;
-  const timestamps = parseUsageCookie(getCookie(COOKIE_ANALYSIS)).filter((t) => t >= cutoff);
+  const now = nowMs();
+  const maxFutureSkewMs = 5 * 60 * 1000;
+  const cutoff = now - 24 * 60 * 60 * 1000;
+  const upperBound = now + maxFutureSkewMs;
+  const timestamps = parseUsageCookie(getCookie(COOKIE_ANALYSIS)).filter(
+    (t) => t >= cutoff && t <= upperBound,
+  );
   persistUsage(timestamps);
 
   return {
@@ -69,9 +72,14 @@ export function canRunAnalysis(): { ok: true } | { ok: false; reason: string } {
 }
 
 export function consumeAnalysisRun(): void {
-  const cutoff = nowMs() - 24 * 60 * 60 * 1000;
-  const timestamps = parseUsageCookie(getCookie(COOKIE_ANALYSIS)).filter((t) => t >= cutoff);
-  timestamps.push(nowMs());
+  const now = nowMs();
+  const maxFutureSkewMs = 5 * 60 * 1000;
+  const cutoff = now - 24 * 60 * 60 * 1000;
+  const upperBound = now + maxFutureSkewMs;
+  const timestamps = parseUsageCookie(getCookie(COOKIE_ANALYSIS)).filter(
+    (t) => t >= cutoff && t <= upperBound,
+  );
+  timestamps.push(now);
   persistUsage(timestamps);
 }
 
