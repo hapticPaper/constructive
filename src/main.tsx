@@ -24,8 +24,9 @@ if (redirectPath) {
 
   const hasScheme = pathPart.includes('://');
   const isProtocolRelative = pathPart.startsWith('//');
+  const isSafePath = /^\/[0-9A-Za-z_\-./]*$/.test(pathPart);
 
-  if (!isProtocolRelative && !hasScheme && !hasTraversal) {
+  if (!isProtocolRelative && !hasScheme && !hasTraversal && isSafePath) {
     window.history.replaceState(null, '', `${base}${target}`);
   }
 }

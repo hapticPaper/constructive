@@ -62,17 +62,14 @@ export function JobsPage(): JSX.Element {
   // oEmbed hydration is performed in a batched effect (cancellable + de-duplicated).
   const oembedInFlight = useRef(new Set<string>());
 
-  const [refreshTick, setRefreshTick] = useState(0);
   const [input, setInput] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const [videos, setVideos] = useState(() => listLocalLibraryVideos());
 
   useEffect(() => {
-    setVideos(listLocalLibraryVideos());
-  }, [refreshTick]);
+    let active = true;
 
-  useEffect(() => {
     // One controller per effect run. Cleanup aborts the whole batch on unmount/list changes.
     const controller = new AbortController();
     const missing = videos.filter(
@@ -98,10 +95,14 @@ export function JobsPage(): JSX.Element {
         }),
       ),
     ).then((results) => {
-      if (results.some(Boolean)) setRefreshTick((v) => v + 1);
+      if (!active) return;
+      if (results.some(Boolean)) setVideos(listLocalLibraryVideos());
     });
 
-    return () => controller.abort();
+    return () => {
+      active = false;
+      controller.abort();
+    };
   }, [videos]);
 
   function addByInput(): void {
@@ -115,20 +116,20 @@ export function JobsPage(): JSX.Element {
     const platform: Platform = 'youtube';
     const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
     upsertLocalLibraryVideo({ platform, videoId, videoUrl });
+    setVideos(listLocalLibraryVideos());
 
     const key = `${platform}:${videoId}`;
     if (!oembedInFlight.current.has(key)) {
       oembedInFlight.current.add(key);
       void hydrateLocalLibraryVideoMetadata(platform, videoId)
         .then((updated) => {
-          if (updated) setRefreshTick((v) => v + 1);
+          if (updated) setVideos(listLocalLibraryVideos());
         })
         .finally(() => {
           oembedInFlight.current.delete(key);
         });
     }
 
-    setRefreshTick((v) => v + 1);
     setInput('');
     setSearchParams({ video: `${platform}:${videoId}` });
   }
@@ -254,7 +255,7 @@ export function JobsPage(): JSX.Element {
                       variant="ghost"
                       onClick={() => {
                         removeLocalLibraryVideo(video.platform, video.videoId);
-                        setRefreshTick((v) => v + 1);
+                        setVideos(listLocalLibraryVideos());
                         if (isFocused) setSearchParams({});
                       }}
                     >
