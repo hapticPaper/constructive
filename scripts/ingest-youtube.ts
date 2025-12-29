@@ -52,9 +52,7 @@ function parseArgs(argv: string[]): { input: string; maxComments: number } {
 
 function toStringSafe(value: unknown): string {
   if (typeof value === 'string') return value;
-  if (value && typeof value === 'object' && 'toString' in value && typeof value.toString === 'function') {
-    return value.toString();
-  }
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
   return '';
 }
 
