@@ -15,11 +15,11 @@ export const VIDEO_CONTENT: Record<string, VideoContent> = {
   'youtube:IPsu4pMpIjk': {
     video: youtube_IPsu4pMpIjk_video as VideoContent['video'],
     comments: youtube_IPsu4pMpIjk_comments,
-    analytics: youtube_IPsu4pMpIjk_analytics,
+    analytics: youtube_IPsu4pMpIjk_analytics as VideoContent['analytics'],
   },
   'youtube:KXPhaAsnrfs': {
     video: youtube_KXPhaAsnrfs_video as VideoContent['video'],
     comments: youtube_KXPhaAsnrfs_comments,
-    analytics: youtube_KXPhaAsnrfs_analytics,
+    analytics: youtube_KXPhaAsnrfs_analytics as VideoContent['analytics'],
   },
 };

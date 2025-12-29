@@ -2,29 +2,12 @@ import { MDXProvider } from '@mdx-js/react';
 import type { MDXComponents } from 'mdx/types';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import {
-  Bar,
-  BarChart,
-  Cell,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
 
 import { getVideoContent, getVideoReportComponent } from '../content/content';
 import type { Platform } from '../content/types';
 import { canRunAnalysis, isVideoUnlocked, unlockVideo } from '../lib/freemium';
 import { Button } from '../components/ui/Button';
 import * as Widgets from '../widgets';
-
-const SENTIMENT_COLORS: Record<string, string> = {
-  positive: '#8cffcb',
-  neutral: 'rgba(255,255,255,0.40)',
-  negative: '#ff6376',
-};
 
 export function VideoAnalyticsPage(): JSX.Element {
   const params = useParams();
@@ -152,10 +135,6 @@ export function VideoAnalyticsPage(): JSX.Element {
     );
   }
 
-  const sentimentData = Object.entries(analytics.sentimentBreakdown).map(
-    ([name, value]) => ({ name, value }),
-  );
-
   return (
     <div>
       <div className="hero">
@@ -183,132 +162,9 @@ export function VideoAnalyticsPage(): JSX.Element {
         </section>
       </div>
 
-      <div style={{ marginTop: 14 }} className="grid grid-3">
-        <section className="panel">
-          <h2>Sentiment mix</h2>
-          <div style={{ height: 220 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={sentimentData}
-                  dataKey="value"
-                  nameKey="name"
-                  innerRadius={50}
-                  outerRadius={80}
-                  paddingAngle={2}
-                >
-                  {sentimentData.map((entry) => (
-                    <Cell
-                      key={entry.name}
-                      fill={SENTIMENT_COLORS[entry.name] ?? 'rgba(255,255,255,0.4)'}
-                    />
-                  ))}
-                </Pie>
-                <Tooltip
-                  contentStyle={{
-                    background: 'rgba(7, 10, 19, 0.95)',
-                    border: '1px solid rgba(255,255,255,0.12)',
-                    borderRadius: 10,
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-          <p className="muted" style={{ marginTop: 6 }}>
-            This is a fast heuristic pass (lexicon + tone filter), not a fully-trained
-            sentiment model.
-          </p>
-        </section>
-
-        <section className="panel">
-          <h2>Top themes</h2>
-          <div style={{ height: 220 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={analytics.topThemes}
-                layout="vertical"
-                margin={{ left: 18 }}
-              >
-                <XAxis type="number" hide />
-                <YAxis
-                  type="category"
-                  dataKey="label"
-                  width={80}
-                  tick={{ fill: '#cfd5ff' }}
-                />
-                <Tooltip
-                  contentStyle={{
-                    background: 'rgba(7, 10, 19, 0.95)',
-                    border: '1px solid rgba(255,255,255,0.12)',
-                    borderRadius: 10,
-                  }}
-                />
-                <Bar
-                  dataKey="count"
-                  fill="rgba(106, 169, 255, 0.75)"
-                  radius={[6, 6, 6, 6]}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-          <p className="muted" style={{ marginTop: 6 }}>
-            Themes are pulled from comment text (stopword removal + frequency).
-          </p>
-        </section>
-
-        <section className="panel">
-          <h2>Protective filter</h2>
-          <p className="muted" style={{ marginTop: 6 }}>
-            We don’t need to re-traumatize creators to find signal.
-          </p>
-          <div
-            style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 }}
-          >
-            <div className="row">
-              <span className="muted">Toxic / harsh</span>
-              <span style={{ color: 'var(--danger)', fontWeight: 650 }}>
-                {analytics.toxicCount.toLocaleString()}
-              </span>
-            </div>
-            <div className="row">
-              <span className="muted">Shown quotes</span>
-              <span style={{ fontWeight: 650 }}>{analytics.safeQuotes.length}</span>
-            </div>
-          </div>
-        </section>
-      </div>
-
-      <div style={{ marginTop: 14 }} className="grid grid-3">
-        <section className="panel">
-          <h2>Constructive takeaways</h2>
-          <ul className="muted" style={{ margin: '10px 0 0 18px' }}>
-            {analytics.gentleCritiques.slice(0, 6).map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </section>
-
-        <section className="panel" style={{ gridColumn: 'span 2' }}>
-          <h2>Notable quotes (safe)</h2>
-          <div
-            style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 }}
-          >
-            {analytics.safeQuotes.slice(0, 6).map((quote) => (
-              <div key={quote} className="callout">
-                <div className="muted">“{quote}”</div>
-              </div>
-            ))}
-          </div>
-        </section>
-      </div>
-
       {Report ? (
         <div style={{ marginTop: 14 }} className="panel">
-          <h2>Playbook report (MDX)</h2>
-          <p className="muted" style={{ marginTop: 6 }}>
-            This section is rendered from an MDX artifact generated by the analytics
-            playbook.
-          </p>
+          <h2>Summary report (playbook)</h2>
           <div className="mdx" style={{ marginTop: 12 }}>
             <MDXProvider components={Widgets as unknown as MDXComponents}>
               <Report />
