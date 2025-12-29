@@ -21,7 +21,11 @@ function parseUsageCookie(raw: string | null): number[] {
   try {
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter((v) => typeof v === 'number');
+    const maxFutureSkewMs = 5 * 60 * 1000;
+    const upperBound = nowMs() + maxFutureSkewMs;
+    return parsed.filter(
+      (v): v is number => typeof v === 'number' && Number.isFinite(v) && v > 0 && v <= upperBound,
+    );
   } catch {
     return [];
   }
