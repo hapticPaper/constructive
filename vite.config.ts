@@ -4,10 +4,8 @@ import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { defineConfig, type Plugin, type ResolvedConfig } from 'vite';
 
-function githubPages404(base: string): Plugin {
+function spa404Redirect(): Plugin {
   let config: ResolvedConfig | null = null;
-
-  const normalizedBase = base.endsWith('/') ? base : `${base}/`;
 
   return {
     name: 'constructive-github-pages-404',
@@ -20,6 +18,9 @@ function githubPages404(base: string): Plugin {
 
       const outDir = config.build.outDir;
       const file = path.join(outDir, '404.html');
+
+      const base = config.base;
+      const normalizedBase = base.endsWith('/') ? base : `${base}/`;
 
       const html = `<!doctype html>
 <html lang="en">
@@ -34,7 +35,7 @@ function githubPages404(base: string): Plugin {
         var l = window.location;
         var base = ${JSON.stringify(normalizedBase)};
 
-        var rel = l.pathname.startsWith(base) ? l.pathname.slice(base.length - 1) : l.pathname;
+        var rel = l.pathname.startsWith(base) ? '/' + l.pathname.slice(base.length) : l.pathname;
         var target = rel + l.search + l.hash;
 
         l.replace(base + '?_redirect=' + encodeURIComponent(target));
@@ -62,7 +63,7 @@ export default defineConfig(() => {
       // MDX needs to run before React.
       mdx({ providerImportSource: '@mdx-js/react' }),
       react(),
-      githubPages404(base),
+      spa404Redirect(),
     ],
   };
 });

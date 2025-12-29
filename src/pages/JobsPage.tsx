@@ -59,6 +59,7 @@ export function JobsPage(): JSX.Element {
   const [searchParams, setSearchParams] = useSearchParams();
   const focused = searchParams.get('video');
 
+  // oEmbed hydration is performed in a batched effect (cancellable + de-duplicated).
   const oembedInFlight = useRef(new Set<string>());
 
   const [refreshTick, setRefreshTick] = useState(0);
@@ -72,6 +73,7 @@ export function JobsPage(): JSX.Element {
   }, [refreshTick]);
 
   useEffect(() => {
+    // One controller per effect run. Cleanup aborts the whole batch on unmount/list changes.
     const controller = new AbortController();
     const missing = videos.filter(
       (v) => v.platform === 'youtube' && (!v.title || !v.channelTitle),
@@ -113,6 +115,19 @@ export function JobsPage(): JSX.Element {
     const platform: Platform = 'youtube';
     const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
     upsertLocalLibraryVideo({ platform, videoId, videoUrl });
+
+    const key = `${platform}:${videoId}`;
+    if (!oembedInFlight.current.has(key)) {
+      oembedInFlight.current.add(key);
+      void hydrateLocalLibraryVideoMetadata(platform, videoId)
+        .then((updated) => {
+          if (updated) setRefreshTick((v) => v + 1);
+        })
+        .finally(() => {
+          oembedInFlight.current.delete(key);
+        });
+    }
+
     setRefreshTick((v) => v + 1);
     setInput('');
     setSearchParams({ video: `${platform}:${videoId}` });

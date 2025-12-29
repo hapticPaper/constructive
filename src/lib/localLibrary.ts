@@ -77,6 +77,10 @@ function loadLibrary(): LocalLibraryVideo[] {
   try {
     return parseLocalLibrary(storage.getItem(STORAGE_KEY));
   } catch {
+    // Corrupted or inaccessible local state is treated as empty to keep the app usable.
+    if (import.meta.env.DEV) {
+      console.warn('[localLibrary] Failed to load local library; treating as empty.');
+    }
     return [];
   }
 }
@@ -88,6 +92,9 @@ function persistLibrary(entries: LocalLibraryVideo[]): void {
     storage.setItem(STORAGE_KEY, JSON.stringify(entries.slice(-200)));
   } catch {
     // ignore: local library is best-effort
+    if (import.meta.env.DEV) {
+      console.warn('[localLibrary] Failed to persist local library; changes not saved.');
+    }
   }
 }
 

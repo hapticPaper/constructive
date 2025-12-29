@@ -27,12 +27,6 @@ export function extractYouTubeVideoId(input: string): string | null {
   return null;
 }
 
-type YouTubeOEmbedResponse = {
-  title?: string;
-  author_name?: string;
-  thumbnail_url?: string;
-};
-
 function asRecord(value: unknown): Record<string, unknown> | null {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
   return value as Record<string, unknown>;
@@ -49,7 +43,7 @@ export async function fetchYouTubeOEmbed(
     const res = await fetch(url, { signal });
     if (!res.ok) return null;
     const parsed = (await res.json()) as unknown;
-    const raw = (asRecord(parsed) ?? {}) as YouTubeOEmbedResponse;
+    const raw = asRecord(parsed) ?? {};
 
     const title = typeof raw.title === 'string' ? raw.title : '';
     const channelTitle = typeof raw.author_name === 'string' ? raw.author_name : '';

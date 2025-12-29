@@ -128,6 +128,7 @@ async function listVideoIds(platform: Platform): Promise<string[]> {
 }
 
 async function listFileNames(absoluteDir: string): Promise<Set<string>> {
+  // 1 readdir per video directory (faster than multiple per-file stats).
   try {
     const entries = await readdir(absoluteDir, { withFileTypes: true });
     const out = new Set<string>();

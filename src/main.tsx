@@ -14,9 +14,17 @@ if (redirectPath) {
   } catch {
     // ignore malformed encoding
   }
+
   const target = decoded.startsWith('/') ? decoded : `/${decoded}`;
 
-  window.history.replaceState(null, '', `${base}${target}`);
+  const match = target.match(/^([^?#]*)(.*)$/);
+  const pathPart = match?.[1] ?? target;
+  const segments = pathPart.split('/').filter(Boolean);
+  const hasTraversal = segments.some((segment) => segment === '.' || segment === '..');
+
+  if (!target.startsWith('//') && !target.includes('://') && !hasTraversal) {
+    window.history.replaceState(null, '', `${base}${target}`);
+  }
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
