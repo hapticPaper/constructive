@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { listVideos } from '../content/content';
-import { canRunAnalysis } from '../lib/freemium';
+import { unlockVideo } from '../lib/freemium';
 import { extractYouTubeVideoId } from '../lib/youtube';
 import { VideoCard } from '../components/VideoCard';
 import { Button } from '../components/ui/Button';
@@ -30,9 +30,9 @@ export function OnboardingPage(): JSX.Element {
       return;
     }
 
-    const gate = canRunAnalysis();
-    if (!gate.ok) {
-      setError(gate.reason);
+    const unlocked = unlockVideo(`youtube:${videoId}`);
+    if (!unlocked.ok) {
+      setError(unlocked.reason);
       return;
     }
 
@@ -103,6 +103,14 @@ export function OnboardingPage(): JSX.Element {
             key={video.videoId}
             video={video}
             ctaLabel="See demo analytics"
+            onCtaClick={(event) => {
+              setError(null);
+              const unlocked = unlockVideo(`${video.platform}:${video.videoId}`);
+              if (!unlocked.ok) {
+                event.preventDefault();
+                setError(unlocked.reason);
+              }
+            }}
           />
         ))}
       </div>

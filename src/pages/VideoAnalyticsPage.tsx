@@ -1,6 +1,6 @@
 import { MDXProvider } from '@mdx-js/react';
 import type { MDXComponents } from 'mdx/types';
-import { useEffect, useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import {
   Bar,
@@ -16,7 +16,8 @@ import {
 
 import { getVideoContent, getVideoReportComponent } from '../content/content';
 import type { Platform } from '../content/types';
-import { canRunAnalysis, consumeAnalysisRun } from '../lib/freemium';
+import { canRunAnalysis, isVideoUnlocked, unlockVideo } from '../lib/freemium';
+import { Button } from '../components/ui/Button';
 import * as Widgets from '../widgets';
 
 const SENTIMENT_COLORS: Record<string, string> = {
@@ -25,32 +26,14 @@ const SENTIMENT_COLORS: Record<string, string> = {
   negative: '#ff6376',
 };
 
-function useConsumeAnalysisOncePerSession({
-  key,
-  enabled,
-}: {
-  key: string;
-  enabled: boolean;
-}): void {
-  useEffect(() => {
-    if (!enabled) return;
-
-    const storageKey = `constructive_viewed:${key}`;
-    try {
-      if (sessionStorage.getItem(storageKey)) return;
-      sessionStorage.setItem(storageKey, String(Date.now()));
-    } catch {
-      // ignore
-    }
-
-    consumeAnalysisRun();
-  }, [enabled, key]);
-}
-
 export function VideoAnalyticsPage(): JSX.Element {
   const params = useParams();
   const platform = (params.platform as Platform | undefined) ?? 'youtube';
   const videoId = params.videoId ?? '';
+  const key = `${platform}:${videoId}`;
+
+  const [unlockError, setUnlockError] = useState<string | null>(null);
+  const [, setUnlockTick] = useState(0);
 
   const content = useMemo(() => getVideoContent(platform, videoId), [platform, videoId]);
   const Report = useMemo(
@@ -58,12 +41,7 @@ export function VideoAnalyticsPage(): JSX.Element {
     [platform, videoId],
   );
 
-  const gate = canRunAnalysis();
-
-  useConsumeAnalysisOncePerSession({
-    key: `${platform}:${videoId}`,
-    enabled: Boolean(content) && gate.ok,
-  });
+  const unlocked = isVideoUnlocked(key);
 
   if (!content) {
     return (
@@ -71,25 +49,53 @@ export function VideoAnalyticsPage(): JSX.Element {
         <h2>Video not found</h2>
         <p className="muted" style={{ marginTop: 6 }}>
           This build only includes a small demo library. Add more videos by running the ingestion
-          and analysis scripts in the repo.
+          playbook in the repo.
         </p>
       </div>
     );
   }
 
-  if (!gate.ok) {
+  if (!unlocked) {
+    const gate = canRunAnalysis();
+
     return (
       <div>
         <div className="hero">
-          <h1>Daily limit reached</h1>
-          <p>{gate.reason}</p>
+          <h1>{gate.ok ? 'Unlock this report' : 'Daily limit reached'}</h1>
+          <p>
+            {gate.ok
+              ? 'Unlocking uses 1 run from your daily quota. Re-opening this same video won’t consume again.'
+              : gate.reason}
+          </p>
         </div>
         <div className="panel" style={{ marginTop: 18 }}>
-          <h2>How this demo works</h2>
+          <h2>Access</h2>
           <p className="muted" style={{ marginTop: 6 }}>
-            The freemium gate is intentionally lightweight (cookie-based) so the demo can run
-            entirely on GitHub Pages.
+            The freemium gate is intentionally cookie-based so the demo can run entirely on GitHub
+            Pages.
           </p>
+          <div style={{ marginTop: 12, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <Button
+              variant="primary"
+              disabled={!gate.ok}
+              onClick={() => {
+                setUnlockError(null);
+                const unlockedNow = unlockVideo(key);
+                if (!unlockedNow.ok) {
+                  setUnlockError(unlockedNow.reason);
+                  return;
+                }
+                setUnlockTick((v) => v + 1);
+              }}
+            >
+              Unlock report
+            </Button>
+          </div>
+          {unlockError ? (
+            <div style={{ marginTop: 10 }} className="callout">
+              <strong>Heads up:</strong> <span className="muted">{unlockError}</span>
+            </div>
+          ) : null}
         </div>
       </div>
     );

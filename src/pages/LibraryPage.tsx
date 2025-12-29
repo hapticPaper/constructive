@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { getVideoContent, listVideos } from '../content/content';
 import type { VideoMetadata } from '../content/types';
 import { VideoCard } from '../components/VideoCard';
+import { unlockVideo } from '../lib/freemium';
 
 function groupByChannel(videos: VideoMetadata[]): Map<string, VideoMetadata[]> {
   const map = new Map<string, VideoMetadata[]>();
@@ -15,6 +16,7 @@ function groupByChannel(videos: VideoMetadata[]): Map<string, VideoMetadata[]> {
 
 export function LibraryPage(): JSX.Element {
   const [query, setQuery] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   const videos = useMemo(() => {
     const all = listVideos();
@@ -55,6 +57,11 @@ export function LibraryPage(): JSX.Element {
           }}
         />
       </div>
+      {error ? (
+        <div style={{ marginTop: 10 }} className="callout">
+          <strong>Heads up:</strong> <span className="muted">{error}</span>
+        </div>
+      ) : null}
 
       <div style={{ marginTop: 18, display: 'flex', flexDirection: 'column', gap: 18 }}>
         {Array.from(grouped.values()).map((channelVideos) => {
@@ -78,7 +85,17 @@ export function LibraryPage(): JSX.Element {
 
                   return (
                     <div key={video.videoId} style={{ display: 'flex', flexDirection: 'column' }}>
-                      <VideoCard video={video} />
+                      <VideoCard
+                        video={video}
+                        onCtaClick={(event) => {
+                          setError(null);
+                          const unlocked = unlockVideo(`${video.platform}:${video.videoId}`);
+                          if (!unlocked.ok) {
+                            event.preventDefault();
+                            setError(unlocked.reason);
+                          }
+                        }}
+                      />
                       <div
                         className="muted"
                         style={{ padding: '8px 2px 0 2px', fontSize: 13 }}
