@@ -724,6 +724,7 @@ function isCommentAnalytics(value: unknown): value is CommentAnalytics {
 }
 
 // The generated MDX expects `<Report />` to be injected via the app's `MDXProvider`.
+// If it's missing, the report renders a small fallback callout instead.
 function buildReportMdx(video: VideoMetadata, analytics: CommentAnalytics): string {
   const report = {
     schema: 'constructive.comment-report@v2',
@@ -756,7 +757,14 @@ function buildReportMdx(video: VideoMetadata, analytics: CommentAnalytics): stri
 
   const lines: string[] = [];
   lines.push(`export const report = ${JSON.stringify(report, null, 2)}`, '');
-  lines.push('<Report report={report} />', '');
+  lines.push(
+    '{typeof Report !== "undefined" ? <Report report={report} /> : (',
+    '  <div className="callout">',
+    '    <strong>Missing widget:</strong> Report',
+    '  </div>',
+    ')}',
+    '',
+  );
   return lines.join('\n');
 }
 

@@ -89,4 +89,8 @@ export const report = {
   }
 }
 
-<Report report={report} />
+{typeof Report !== "undefined" ? <Report report={report} /> : (
+  <div className="callout">
+    <strong>Missing widget:</strong> Report
+  </div>
+)}
