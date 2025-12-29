@@ -187,6 +187,9 @@ function escapeMdxText(text: string): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;')
+    .replace(/`/g, '\\`')
+    .replace(/\{/g, '\\{')
+    .replace(/\}/g, '\\}')
     .replace(/\*/g, '\\*')
     .replace(/_/g, '\\_')
     .replace(/\[/g, '\\[')
@@ -194,13 +197,6 @@ function escapeMdxText(text: string): string {
     .replace(/\(/g, '\\(')
     .replace(/\)/g, '\\)')
     .replace(/!/g, '\\!')
-    .replace(/\{/g, '\\{')
-    .replace(/\}/g, '\\}')
-    .replace(/`/g, '\\`')
-    .replace(/\*/g, '\\*')
-    .replace(/_/g, '\\_')
-    .replace(/\[/g, '\\[')
-    .replace(/\]/g, '\\]')
     .replace(/\|/g, '\\|');
 }
 
