@@ -2,6 +2,10 @@ import { deleteCookie, getCookie, setCookie } from './cookies';
 
 const COOKIE_ANALYSIS = 'constructive_analysis_runs';
 const COOKIE_GOOGLE_ID_TOKEN = 'constructive_google_id_token';
+const COOKIE_VIEWED_VIDEOS = 'constructive_viewed_videos';
+
+const MAX_VIEWED_VIDEOS = 200;
+const MAX_ANALYSIS_USAGE_ENTRIES = 200;
 
 // Sliding 24-hour window (not calendar days).
 const USAGE_WINDOW_MS = 24 * 60 * 60 * 1000;
@@ -14,6 +18,8 @@ type Usage = {
   used: number;
   windowStartMs: number;
 };
+
+type ViewedVideos = Record<string, number>;
 
 function nowMs(): number {
   return Date.now();
@@ -44,10 +50,60 @@ function loadUsage(now: number): { cutoff: number; timestamps: number[] } {
   return { cutoff, timestamps };
 }
 
+function parseViewedVideosCookie(raw: string | null): ViewedVideos {
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!parsed || typeof parsed !== 'object') return {};
+
+    const out: ViewedVideos = {};
+    for (const [key, value] of Object.entries(parsed)) {
+      if (typeof value !== 'number') continue;
+      if (!Number.isFinite(value)) continue;
+      out[key] = value;
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
+function pruneViewedVideos(entries: ViewedVideos, cutoff: number): ViewedVideos {
+  const kept: Array<[string, number]> = [];
+  for (const [key, value] of Object.entries(entries)) {
+    if (value >= cutoff) kept.push([key, value]);
+  }
+
+  kept.sort((a, b) => a[1] - b[1]);
+  return Object.fromEntries(kept.slice(-MAX_VIEWED_VIDEOS)) as ViewedVideos;
+}
+
+function viewedVideosEqual(a: ViewedVideos, b: ViewedVideos): boolean {
+  const aKeys = Object.keys(a).sort();
+  const bKeys = Object.keys(b).sort();
+  if (aKeys.length !== bKeys.length) return false;
+  for (let i = 0; i < aKeys.length; i += 1) {
+    const key = aKeys[i];
+    if (key !== bKeys[i]) return false;
+    if (a[key] !== b[key]) return false;
+  }
+  return true;
+}
+
 function persistUsage(timestamps: number[]): void {
   setCookie({
     name: COOKIE_ANALYSIS,
-    value: JSON.stringify(timestamps.slice(-200)),
+    value: JSON.stringify(timestamps.slice(-MAX_ANALYSIS_USAGE_ENTRIES)),
+    maxAgeSeconds: 60 * 60 * 24 * 30,
+  });
+}
+
+function persistViewedVideos(entries: ViewedVideos): void {
+  const cutoff = nowMs() - USAGE_WINDOW_MS;
+  const pruned = pruneViewedVideos(entries, cutoff);
+  setCookie({
+    name: COOKIE_VIEWED_VIDEOS,
+    value: JSON.stringify(pruned),
     maxAgeSeconds: 60 * 60 * 24 * 30,
   });
 }
@@ -88,6 +144,47 @@ export function consumeAnalysisRun(): void {
   const { timestamps } = loadUsage(now);
   timestamps.push(now);
   persistUsage(timestamps);
+}
+
+/**
+* Returns whether video analytics can be viewed.
+*
+* A video can be re-viewed within 24h if it has already been charged.
+*/
+export function canViewVideoAnalytics(videoKey: string): { ok: true } | { ok: false; reason: string } {
+  const now = nowMs();
+  const cutoff = now - USAGE_WINDOW_MS;
+  const viewed = parseViewedVideosCookie(getCookie(COOKIE_VIEWED_VIDEOS));
+  const pruned = pruneViewedVideos(viewed, cutoff);
+
+  if (typeof pruned[videoKey] === 'number') return { ok: true };
+  return canRunAnalysis();
+}
+
+/**
+* Records a video analytics view.
+*
+* This is idempotent per video within 24h; first-time views consume an analysis run.
+*/
+export function consumeVideoAnalyticsView(videoKey: string): void {
+  const now = nowMs();
+  const cutoff = now - USAGE_WINDOW_MS;
+  const viewed = parseViewedVideosCookie(getCookie(COOKIE_VIEWED_VIDEOS));
+  const pruned = pruneViewedVideos(viewed, cutoff);
+
+  const hadEntry = typeof pruned[videoKey] === 'number';
+  if (!hadEntry) {
+    const gate = canRunAnalysis();
+    if (!gate.ok) {
+      if (!viewedVideosEqual(viewed, pruned)) persistViewedVideos(pruned);
+      return;
+    }
+
+    consumeAnalysisRun();
+    pruned[videoKey] = now;
+  }
+
+  if (!viewedVideosEqual(viewed, pruned)) persistViewedVideos(pruned);
 }
 
 export function isGoogleAuthEnabled(): boolean {

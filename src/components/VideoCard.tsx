@@ -1,4 +1,3 @@
-import type { MouseEvent } from 'react';
 import { Link } from 'react-router-dom';
 
 import type { VideoMetadata } from '../content/types';
@@ -10,7 +9,7 @@ export function VideoCard({
 }: {
   video: VideoMetadata;
   ctaLabel?: string;
-  onCtaClick?: (event: MouseEvent<HTMLAnchorElement>) => void;
+  onCtaClick?: () => void;
 }): JSX.Element {
   return (
     <div className="panel card">

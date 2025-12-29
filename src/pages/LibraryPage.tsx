@@ -2,7 +2,6 @@ import { useMemo, useState } from 'react';
 
 import { getVideoContent, listVideos } from '../content/content';
 import type { VideoMetadata } from '../content/types';
-import { canRunAnalysis, consumeAnalysisRun } from '../lib/freemium';
 import { VideoCard } from '../components/VideoCard';
 
 function groupByChannel(videos: VideoMetadata[]): Map<string, VideoMetadata[]> {
@@ -16,7 +15,6 @@ function groupByChannel(videos: VideoMetadata[]): Map<string, VideoMetadata[]> {
 
 export function LibraryPage(): JSX.Element {
   const [query, setQuery] = useState('');
-  const [error, setError] = useState<string | null>(null);
 
   const videos = useMemo(() => {
     const all = listVideos();
@@ -40,12 +38,6 @@ export function LibraryPage(): JSX.Element {
           metadata, comments snapshot, computed analytics, and a report in MDX.
         </p>
       </div>
-
-      {error ? (
-        <div style={{ marginTop: 10 }} className="callout">
-          <strong>Heads up:</strong> <span className="muted">{error}</span>
-        </div>
-      ) : null}
 
       <div style={{ marginTop: 18, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
         <input
@@ -86,20 +78,7 @@ export function LibraryPage(): JSX.Element {
 
                   return (
                     <div key={video.videoId} style={{ display: 'flex', flexDirection: 'column' }}>
-                      <VideoCard
-                        video={video}
-                        onCtaClick={(event) => {
-                          setError(null);
-                          const gate = canRunAnalysis();
-                          if (!gate.ok) {
-                            event.preventDefault();
-                            setError(gate.reason);
-                            return;
-                          }
-
-                          consumeAnalysisRun();
-                        }}
-                      />
+                      <VideoCard video={video} />
                       <div
                         className="muted"
                         style={{ padding: '8px 2px 0 2px', fontSize: 13 }}
