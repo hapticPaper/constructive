@@ -168,8 +168,8 @@ export function VideoAnalyticsPage(): JSX.Element {
         <div style={{ marginTop: 14 }} className="panel">
           <h2>Radar breakdown</h2>
           <p className="muted" style={{ marginTop: 6, lineHeight: 1.45 }}>
-            Each axis is the share of analyzed comments that match a standardized category.
-            Categories can overlap.
+            Each axis is the share of analyzed comments that match a standardized
+            category. Categories can overlap.
           </p>
           <div style={{ marginTop: 12 }}>
             <RadarGraph

@@ -76,12 +76,14 @@ export function RadarGraph({
     );
   }
 
-  const data: ChartDatum[] = radarBucketsWithRates(radar, totalComments).map((bucket) => ({
-    label: bucket.label,
-    value: bucket.rate * 100,
-    count: bucket.count,
-    rate: bucket.rate,
-  }));
+  const data: ChartDatum[] = radarBucketsWithRates(radar, totalComments).map(
+    (bucket) => ({
+      label: bucket.label,
+      value: bucket.rate * 100,
+      count: bucket.count,
+      rate: bucket.rate,
+    }),
+  );
 
   return (
     <div>

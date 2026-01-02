@@ -482,8 +482,7 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
             ? Math.min(comment.likeCount, LIKE_SCORE_CAP)
             : 0;
         const lengthScore =
-          Math.min(cleaned.length, HIGHLIGHT_LEN_SCORE_DENOM) /
-          HIGHLIGHT_LEN_SCORE_DENOM;
+          Math.min(cleaned.length, HIGHLIGHT_LEN_SCORE_DENOM) / HIGHLIGHT_LEN_SCORE_DENOM;
         questionCandidates.push({ score: likeScore + lengthScore, text: cleaned });
       }
     }
@@ -498,8 +497,7 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
             ? Math.min(comment.likeCount, LIKE_SCORE_CAP)
             : 0;
         const lengthScore =
-          Math.min(cleaned.length, HIGHLIGHT_LEN_SCORE_DENOM) /
-          HIGHLIGHT_LEN_SCORE_DENOM;
+          Math.min(cleaned.length, HIGHLIGHT_LEN_SCORE_DENOM) / HIGHLIGHT_LEN_SCORE_DENOM;
         suggestionCandidates.push({ score: likeScore + lengthScore, text: cleaned });
       }
     }
