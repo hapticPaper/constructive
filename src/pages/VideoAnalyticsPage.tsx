@@ -4,9 +4,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
 import { getVideoContent, getVideoReportComponent } from '../content/content';
-import type { Platform } from '../content/types';
+import type { Platform, RadarCategoryCounts } from '../content/types';
 import { canRunAnalysis, isVideoUnlocked, unlockVideo } from '../lib/freemium';
 import { Button } from '../components/ui/Button';
+import { RadarGraph } from '../components/ui/RadarGraph';
 import * as Widgets from '../widgets';
 
 export function VideoAnalyticsPage(): JSX.Element {
@@ -85,6 +86,7 @@ export function VideoAnalyticsPage(): JSX.Element {
   }
 
   const analytics = content.analytics;
+  const radar = (analytics as unknown as { radar?: RadarCategoryCounts }).radar;
 
   if (!unlocked) {
     const gate = canRunAnalysis();
@@ -161,6 +163,27 @@ export function VideoAnalyticsPage(): JSX.Element {
           <div className="label">Suggestions</div>
         </section>
       </div>
+
+      {radar ? (
+        <div style={{ marginTop: 14 }} className="panel">
+          <h2>Radar breakdown</h2>
+          <p className="muted" style={{ marginTop: 6, lineHeight: 1.45 }}>
+            Each axis is the share of analyzed comments that match a standardized category.
+            Categories can overlap.
+          </p>
+          <div style={{ marginTop: 12 }}>
+            <RadarGraph
+              radar={radar}
+              totalComments={analytics.commentCount}
+              footer={
+                <div className="muted" style={{ fontSize: 13 }}>
+                  Hover a category to see the underlying count.
+                </div>
+              }
+            />
+          </div>
+        </div>
+      ) : null}
 
       {Report ? (
         <div style={{ marginTop: 14 }} className="panel">

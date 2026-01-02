@@ -33,6 +33,16 @@ export type CommentRecord = {
 
 export type Sentiment = 'positive' | 'neutral' | 'negative';
 
+export type RadarCategory =
+  | 'praise'
+  | 'criticism'
+  | 'question'
+  | 'suggestion'
+  | 'toxic'
+  | 'people';
+
+export type RadarCategoryCounts = Record<RadarCategory, number>;
+
 export type CommentSignals = {
   sentiment: Sentiment;
   isToxic: boolean;
@@ -48,13 +58,14 @@ export type CreatorTakeaway = {
 };
 
 export type CommentAnalytics = {
-  schema: 'constructive.comment-analytics@v2';
+  schema: 'constructive.comment-analytics@v3';
   commentCount: number;
   analyzedAt: string;
   sentimentBreakdown: Record<Sentiment, number>;
   toxicCount: number;
   questionCount: number;
   suggestionCount: number;
+  radar: RadarCategoryCounts;
   themes: {
     topics: ThemeBucket;
     people: ThemeBucket;

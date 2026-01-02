@@ -9,6 +9,8 @@ import type {
   VideoMetadata,
 } from '../src/content/types';
 
+import { RADAR_CATEGORIES, emptyRadarCounts } from '../src/content/radar';
+
 import { writeJsonFile, writeTextFile } from './fs';
 import {
   analyticsJsonPath,
@@ -420,6 +422,7 @@ function isLikelyPersonToken(token: string): boolean {
   // Intentionally small heuristic: we only classify single-word, lowercased tokens.
   // Multi-word names and edge cases (e.g. last names) will be treated as topics.
   if (!/^[a-z]+$/u.test(token)) return false;
+  if (STOPWORDS.has(token)) return false;
   return COMMON_FIRST_NAMES.has(token);
 }
 
@@ -440,6 +443,8 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
     negative: 0,
   };
 
+  const radar = emptyRadarCounts();
+
   let toxicCount = 0;
   let questionCount = 0;
   let suggestionCount = 0;
@@ -459,13 +464,18 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
 
     const toxic = isToxicText(tokens);
     if (toxic) toxicCount += 1;
+    if (toxic) radar.toxic += 1;
 
     const sentiment = sentimentForTokens(tokens);
     sentimentBreakdown[sentiment] += 1;
 
+    if (sentiment === 'positive') radar.praise += 1;
+    if (sentiment === 'negative') radar.criticism += 1;
+
     const isQuestion = isQuestionText(cleaned);
     if (isQuestion) {
       questionCount += 1;
+      radar.question += 1;
       if (!toxic) {
         const likeScore =
           typeof comment.likeCount === 'number'
@@ -481,6 +491,7 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
     const isSuggestion = isSuggestionText(cleaned);
     if (isSuggestion) {
       suggestionCount += 1;
+      radar.suggestion += 1;
       if (!toxic) {
         const likeScore =
           typeof comment.likeCount === 'number'
@@ -498,6 +509,10 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
       if (STOPWORDS.has(token)) continue;
       if (TOXIC_WORDS.has(token)) continue;
       themeCounts.set(token, (themeCounts.get(token) ?? 0) + 1);
+    }
+
+    if (tokens.some(isLikelyPersonToken)) {
+      radar.people += 1;
     }
 
     if (!toxic) {
@@ -627,13 +642,14 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
     .slice(0, TAKEAWAY_LIMIT);
 
   return {
-    schema: 'constructive.comment-analytics@v2',
+    schema: 'constructive.comment-analytics@v3',
     commentCount: analyzedCount,
     analyzedAt: new Date().toISOString(),
     sentimentBreakdown,
     toxicCount,
     questionCount,
     suggestionCount,
+    radar,
     themes: {
       topics: themes.topics.slice(0, THEME_BUCKET_SIZE),
       people: themes.people.slice(0, THEME_BUCKET_SIZE),
@@ -649,7 +665,7 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
 
 function isCommentAnalytics(value: unknown): value is CommentAnalytics {
   if (!isRecord(value)) return false;
-  if (value.schema !== 'constructive.comment-analytics@v2') return false;
+  if (value.schema !== 'constructive.comment-analytics@v3') return false;
   if (typeof value.commentCount !== 'number' || value.commentCount < 0) return false;
   if (typeof value.analyzedAt !== 'string') return false;
 
@@ -683,6 +699,13 @@ function isCommentAnalytics(value: unknown): value is CommentAnalytics {
   if (typeof value.questionCount !== 'number' || value.questionCount < 0) return false;
   if (typeof value.suggestionCount !== 'number' || value.suggestionCount < 0) {
     return false;
+  }
+
+  if (!isRecord(value.radar)) return false;
+  for (const category of RADAR_CATEGORIES) {
+    const count = value.radar[category.key];
+    if (typeof count !== 'number' || count < 0) return false;
+    if (count > value.commentCount) return false;
   }
 
   if (!isRecord(value.themes)) return false;
