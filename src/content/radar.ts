@@ -5,6 +5,8 @@ export type RadarCategoryDefinition = {
   label: string;
 };
 
+// Each category represents a per-comment binary classification (0/1 per comment), so
+// any category count is always <= the total number of analyzed comments.
 export const RADAR_CATEGORIES: readonly RadarCategoryDefinition[] = [
   { key: 'praise', label: 'Praise' },
   { key: 'criticism', label: 'Criticism' },

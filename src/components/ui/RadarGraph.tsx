@@ -8,6 +8,7 @@ import {
   RadarChart,
   ResponsiveContainer,
   Tooltip,
+  type TooltipProps,
 } from 'recharts';
 
 import { radarBucketsWithRates } from '../../content/radar';
@@ -28,12 +29,9 @@ function formatPercent(rate: number): string {
 function TooltipContent({
   active,
   payload,
-}: {
-  active?: boolean;
-  payload?: Array<{ payload: ChartDatum }>;
-}): JSX.Element | null {
+}: TooltipProps<number, string>): JSX.Element | null {
   if (!active || !payload?.length) return null;
-  const datum = payload[0]?.payload;
+  const datum = payload[0]?.payload as ChartDatum | undefined;
   if (!datum) return null;
 
   return (
@@ -108,7 +106,7 @@ export function RadarGraph({
               fill="rgba(106,169,255,0.28)"
               fillOpacity={1}
             />
-            <Tooltip content={<TooltipContent />} />
+            <Tooltip content={TooltipContent} />
           </RadarChart>
         </ResponsiveContainer>
       </div>
