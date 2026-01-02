@@ -422,6 +422,7 @@ function isLikelyPersonToken(token: string): boolean {
   // Intentionally small heuristic: we only classify single-word, lowercased tokens.
   // Multi-word names and edge cases (e.g. last names) will be treated as topics.
   if (!/^[a-z]+$/u.test(token)) return false;
+  if (token.length < 4) return false;
   if (STOPWORDS.has(token)) return false;
   return COMMON_FIRST_NAMES.has(token);
 }
@@ -702,7 +703,7 @@ function isCommentAnalytics(value: unknown): value is CommentAnalytics {
   if (!isRecord(value.radar)) return false;
   for (const category of RADAR_CATEGORIES) {
     const count = value.radar[category.key];
-    if (typeof count !== 'number' || count < 0) return false;
+    if (typeof count !== 'number' || !Number.isInteger(count) || count < 0) return false;
     if (count > value.commentCount) return false;
   }
 
