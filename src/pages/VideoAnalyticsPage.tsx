@@ -168,7 +168,8 @@ export function VideoAnalyticsPage(): JSX.Element {
         <h2>Radar breakdown</h2>
         <p className="muted" style={{ marginTop: 6, lineHeight: 1.45 }}>
           Each axis is the share of analyzed comments that match a standardized category.
-          Categories can overlap.
+          Categories can overlap, and “People” counts comments that mention at least one
+          likely person name.
         </p>
         <div style={{ marginTop: 12 }}>
           <RadarGraph
@@ -176,8 +177,7 @@ export function VideoAnalyticsPage(): JSX.Element {
             totalComments={analytics.commentCount}
             footer={
               <div className="muted" style={{ fontSize: 13, lineHeight: 1.4 }}>
-                Hover a category to see the underlying count. “People” counts comments
-                that mention a likely person name.
+                Hover a category to see the underlying count.
               </div>
             }
           />

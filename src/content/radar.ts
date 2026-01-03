@@ -62,6 +62,10 @@ export function radarBucketsWithRates(
   }));
 }
 
+/**
+* Aggregates radar analytics across v3 CommentAnalytics entries.
+* Throws if any entry is not schema v3; callers should pre-filter inputs.
+*/
 export function aggregateRadarAnalytics(
   analytics: CommentAnalytics[],
 ): Pick<CommentAnalytics, 'commentCount' | 'radar'> {
