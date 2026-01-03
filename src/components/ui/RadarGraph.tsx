@@ -59,6 +59,9 @@ export function RadarGraph({
   footer,
 }: {
   radar: RadarCategoryCounts;
+  /**
+   * Denominator for rates (should match the `commentCount` used to compute `radar`).
+   */
   totalComments: number;
   height?: number;
   footer?: ReactNode;

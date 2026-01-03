@@ -63,6 +63,7 @@ export function aggregateRadarAnalytics(
   let commentCount = 0;
 
   for (const entry of analytics) {
+    if (!entry.radar) continue;
     commentCount += entry.commentCount;
     for (const category of RADAR_CATEGORIES) {
       radar[category.key] += entry.radar[category.key];

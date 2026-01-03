@@ -175,8 +175,9 @@ export function VideoAnalyticsPage(): JSX.Element {
             radar={radar}
             totalComments={analytics.commentCount}
             footer={
-              <div className="muted" style={{ fontSize: 13 }}>
-                Hover a category to see the underlying count.
+              <div className="muted" style={{ fontSize: 13, lineHeight: 1.4 }}>
+                Hover a category to see the underlying count. “People” counts comments
+                that mention a likely person name.
               </div>
             }
           />
