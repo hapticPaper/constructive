@@ -429,9 +429,7 @@ function isLikelyPersonToken(token: string): boolean {
   // Intentionally small heuristic: we only classify single-word, lowercased tokens.
   // Multi-word names and edge cases (e.g. last names) will be treated as topics.
   if (!/^[a-z]+$/u.test(token)) return false;
-  if (token.length < 4) return false;
-  if (STOPWORDS.has(token)) return false;
-  if (TOXIC_WORDS.has(token)) return false;
+  if (!isThemeToken(token)) return false;
   return COMMON_FIRST_NAMES.has(token);
 }
 

@@ -57,6 +57,7 @@ export type CreatorTakeaway = {
   detail: string;
 };
 
+// Comment analytics schema is versioned. This type represents the latest version.
 export type CommentAnalytics = {
   schema: 'constructive.comment-analytics@v3';
   commentCount: number;

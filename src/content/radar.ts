@@ -72,9 +72,11 @@ export function aggregateRadarAnalytics(
   const radar = emptyRadarCounts();
   let commentCount = 0;
 
-  for (const entry of analytics) {
+  for (const [index, entry] of analytics.entries()) {
     if (entry.schema !== 'constructive.comment-analytics@v3') {
-      throw new Error(`aggregateRadarAnalytics requires v3 analytics (got ${entry.schema}).`);
+      throw new Error(
+        `aggregateRadarAnalytics requires v3 analytics; entry at index ${index} has schema ${entry.schema}.`,
+      );
     }
     commentCount += entry.commentCount;
     for (const category of RADAR_CATEGORIES) {
