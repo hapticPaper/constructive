@@ -31,8 +31,16 @@ function TooltipContent({
   payload,
 }: TooltipProps<number, string>): JSX.Element | null {
   if (!active || !payload?.length) return null;
-  const datum = payload[0]?.payload as ChartDatum | undefined;
-  if (!datum) return null;
+  const raw = payload[0]?.payload as Partial<ChartDatum> | undefined;
+  if (
+    !raw ||
+    typeof raw.label !== 'string' ||
+    typeof raw.rate !== 'number' ||
+    typeof raw.count !== 'number'
+  ) {
+    return null;
+  }
+  const datum = raw as ChartDatum;
 
   return (
     <div

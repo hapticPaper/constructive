@@ -365,6 +365,13 @@ function tokenize(text: string): string[] {
     .filter(Boolean);
 }
 
+function isThemeToken(token: string): boolean {
+  if (token.length < 4) return false;
+  if (STOPWORDS.has(token)) return false;
+  if (TOXIC_WORDS.has(token)) return false;
+  return true;
+}
+
 function isToxicText(tokens: string[]): boolean {
   for (const token of tokens) {
     if (TOXIC_WORDS.has(token)) return true;
@@ -422,8 +429,7 @@ function isLikelyPersonToken(token: string): boolean {
   // Intentionally small heuristic: we only classify single-word, lowercased tokens.
   // Multi-word names and edge cases (e.g. last names) will be treated as topics.
   if (!/^[a-z]+$/u.test(token)) return false;
-  if (token.length < 4) return false;
-  if (STOPWORDS.has(token)) return false;
+  if (!isThemeToken(token)) return false;
   return COMMON_FIRST_NAMES.has(token);
 }
 
@@ -504,9 +510,7 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
     }
 
     for (const token of tokens) {
-      if (token.length < 4) continue;
-      if (STOPWORDS.has(token)) continue;
-      if (TOXIC_WORDS.has(token)) continue;
+      if (!isThemeToken(token)) continue;
       themeCounts.set(token, (themeCounts.get(token) ?? 0) + 1);
     }
 
@@ -707,6 +711,12 @@ function isCommentAnalytics(value: unknown): value is CommentAnalytics {
     if (typeof count !== 'number' || !Number.isInteger(count) || count < 0) return false;
     if (count > value.commentCount) return false;
   }
+
+  if (value.radar.praise !== value.sentimentBreakdown.positive) return false;
+  if (value.radar.criticism !== value.sentimentBreakdown.negative) return false;
+  if (value.radar.question !== value.questionCount) return false;
+  if (value.radar.suggestion !== value.suggestionCount) return false;
+  if (value.radar.toxic !== value.toxicCount) return false;
 
   if (!isRecord(value.themes)) return false;
   if (!Array.isArray(value.themes.topics)) return false;
