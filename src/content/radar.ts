@@ -49,10 +49,16 @@ export function radarBucketsWithRates(
   radar: RadarCategoryCounts,
   totalComments: number,
 ): RadarBucketWithRate[] {
-  const denom = totalComments > 0 ? totalComments : 1;
+  if (totalComments <= 0) {
+    return radarCountsToBuckets(radar).map((bucket) => ({
+      ...bucket,
+      rate: 0,
+    }));
+  }
+
   return radarCountsToBuckets(radar).map((bucket) => ({
     ...bucket,
-    rate: bucket.count / denom,
+    rate: bucket.count / totalComments,
   }));
 }
 

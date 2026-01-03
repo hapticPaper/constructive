@@ -514,7 +514,8 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
       themeCounts.set(token, (themeCounts.get(token) ?? 0) + 1);
     }
 
-    // Count comments that mention at least one likely person token (not total mentions).
+    // Count comments that mention at least one likely person token (same heuristic as
+    // `themes.people`; not total mentions).
     if (tokens.some(isLikelyPersonToken)) {
       radar.people += 1;
     }
