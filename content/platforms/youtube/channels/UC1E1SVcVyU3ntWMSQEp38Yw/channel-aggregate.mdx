@@ -1,0 +1,67 @@
+export const channelAggregate = {
+  "schema": "constructive.channel-aggregate@v1",
+  "generatedAt": "2026-01-03T16:08:53.922Z",
+  "channel": {
+    "platform": "youtube",
+    "channelId": "UC1E1SVcVyU3ntWMSQEp38Yw",
+    "channelTitle": "The Prof G Pod – Scott Galloway",
+    "channelUrl": "https://www.youtube.com/@TheProfGPod"
+  },
+  "videoCount": 1,
+  "totalComments": 200,
+  "sentimentBreakdown": {
+    "positive": 18,
+    "neutral": 182,
+    "negative": 0
+  },
+  "topTopics": [
+    {
+      "label": "israel",
+      "count": 36
+    },
+    {
+      "label": "great",
+      "count": 22
+    },
+    {
+      "label": "conversation",
+      "count": 18
+    },
+    {
+      "label": "thank",
+      "count": 17
+    },
+    {
+      "label": "brand",
+      "count": 15
+    },
+    {
+      "label": "klein",
+      "count": 13
+    },
+    {
+      "label": "pete",
+      "count": 13
+    },
+    {
+      "label": "being",
+      "count": 12
+    }
+  ],
+  "takeaways": [
+    {
+      "title": "Channel-wide topic patterns",
+      "detail": "Across 1 videos, viewers consistently discuss: israel, great, conversation."
+    },
+    {
+      "title": "High engagement rate",
+      "detail": "Averaging 200 comments per video shows strong community interaction."
+    }
+  ]
+}
+
+{typeof ChannelAggregate !== "undefined" ? <ChannelAggregate channelAggregate={channelAggregate} /> : (
+  <div className="callout">
+    <strong>Missing widget:</strong> ChannelAggregate
+  </div>
+)}
