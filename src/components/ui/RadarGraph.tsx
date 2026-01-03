@@ -21,6 +21,8 @@ type ChartDatum = {
   rate: number;
 };
 
+const RADAR_SERIES_DATA_KEY = 'value';
+
 function formatPercent(rate: number): string {
   const pct = Math.round(rate * 100);
   return `${pct}%`;
@@ -31,7 +33,9 @@ function TooltipContent({
   payload,
 }: TooltipProps<number, string>): JSX.Element | null {
   if (!active || !payload?.length) return null;
-  const raw = payload[0]?.payload as Partial<ChartDatum> | undefined;
+  const entry = payload.find((item) => item.dataKey === RADAR_SERIES_DATA_KEY);
+  if (!entry) return null;
+  const raw = entry?.payload as Partial<ChartDatum> | undefined;
   if (
     !raw ||
     typeof raw.label !== 'string' ||
@@ -113,7 +117,7 @@ export function RadarGraph({
               tickLine={false}
             />
             <Radar
-              dataKey="value"
+              dataKey={RADAR_SERIES_DATA_KEY}
               stroke="#6aa9ff"
               fill="rgba(106,169,255,0.28)"
               fillOpacity={1}

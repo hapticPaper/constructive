@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
 import { getVideoContent, getVideoReportComponent } from '../content/content';
+import { getValidRadarFromAnalytics } from '../content/radar';
 import type { Platform } from '../content/types';
 import { canRunAnalysis, isVideoUnlocked, unlockVideo } from '../lib/freemium';
 import { Button } from '../components/ui/Button';
@@ -86,7 +87,7 @@ export function VideoAnalyticsPage(): JSX.Element {
   }
 
   const analytics = content.analytics;
-  const radar = 'radar' in analytics ? analytics.radar : null;
+  const radar = getValidRadarFromAnalytics(analytics);
 
   if (!unlocked) {
     const gate = canRunAnalysis();

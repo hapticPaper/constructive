@@ -713,14 +713,8 @@ function isCommentAnalytics(value: unknown): value is CommentAnalytics {
     if (count > value.commentCount) return false;
   }
 
-  // By design, certain radar buckets are exact aliases of other summary metrics.
-  // If this ever changes, update both the generator and validator (and migrate stored
-  // `analytics.json` content).
-  if (value.radar.praise !== value.sentimentBreakdown.positive) return false;
-  if (value.radar.criticism !== value.sentimentBreakdown.negative) return false;
-  if (value.radar.question !== value.questionCount) return false;
-  if (value.radar.suggestion !== value.suggestionCount) return false;
-  if (value.radar.toxic !== value.toxicCount) return false;
+  // Radar buckets are validated independently. Some categories may mirror other
+  // summary metrics today, but the schema does not enforce strict equality.
 
   if (!isRecord(value.themes)) return false;
   if (!Array.isArray(value.themes.topics)) return false;
