@@ -86,7 +86,7 @@ export function VideoAnalyticsPage(): JSX.Element {
   }
 
   const analytics = content.analytics;
-  const radar = analytics.radar;
+  const radar = 'radar' in analytics ? analytics.radar : null;
 
   if (!unlocked) {
     const gate = canRunAnalysis();
@@ -172,15 +172,22 @@ export function VideoAnalyticsPage(): JSX.Element {
           likely person name.
         </p>
         <div style={{ marginTop: 12 }}>
-          <RadarGraph
-            radar={radar}
-            totalComments={analytics.commentCount}
-            footer={
-              <div className="muted" style={{ fontSize: 13, lineHeight: 1.4 }}>
-                Hover a category to see the underlying count.
-              </div>
-            }
-          />
+          {radar ? (
+            <RadarGraph
+              radar={radar}
+              totalComments={analytics.commentCount}
+              footer={
+                <div className="muted" style={{ fontSize: 13, lineHeight: 1.4 }}>
+                  Hover a category to see the underlying count.
+                </div>
+              }
+            />
+          ) : (
+            <div className="callout">
+              <strong>Radar data missing:</strong>{' '}
+              <span className="muted">re-run the analysis playbook to regenerate.</span>
+            </div>
+          )}
         </div>
       </div>
 

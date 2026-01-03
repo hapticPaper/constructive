@@ -78,6 +78,14 @@ export function aggregateRadarAnalytics(
         `aggregateRadarAnalytics requires v3 analytics; entry at index ${index} has schema ${entry.schema}.`,
       );
     }
+
+    for (const category of RADAR_CATEGORIES) {
+      if (entry.radar[category.key] > entry.commentCount) {
+        throw new Error(
+          `Radar category "${category.key}" exceeds commentCount for analytics entry at index ${index}.`,
+        );
+      }
+    }
     commentCount += entry.commentCount;
     for (const category of RADAR_CATEGORIES) {
       radar[category.key] += entry.radar[category.key];
