@@ -20,12 +20,10 @@ export function ChannelPage(): JSX.Element {
 
   const [aggregateModule, setAggregateModule] = useState<ChannelAggregateModule | null>(null);
   const [aggregateLoading, setAggregateLoading] = useState(true);
-  const [aggregateError, setAggregateError] = useState<string | null>(null);
 
   // Load channel aggregate dynamically
   useEffect(() => {
     setAggregateLoading(true);
-    setAggregateError(null);
 
     // Dynamically import the channel aggregate MDX
     import(
@@ -38,7 +36,6 @@ export function ChannelPage(): JSX.Element {
       .catch(() => {
         setAggregateModule(null);
         setAggregateLoading(false);
-        setAggregateError(null); // Not an error, just means no aggregate exists yet
       });
   }, [platform, channelId]);
 
@@ -231,7 +228,7 @@ export function ChannelPage(): JSX.Element {
                           : 'Comments not captured yet'}
                       </div>
                     </div>
-                    <Button variant="secondary" disabled>
+                    <Button variant="ghost" disabled>
                       Analysis pending
                     </Button>
                   </div>
@@ -276,7 +273,7 @@ export function ChannelPage(): JSX.Element {
                     href={video.videoUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="btn btn-secondary"
+                    className="btn btn-ghost"
                     style={{ textDecoration: 'none' }}
                   >
                     Open on YouTube

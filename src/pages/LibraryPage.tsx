@@ -86,7 +86,7 @@ export function LibraryPage(): JSX.Element {
                 </div>
                 <Link
                   to={`/channel/${channel.platform}/${channel.channelId}`}
-                  className="btn btn-secondary"
+                  className="btn btn-ghost"
                   style={{ textDecoration: 'none' }}
                 >
                   View Channel
