@@ -1,7 +1,7 @@
 {
-  "schema": "constructive.comment-analytics@v2",
+  "schema": "constructive.comment-analytics@v3",
   "commentCount": 200,
-  "analyzedAt": "2025-12-29T17:44:44.267Z",
+  "analyzedAt": "2026-01-02T23:58:00.089Z",
   "sentimentBreakdown": {
     "positive": 9,
     "neutral": 190,
@@ -10,6 +10,14 @@
   "toxicCount": 3,
   "questionCount": 38,
   "suggestionCount": 19,
+  "radar": {
+    "praise": 9,
+    "criticism": 1,
+    "question": 38,
+    "suggestion": 19,
+    "toxic": 3,
+    "people": 9
+  },
   "themes": {
     "topics": [
       {

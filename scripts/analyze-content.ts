@@ -9,6 +9,8 @@ import type {
   VideoMetadata,
 } from '../src/content/types';
 
+import { RADAR_CATEGORIES, emptyRadarCounts } from '../src/content/radar';
+
 import { writeJsonFile, writeTextFile } from './fs';
 import {
   analyticsJsonPath,
@@ -363,6 +365,13 @@ function tokenize(text: string): string[] {
     .filter(Boolean);
 }
 
+function isThemeToken(token: string): boolean {
+  if (token.length < 4) return false;
+  if (STOPWORDS.has(token)) return false;
+  if (TOXIC_WORDS.has(token)) return false;
+  return true;
+}
+
 function isToxicText(tokens: string[]): boolean {
   for (const token of tokens) {
     if (TOXIC_WORDS.has(token)) return true;
@@ -420,6 +429,7 @@ function isLikelyPersonToken(token: string): boolean {
   // Intentionally small heuristic: we only classify single-word, lowercased tokens.
   // Multi-word names and edge cases (e.g. last names) will be treated as topics.
   if (!/^[a-z]+$/u.test(token)) return false;
+  if (!isThemeToken(token)) return false;
   return COMMON_FIRST_NAMES.has(token);
 }
 
@@ -439,6 +449,8 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
     neutral: 0,
     negative: 0,
   };
+
+  const radar = emptyRadarCounts();
 
   let toxicCount = 0;
   let questionCount = 0;
@@ -472,8 +484,7 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
             ? Math.min(comment.likeCount, LIKE_SCORE_CAP)
             : 0;
         const lengthScore =
-          Math.min(cleaned.length, HIGHLIGHT_LEN_SCORE_DENOM) /
-          HIGHLIGHT_LEN_SCORE_DENOM;
+          Math.min(cleaned.length, HIGHLIGHT_LEN_SCORE_DENOM) / HIGHLIGHT_LEN_SCORE_DENOM;
         questionCandidates.push({ score: likeScore + lengthScore, text: cleaned });
       }
     }
@@ -487,17 +498,20 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
             ? Math.min(comment.likeCount, LIKE_SCORE_CAP)
             : 0;
         const lengthScore =
-          Math.min(cleaned.length, HIGHLIGHT_LEN_SCORE_DENOM) /
-          HIGHLIGHT_LEN_SCORE_DENOM;
+          Math.min(cleaned.length, HIGHLIGHT_LEN_SCORE_DENOM) / HIGHLIGHT_LEN_SCORE_DENOM;
         suggestionCandidates.push({ score: likeScore + lengthScore, text: cleaned });
       }
     }
 
     for (const token of tokens) {
-      if (token.length < 4) continue;
-      if (STOPWORDS.has(token)) continue;
-      if (TOXIC_WORDS.has(token)) continue;
+      if (!isThemeToken(token)) continue;
       themeCounts.set(token, (themeCounts.get(token) ?? 0) + 1);
+    }
+
+    // Count comments that mention at least one likely person token (same heuristic as
+    // `themes.people`; not total mentions).
+    if (tokens.some(isLikelyPersonToken)) {
+      radar.people += 1;
     }
 
     if (!toxic) {
@@ -626,14 +640,21 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
     )
     .slice(0, TAKEAWAY_LIMIT);
 
+  radar.praise = sentimentBreakdown.positive;
+  radar.criticism = sentimentBreakdown.negative;
+  radar.question = questionCount;
+  radar.suggestion = suggestionCount;
+  radar.toxic = toxicCount;
+
   return {
-    schema: 'constructive.comment-analytics@v2',
+    schema: 'constructive.comment-analytics@v3',
     commentCount: analyzedCount,
     analyzedAt: new Date().toISOString(),
     sentimentBreakdown,
     toxicCount,
     questionCount,
     suggestionCount,
+    radar,
     themes: {
       topics: themes.topics.slice(0, THEME_BUCKET_SIZE),
       people: themes.people.slice(0, THEME_BUCKET_SIZE),
@@ -649,7 +670,7 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
 
 function isCommentAnalytics(value: unknown): value is CommentAnalytics {
   if (!isRecord(value)) return false;
-  if (value.schema !== 'constructive.comment-analytics@v2') return false;
+  if (value.schema !== 'constructive.comment-analytics@v3') return false;
   if (typeof value.commentCount !== 'number' || value.commentCount < 0) return false;
   if (typeof value.analyzedAt !== 'string') return false;
 
@@ -684,6 +705,16 @@ function isCommentAnalytics(value: unknown): value is CommentAnalytics {
   if (typeof value.suggestionCount !== 'number' || value.suggestionCount < 0) {
     return false;
   }
+
+  if (!isRecord(value.radar)) return false;
+  for (const category of RADAR_CATEGORIES) {
+    const count = value.radar[category.key];
+    if (typeof count !== 'number' || !Number.isInteger(count) || count < 0) return false;
+    if (count > value.commentCount) return false;
+  }
+
+  // Radar buckets are validated independently. Some categories may mirror other
+  // summary metrics today, but the schema does not enforce strict equality.
 
   if (!isRecord(value.themes)) return false;
   if (!Array.isArray(value.themes.topics)) return false;
