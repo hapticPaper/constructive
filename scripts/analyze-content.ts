@@ -715,6 +715,9 @@ function isCommentAnalytics(value: unknown): value is CommentAnalytics {
     if (count > value.commentCount) return false;
   }
 
+  // By design, certain radar buckets are exact aliases of other summary metrics.
+  // If this ever changes, update both the generator and validator (and migrate stored
+  // `analytics.json` content).
   if (value.radar.praise !== value.sentimentBreakdown.positive) return false;
   if (value.radar.criticism !== value.sentimentBreakdown.negative) return false;
   if (value.radar.question !== value.questionCount) return false;

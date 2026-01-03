@@ -65,13 +65,12 @@ export function radarBucketsWithRates(
 export function aggregateRadarAnalytics(
   analytics: CommentAnalytics[],
 ): Pick<CommentAnalytics, 'commentCount' | 'radar'> {
-  // Assumes v3 analytics (i.e. `radar` is present).
   const radar = emptyRadarCounts();
   let commentCount = 0;
 
   for (const entry of analytics) {
-    if (!('radar' in entry)) {
-      throw new Error('Expected v3 comment analytics with radar buckets.');
+    if (entry.schema !== 'constructive.comment-analytics@v3') {
+      throw new Error(`aggregateRadarAnalytics requires v3 analytics (got ${entry.schema}).`);
     }
     commentCount += entry.commentCount;
     for (const category of RADAR_CATEGORIES) {

@@ -86,7 +86,7 @@ export function VideoAnalyticsPage(): JSX.Element {
   }
 
   const analytics = content.analytics;
-  const radar = 'radar' in analytics ? analytics.radar : null;
+  const radar = analytics.radar;
 
   if (!unlocked) {
     const gate = canRunAnalysis();
@@ -170,25 +170,18 @@ export function VideoAnalyticsPage(): JSX.Element {
           Each axis is the share of analyzed comments that match a standardized category.
           Categories can overlap.
         </p>
-        {radar ? (
-          <div style={{ marginTop: 12 }}>
-            <RadarGraph
-              radar={radar}
-              totalComments={analytics.commentCount}
-              footer={
-                <div className="muted" style={{ fontSize: 13, lineHeight: 1.4 }}>
-                  Hover a category to see the underlying count. “People” counts comments
-                  that mention a likely person name.
-                </div>
-              }
-            />
-          </div>
-        ) : (
-          <div className="callout" style={{ marginTop: 12 }}>
-            <strong>Radar data missing:</strong>{' '}
-            <span className="muted">re-run the analysis playbook to regenerate.</span>
-          </div>
-        )}
+        <div style={{ marginTop: 12 }}>
+          <RadarGraph
+            radar={radar}
+            totalComments={analytics.commentCount}
+            footer={
+              <div className="muted" style={{ fontSize: 13, lineHeight: 1.4 }}>
+                Hover a category to see the underlying count. “People” counts comments
+                that mention a likely person name.
+              </div>
+            }
+          />
+        </div>
       </div>
 
       {Report ? (
