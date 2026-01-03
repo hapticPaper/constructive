@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 import { getVideoContent, listVideos } from '../content/content';
 import type { VideoMetadata } from '../content/types';
@@ -73,14 +74,25 @@ export function LibraryPage(): JSX.Element {
             <section key={`${channel.platform}:${channel.channelId}`}>
               <div className="row" style={{ marginBottom: 10 }}>
                 <div>
-                  <div style={{ fontWeight: 650 }}>{channel.channelTitle}</div>
+                  <Link
+                    to={`/channel/${channel.platform}/${channel.channelId}`}
+                    style={{ textDecoration: 'none', color: 'inherit' }}
+                  >
+                    <div style={{ fontWeight: 650 }}>{channel.channelTitle}</div>
+                  </Link>
                   <div className="muted" style={{ fontSize: 13 }}>
                     {channelVideos.length} videos
                   </div>
                 </div>
+                <Link
+                  to={`/channel/${channel.platform}/${channel.channelId}`}
+                  className="btn btn-secondary"
+                  style={{ textDecoration: 'none' }}
+                >
+                  View Channel
+                </Link>
               </div>
-              <div className="cards">
-                {channelVideos.map((video) => {
+              <div className="cards">{channelVideos.map((video) => {
                   const content = getVideoContent(video.platform, video.videoId);
                   const commentCount =
                     content?.analytics?.commentCount ?? content?.comments?.length;
