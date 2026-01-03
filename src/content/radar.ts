@@ -63,35 +63,92 @@ export function radarBucketsWithRates(
 }
 
 /**
-* Aggregates radar analytics across v3 CommentAnalytics entries.
-* Assumes entries represent disjoint comment sets (e.g. one entry per video).
-* Throws if any entry is not schema v3; callers should pre-filter inputs.
-*/
+ * Aggregates radar analytics across v3 CommentAnalytics entries.
+ * Assumes entries represent disjoint comment sets (e.g. one entry per video).
+ */
+export type AggregateRadarAnalyticsOptions = {
+  onIncompatible?: 'skip' | 'throw';
+};
+
 export function aggregateRadarAnalytics(
-  analytics: CommentAnalytics[],
+  analytics: ReadonlyArray<unknown>,
+  options: AggregateRadarAnalyticsOptions = {},
 ): Pick<CommentAnalytics, 'commentCount' | 'radar'> {
+  const onIncompatible = options.onIncompatible ?? 'throw';
   const radar = emptyRadarCounts();
   let commentCount = 0;
 
   for (const [index, entry] of analytics.entries()) {
-    if (entry.schema !== 'constructive.comment-analytics@v3') {
-      throw new Error(
-        `aggregateRadarAnalytics requires v3 analytics; entry at index ${index} has schema ${entry.schema}.`,
-      );
-    }
+    const v3 = coerceRadarAnalyticsV3(entry, index, onIncompatible);
+    if (!v3) continue;
 
+    commentCount += v3.commentCount;
     for (const category of RADAR_CATEGORIES) {
-      if (entry.radar[category.key] > entry.commentCount) {
-        throw new Error(
-          `Radar category "${category.key}" exceeds commentCount for analytics entry at index ${index}.`,
-        );
-      }
-    }
-    commentCount += entry.commentCount;
-    for (const category of RADAR_CATEGORIES) {
-      radar[category.key] += entry.radar[category.key];
+      radar[category.key] += v3.radar[category.key];
     }
   }
 
   return { commentCount, radar };
+}
+
+type RadarAnalyticsV3 = Pick<CommentAnalytics, 'commentCount' | 'radar' | 'schema'>;
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+function coerceRadarAnalyticsV3(
+  value: unknown,
+  index: number,
+  onIncompatible: 'skip' | 'throw',
+): RadarAnalyticsV3 | null {
+  if (!isRecord(value) || value.schema !== 'constructive.comment-analytics@v3') {
+    if (onIncompatible === 'skip') return null;
+
+    const schemaValue = isRecord(value) ? value.schema : undefined;
+    throw new Error(
+      `aggregateRadarAnalytics requires v3 analytics; entry at index ${index} has schema ${String(schemaValue)}.`,
+    );
+  }
+
+  if (typeof value.commentCount !== 'number' || !Number.isInteger(value.commentCount)) {
+    if (onIncompatible === 'skip') return null;
+    throw new Error(
+      `aggregateRadarAnalytics requires integer commentCount; entry at index ${index} has commentCount ${String(value.commentCount)}.`,
+    );
+  }
+
+  if (!isRecord(value.radar)) {
+    if (onIncompatible === 'skip') return null;
+    throw new Error(
+      `aggregateRadarAnalytics requires a radar object; entry at index ${index} is missing radar.`,
+    );
+  }
+
+  const radar = emptyRadarCounts();
+  for (const category of RADAR_CATEGORIES) {
+    const count = value.radar[category.key];
+
+    if (typeof count !== 'number' || !Number.isInteger(count) || count < 0) {
+      if (onIncompatible === 'skip') return null;
+      throw new Error(
+        `aggregateRadarAnalytics requires integer radar counts; entry at index ${index} has invalid count for ${category.key}.`,
+      );
+    }
+
+    if (count > value.commentCount) {
+      if (onIncompatible === 'skip') return null;
+      throw new Error(
+        `Radar category "${category.key}" exceeds commentCount for analytics entry at index ${index}.`,
+      );
+    }
+
+    radar[category.key] = count;
+  }
+
+  return {
+    schema: 'constructive.comment-analytics@v3',
+    commentCount: value.commentCount,
+    radar,
+  };
 }
