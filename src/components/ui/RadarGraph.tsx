@@ -36,7 +36,8 @@ function TooltipContent({
     !raw ||
     typeof raw.label !== 'string' ||
     typeof raw.rate !== 'number' ||
-    typeof raw.count !== 'number'
+    typeof raw.count !== 'number' ||
+    typeof raw.value !== 'number'
   ) {
     return null;
   }
