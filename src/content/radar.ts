@@ -65,11 +65,23 @@ export function radarBucketsWithRates(
 /**
  * Aggregates radar analytics across v3 CommentAnalytics entries.
  * Assumes entries represent disjoint comment sets (e.g. one entry per video).
+ *
+ * By default this function is strict and throws if any entry is incompatible.
+ * Use `onIncompatible: 'skip'` to ignore incompatible entries instead; skipped
+ * entries are excluded from the returned totals.
  */
 export type AggregateRadarAnalyticsOptions = {
   onIncompatible?: 'skip' | 'throw';
 };
 
+export function aggregateRadarAnalytics(
+  analytics: ReadonlyArray<CommentAnalytics>,
+  options?: AggregateRadarAnalyticsOptions,
+): Pick<CommentAnalytics, 'commentCount' | 'radar'>;
+export function aggregateRadarAnalytics(
+  analytics: ReadonlyArray<unknown>,
+  options?: AggregateRadarAnalyticsOptions,
+): Pick<CommentAnalytics, 'commentCount' | 'radar'>;
 export function aggregateRadarAnalytics(
   analytics: ReadonlyArray<unknown>,
   options: AggregateRadarAnalyticsOptions = {},
