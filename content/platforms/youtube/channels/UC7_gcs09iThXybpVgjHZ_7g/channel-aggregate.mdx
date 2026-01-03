@@ -1,0 +1,67 @@
+export const channelAggregate = {
+  "schema": "constructive.channel-aggregate@v1",
+  "generatedAt": "2026-01-03T16:03:32.698Z",
+  "channel": {
+    "platform": "youtube",
+    "channelId": "UC7_gcs09iThXybpVgjHZ_7g",
+    "channelTitle": "PBS Space Time",
+    "channelUrl": "https://www.youtube.com/@pbsspacetime"
+  },
+  "videoCount": 1,
+  "totalComments": 200,
+  "sentimentBreakdown": {
+    "positive": 9,
+    "neutral": 190,
+    "negative": 1
+  },
+  "topTopics": [
+    {
+      "label": "mass",
+      "count": 42
+    },
+    {
+      "label": "infinity",
+      "count": 41
+    },
+    {
+      "label": "electron",
+      "count": 29
+    },
+    {
+      "label": "infinite",
+      "count": 24
+    },
+    {
+      "label": "negative",
+      "count": 17
+    },
+    {
+      "label": "higgs",
+      "count": 14
+    },
+    {
+      "label": "video",
+      "count": 14
+    },
+    {
+      "label": "infinities",
+      "count": 13
+    }
+  ],
+  "takeaways": [
+    {
+      "title": "Channel-wide topic patterns",
+      "detail": "Across 1 videos, viewers consistently discuss: mass, infinity, electron."
+    },
+    {
+      "title": "High engagement rate",
+      "detail": "Averaging 200 comments per video shows strong community interaction."
+    }
+  ]
+}
+
+{typeof ChannelAggregate !== "undefined" ? <ChannelAggregate channelAggregate={channelAggregate} /> : (
+  <div className="callout">
+    <strong>Missing widget:</strong> ChannelAggregate
+  </div>
+)}
