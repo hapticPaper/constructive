@@ -46,8 +46,8 @@ function HistogramList({ items }: { items: ThemeItem[] }): JSX.Element {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 }}>
-      {items.map((item) => (
-        <div key={`${item.label}:${item.count}`} className="row">
+      {items.map((item, index) => (
+        <div key={`${index}-${item.label}`} className="row">
           <span style={{ fontWeight: 650 }}>{item.label}</span>
           <span className="muted">{item.count.toLocaleString()}</span>
         </div>
@@ -67,8 +67,8 @@ function TakeawayList({ takeaways }: { takeaways: CreatorTakeaway[] }): JSX.Elem
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 }}>
-      {takeaways.map((takeaway) => (
-        <div key={`${takeaway.title}:${takeaway.detail}`}>
+      {takeaways.map((takeaway, index) => (
+        <div key={index}>
           <div style={{ fontWeight: 650 }}>{takeaway.title}</div>
           <div className="muted" style={{ marginTop: 4, lineHeight: 1.35 }}>
             {takeaway.detail}

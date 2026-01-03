@@ -92,7 +92,8 @@ export function LibraryPage(): JSX.Element {
                   View Channel
                 </Link>
               </div>
-              <div className="cards">{channelVideos.map((video) => {
+              <div className="cards">
+                {channelVideos.map((video) => {
                   const content = getVideoContent(video.platform, video.videoId);
                   const commentCount =
                     content?.analytics?.commentCount ?? content?.comments?.length;
