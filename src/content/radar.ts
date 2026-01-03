@@ -64,6 +64,7 @@ export function radarBucketsWithRates(
 
 /**
 * Aggregates radar analytics across v3 CommentAnalytics entries.
+* Assumes entries represent disjoint comment sets (e.g. one entry per video).
 * Throws if any entry is not schema v3; callers should pre-filter inputs.
 */
 export function aggregateRadarAnalytics(

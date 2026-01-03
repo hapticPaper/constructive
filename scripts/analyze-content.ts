@@ -471,18 +471,13 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
 
     const toxic = isToxicText(tokens);
     if (toxic) toxicCount += 1;
-    if (toxic) radar.toxic += 1;
 
     const sentiment = sentimentForTokens(tokens);
     sentimentBreakdown[sentiment] += 1;
 
-    if (sentiment === 'positive') radar.praise += 1;
-    if (sentiment === 'negative') radar.criticism += 1;
-
     const isQuestion = isQuestionText(cleaned);
     if (isQuestion) {
       questionCount += 1;
-      radar.question += 1;
       if (!toxic) {
         const likeScore =
           typeof comment.likeCount === 'number'
@@ -497,7 +492,6 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
     const isSuggestion = isSuggestionText(cleaned);
     if (isSuggestion) {
       suggestionCount += 1;
-      radar.suggestion += 1;
       if (!toxic) {
         const likeScore =
           typeof comment.likeCount === 'number'
@@ -645,6 +639,12 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
         all.findIndex((candidate) => candidate.title === entry.title) === index,
     )
     .slice(0, TAKEAWAY_LIMIT);
+
+  radar.praise = sentimentBreakdown.positive;
+  radar.criticism = sentimentBreakdown.negative;
+  radar.question = questionCount;
+  radar.suggestion = suggestionCount;
+  radar.toxic = toxicCount;
 
   return {
     schema: 'constructive.comment-analytics@v3',
