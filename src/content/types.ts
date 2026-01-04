@@ -90,3 +90,17 @@ export type VideoContent = {
   comments?: CommentRecord[];
   analytics?: CommentAnalytics;
 };
+
+/**
+ * Channel-level aggregate of video analytics.
+ */
+export type ChannelAggregate = {
+  schema: 'constructive.channel-aggregate@v1';
+  generatedAt: string;
+  channel: ChannelRef;
+  videoCount: number;
+  totalComments: number;
+  sentimentBreakdown: Record<Sentiment, number>;
+  topTopics: ThemeBucket;
+  takeaways: CreatorTakeaway[];
+};

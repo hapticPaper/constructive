@@ -27,3 +27,11 @@ export function reportMdxPath(platform: Platform, videoId: string): string {
 export function ingestionMetaPath(platform: Platform, videoId: string): string {
   return path.join(videoRoot(platform, videoId), 'ingestion.json');
 }
+
+export function channelRoot(platform: Platform, channelId: string): string {
+  return path.join(ROOT, 'platforms', platform, 'channels', channelId);
+}
+
+export function channelAggregateMdxPath(platform: Platform, channelId: string): string {
+  return path.join(channelRoot(platform, channelId), 'channel-aggregate.mdx');
+}
