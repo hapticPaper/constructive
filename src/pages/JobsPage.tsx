@@ -52,7 +52,7 @@ function getJobStage(platform: Platform, videoId: string): JobStage {
 
 const FOCUSED_JOB_STYLE = {
   borderColor: 'rgba(var(--brand-rgb), 0.35)',
-  boxShadow: '0 0 0 4px rgba(var(--brand-rgb), 0.12)',
+  boxShadow: '0 0 0 3px rgba(var(--brand-rgb), 0.1)',
 } as const;
 
 export function JobsPage(): JSX.Element {

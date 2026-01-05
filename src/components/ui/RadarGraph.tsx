@@ -50,7 +50,7 @@ function TooltipContent({
   return (
     <div
       style={{
-        background: 'var(--panel)',
+        background: 'var(--panel-3)',
         border: '1px solid var(--border)',
         borderRadius: 10,
         padding: '10px 12px',

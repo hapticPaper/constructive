@@ -91,7 +91,8 @@ input::placeholder {
 }
 
 :focus-visible {
-  outline: none;
+  outline: 2px solid rgba(var(--brand-rgb), 0.5);
+  outline-offset: 2px;
 }
 
 .app-shell {
@@ -192,6 +193,7 @@ input::placeholder {
 }
 
 .btn:focus-visible {
+  outline: none;
   box-shadow: 0 0 0 4px rgba(var(--brand-rgb), 0.14);
   border-color: rgba(var(--brand-rgb), 0.35);
 }
@@ -221,6 +223,7 @@ input::placeholder {
 }
 
 .input:focus-visible {
+  outline: none;
   box-shadow: 0 0 0 4px rgba(var(--brand-rgb), 0.12);
   border-color: rgba(var(--brand-rgb), 0.35);
 }
