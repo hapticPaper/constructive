@@ -11,9 +11,9 @@ type ThemeItem = ThemeBucket[number];
 const CHANNEL_AGGREGATE_SCHEMA = 'constructive.channel-aggregate@v1' as const;
 
 const SENTIMENT_COLORS: Record<Sentiment, string> = {
-  positive: '#8cffcb',
-  neutral: 'rgba(255,255,255,0.65)',
-  negative: '#ff6376',
+  positive: 'var(--positive)',
+  neutral: 'var(--neutral)',
+  negative: 'var(--negative)',
 };
 
 const SENTIMENT_ORDER: Sentiment[] = ['positive', 'neutral', 'negative'];
