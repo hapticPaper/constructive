@@ -75,11 +75,7 @@ export function OnboardingPage(): JSX.Element {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="https://www.youtube.com/watch?v=..."
-            className="input"
-            style={{
-              flex: '1 1 340px',
-              minWidth: 240,
-            }}
+            className="input input-fluid"
           />
           <Button variant="primary" onClick={goToVideoByInput}>
             Analyze

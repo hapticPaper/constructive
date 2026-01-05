@@ -119,8 +119,8 @@ export function RadarGraph({
             />
             <Radar
               dataKey={RADAR_SERIES_DATA_KEY}
-              stroke="var(--brand)"
-              fill="rgba(var(--brand-rgb),0.16)"
+              stroke="var(--brand, #2563eb)"
+              fill="rgba(var(--brand-rgb, 37, 99, 235), 0.16)"
               fillOpacity={1}
             />
             <Tooltip content={TooltipContent} />

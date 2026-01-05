@@ -12,6 +12,7 @@
   --brand-rgb: 37, 99, 235;
   --brand: rgb(var(--brand-rgb));
 
+  /* Sentiment tokens (used by Report + ChannelAggregate widgets) */
   --positive: #16a34a;
   --neutral: #64748b;
   --negative: #dc2626;
@@ -90,7 +91,11 @@ input::placeholder {
   color: var(--muted-2);
 }
 
-:focus-visible {
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
   outline: 2px solid rgba(var(--brand-rgb), 0.5);
   outline-offset: 2px;
 }
@@ -220,6 +225,11 @@ input::placeholder {
   border-radius: 10px;
   padding: 10px 12px;
   box-shadow: var(--shadow-sm);
+}
+
+.input-fluid {
+  flex: 1 1 340px;
+  min-width: 240px;
 }
 
 .input:focus-visible {
