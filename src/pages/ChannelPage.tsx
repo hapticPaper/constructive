@@ -5,6 +5,8 @@ import { Link, useParams } from 'react-router-dom';
 
 import { getVideoContent, listVideos } from '../content/content';
 import type { Platform, VideoMetadata } from '../content/types';
+import { Hero, type BreadcrumbItem } from '../components/Hero';
+import { HeroActionLink } from '../components/HeroActionLink';
 import { Button } from '../components/ui/Button';
 import * as Widgets from '../widgets';
 
@@ -92,48 +94,26 @@ export function ChannelPage(): JSX.Element {
 
   const channel = channelVideos[0].channel;
   const ChannelAggregateComponent = aggregateModule?.default;
+  const breadcrumbs: BreadcrumbItem[] = [
+    { label: 'Library', to: '/library' },
+    { label: channel.channelTitle },
+  ];
 
   return (
     <div>
-      <div className="hero">
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            gap: 14,
-            alignItems: 'flex-end',
-            flexWrap: 'wrap',
-          }}
-        >
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <div className="breadcrumbs">
-              <Link to="/library">Library</Link>
-              <span>/</span>
-              <span>{channel.channelTitle}</span>
-            </div>
-            <h1>{channel.channelTitle}</h1>
-            <p>
-              {channelVideos.length} video{channelVideos.length !== 1 ? 's' : ''} ·{' '}
-              {channel.channelUrl ? (
-                <a href={channel.channelUrl} target="_blank" rel="noreferrer">
-                  Open on YouTube
-                </a>
-              ) : (
-                <span className="muted">YouTube Channel</span>
-              )}
-            </p>
-          </div>
-          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-            <Link
-              to="/library"
-              className="btn btn-ghost"
-              style={{ textDecoration: 'none' }}
-            >
-              Back to Library
-            </Link>
-          </div>
-        </div>
-      </div>
+      <Hero
+        breadcrumbs={breadcrumbs}
+        heading={channel.channelTitle}
+        description={`${channelVideos.length} video${channelVideos.length !== 1 ? 's' : ''}`}
+        actions={
+          <>
+            {channel.channelUrl ? (
+              <HeroActionLink href={channel.channelUrl}>Open on YouTube</HeroActionLink>
+            ) : null}
+            <HeroActionLink to="/library">Back to Library</HeroActionLink>
+          </>
+        }
+      />
 
       {/* Channel Aggregate Section */}
       {aggregateLoading ? (

@@ -1,5 +1,4 @@
-import clsx from 'clsx';
-import { Link, NavLink, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 import {
   getAnalysisUsage,
@@ -8,18 +7,13 @@ import {
   signInWithGoogle,
   signOut,
 } from '../lib/freemium';
+import { PrimaryNavLinks } from './PrimaryNavLinks';
 import { Button } from './ui/Button';
 import { Pill } from './ui/Pill';
 
 export function NavBar(): JSX.Element {
-  const location = useLocation();
   const usage = getAnalysisUsage();
   const tier = getUserTier();
-
-  const libraryActive =
-    location.pathname.startsWith('/library') ||
-    location.pathname.startsWith('/channel') ||
-    location.pathname.startsWith('/video');
 
   return (
     <header className="nav">
@@ -29,27 +23,7 @@ export function NavBar(): JSX.Element {
             Constructive
           </Link>
           <nav className="nav-links">
-            <NavLink
-              end
-              to="/"
-              className={({ isActive }) => clsx('nav-link', isActive && 'active')}
-            >
-              Overview
-            </NavLink>
-            <NavLink
-              to="/library"
-              className={({ isActive }) =>
-                clsx('nav-link', (isActive || libraryActive) && 'active')
-              }
-            >
-              Library
-            </NavLink>
-            <NavLink
-              to="/jobs"
-              className={({ isActive }) => clsx('nav-link', isActive && 'active')}
-            >
-              Jobs
-            </NavLink>
+            <PrimaryNavLinks linkClassName="nav-link" />
           </nav>
         </div>
         <div className="nav-right">
