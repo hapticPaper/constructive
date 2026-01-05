@@ -1,4 +1,5 @@
-import { Link, useLocation } from 'react-router-dom';
+import clsx from 'clsx';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 
 import {
   getAnalysisUsage,
@@ -15,36 +16,40 @@ export function NavBar(): JSX.Element {
   const usage = getAnalysisUsage();
   const tier = getUserTier();
 
+  const libraryActive =
+    location.pathname.startsWith('/library') ||
+    location.pathname.startsWith('/channel') ||
+    location.pathname.startsWith('/video');
+
   return (
     <header className="nav">
-      <div className="nav-inner">
+      <div className="app-container nav-inner">
         <div className="nav-left">
           <Link to="/" className="brand">
             Constructive
           </Link>
           <nav className="nav-links">
-            <Link
+            <NavLink
+              end
               to="/"
-              className={location.pathname === '/' ? 'nav-link active' : 'nav-link'}
+              className={({ isActive }) => clsx('nav-link', isActive && 'active')}
             >
-              Onboard
-            </Link>
-            <Link
+              Overview
+            </NavLink>
+            <NavLink
               to="/library"
-              className={
-                location.pathname.startsWith('/library') ? 'nav-link active' : 'nav-link'
+              className={({ isActive }) =>
+                clsx('nav-link', (isActive || libraryActive) && 'active')
               }
             >
               Library
-            </Link>
-            <Link
+            </NavLink>
+            <NavLink
               to="/jobs"
-              className={
-                location.pathname.startsWith('/jobs') ? 'nav-link active' : 'nav-link'
-              }
+              className={({ isActive }) => clsx('nav-link', isActive && 'active')}
             >
               Jobs
-            </Link>
+            </NavLink>
           </nav>
         </div>
         <div className="nav-right">

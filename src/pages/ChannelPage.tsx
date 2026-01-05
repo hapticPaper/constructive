@@ -18,7 +18,9 @@ export function ChannelPage(): JSX.Element {
   const platform = (params.platform as Platform | undefined) ?? 'youtube';
   const channelId = params.channelId ?? '';
 
-  const [aggregateModule, setAggregateModule] = useState<ChannelAggregateModule | null>(null);
+  const [aggregateModule, setAggregateModule] = useState<ChannelAggregateModule | null>(
+    null,
+  );
   const [aggregateLoading, setAggregateLoading] = useState(true);
 
   // Load channel aggregate dynamically
@@ -72,11 +74,15 @@ export function ChannelPage(): JSX.Element {
       <div className="panel">
         <h2>Channel not found</h2>
         <p className="muted" style={{ marginTop: 6 }}>
-          No videos found for channel {channelId} on {platform}. Add videos via the ingestion
-          workflow.
+          No videos found for channel {channelId} on {platform}. Add videos via the
+          ingestion workflow.
         </p>
         <div style={{ marginTop: 12 }}>
-          <Link to="/library" className="btn btn-primary" style={{ textDecoration: 'none' }}>
+          <Link
+            to="/library"
+            className="btn btn-primary"
+            style={{ textDecoration: 'none' }}
+          >
             Back to Library
           </Link>
         </div>
@@ -90,17 +96,43 @@ export function ChannelPage(): JSX.Element {
   return (
     <div>
       <div className="hero">
-        <h1>{channel.channelTitle}</h1>
-        <p>
-          {channelVideos.length} video{channelVideos.length !== 1 ? 's' : ''} ·{' '}
-          {channel.channelUrl ? (
-            <a href={channel.channelUrl} target="_blank" rel="noreferrer">
-              Open on YouTube
-            </a>
-          ) : (
-            <span className="muted">YouTube Channel</span>
-          )}
-        </p>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            gap: 14,
+            alignItems: 'flex-end',
+            flexWrap: 'wrap',
+          }}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div className="breadcrumbs">
+              <Link to="/library">Library</Link>
+              <span>/</span>
+              <span>{channel.channelTitle}</span>
+            </div>
+            <h1>{channel.channelTitle}</h1>
+            <p>
+              {channelVideos.length} video{channelVideos.length !== 1 ? 's' : ''} ·{' '}
+              {channel.channelUrl ? (
+                <a href={channel.channelUrl} target="_blank" rel="noreferrer">
+                  Open on YouTube
+                </a>
+              ) : (
+                <span className="muted">YouTube Channel</span>
+              )}
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+            <Link
+              to="/library"
+              className="btn btn-ghost"
+              style={{ textDecoration: 'none' }}
+            >
+              Back to Library
+            </Link>
+          </div>
+        </div>
       </div>
 
       {/* Channel Aggregate Section */}
@@ -124,8 +156,8 @@ export function ChannelPage(): JSX.Element {
         <div className="panel" style={{ marginTop: 18 }}>
           <h2>Channel insights</h2>
           <p className="muted" style={{ marginTop: 6 }}>
-            No channel aggregate available yet. Run the channel analysis script to generate
-            insights across all videos.
+            No channel aggregate available yet. Run the channel analysis script to
+            generate insights across all videos.
           </p>
           <div className="callout" style={{ marginTop: 10 }}>
             <strong>How to generate:</strong>
@@ -170,7 +202,9 @@ export function ChannelPage(): JSX.Element {
                       />
                     )}
                     <div>
-                      <div style={{ fontWeight: 650, lineHeight: 1.3 }}>{video.title}</div>
+                      <div style={{ fontWeight: 650, lineHeight: 1.3 }}>
+                        {video.title}
+                      </div>
                       <div className="muted" style={{ marginTop: 4, fontSize: 13 }}>
                         {typeof commentCount === 'number'
                           ? `${commentCount.toLocaleString()} comments`
@@ -221,7 +255,9 @@ export function ChannelPage(): JSX.Element {
                       />
                     )}
                     <div>
-                      <div style={{ fontWeight: 650, lineHeight: 1.3 }}>{video.title}</div>
+                      <div style={{ fontWeight: 650, lineHeight: 1.3 }}>
+                        {video.title}
+                      </div>
                       <div className="muted" style={{ marginTop: 4, fontSize: 13 }}>
                         {typeof commentCount === 'number'
                           ? `${commentCount.toLocaleString()} comments captured`

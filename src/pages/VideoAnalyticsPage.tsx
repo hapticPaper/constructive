@@ -52,17 +52,53 @@ export function VideoAnalyticsPage(): JSX.Element {
 
   if (!content.analytics) {
     const commentCount = content.comments?.length;
+    const channelHref = `/channel/${content.video.channel.platform}/${content.video.channel.channelId}`;
 
     return (
       <div>
         <div className="hero">
-          <h1>{content.video.title}</h1>
-          <p>
-            {content.video.channel.channelTitle} ·{' '}
-            <a href={content.video.videoUrl} target="_blank" rel="noreferrer">
-              Open on YouTube
-            </a>
-          </p>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              gap: 14,
+              alignItems: 'flex-end',
+              flexWrap: 'wrap',
+            }}
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div className="breadcrumbs">
+                <Link to="/library">Library</Link>
+                <span>/</span>
+                <Link to={channelHref}>{content.video.channel.channelTitle}</Link>
+                <span>/</span>
+                <span>{content.video.title}</span>
+              </div>
+              <h1>{content.video.title}</h1>
+              <p>
+                {content.video.channel.channelTitle} ·{' '}
+                <a href={content.video.videoUrl} target="_blank" rel="noreferrer">
+                  Open on YouTube
+                </a>
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+              <Link
+                to={channelHref}
+                className="btn btn-ghost"
+                style={{ textDecoration: 'none' }}
+              >
+                View channel
+              </Link>
+              <Link
+                to="/library"
+                className="btn btn-ghost"
+                style={{ textDecoration: 'none' }}
+              >
+                Back to Library
+              </Link>
+            </div>
+          </div>
         </div>
 
         <div className="panel" style={{ marginTop: 18 }}>
@@ -91,16 +127,52 @@ export function VideoAnalyticsPage(): JSX.Element {
 
   if (!unlocked) {
     const gate = canRunAnalysis();
+    const channelHref = `/channel/${content.video.channel.platform}/${content.video.channel.channelId}`;
 
     return (
       <div>
         <div className="hero">
-          <h1>{gate.ok ? 'Unlock this report' : 'Daily limit reached'}</h1>
-          <p>
-            {gate.ok
-              ? 'Unlocking uses 1 run from your daily quota. Re-opening this same video won’t consume again.'
-              : gate.reason}
-          </p>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              gap: 14,
+              alignItems: 'flex-end',
+              flexWrap: 'wrap',
+            }}
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div className="breadcrumbs">
+                <Link to="/library">Library</Link>
+                <span>/</span>
+                <Link to={channelHref}>{content.video.channel.channelTitle}</Link>
+                <span>/</span>
+                <span>{content.video.title}</span>
+              </div>
+              <h1>{gate.ok ? 'Unlock this report' : 'Daily limit reached'}</h1>
+              <p>
+                {gate.ok
+                  ? 'Unlocking uses 1 run from your daily quota. Re-opening this same video won’t consume again.'
+                  : gate.reason}
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+              <Link
+                to={channelHref}
+                className="btn btn-ghost"
+                style={{ textDecoration: 'none' }}
+              >
+                View channel
+              </Link>
+              <Link
+                to="/library"
+                className="btn btn-ghost"
+                style={{ textDecoration: 'none' }}
+              >
+                Back to Library
+              </Link>
+            </div>
+          </div>
         </div>
         <div className="panel" style={{ marginTop: 18 }}>
           <h2>Access</h2>
@@ -141,13 +213,52 @@ export function VideoAnalyticsPage(): JSX.Element {
   return (
     <div>
       <div className="hero">
-        <h1>{content.video.title}</h1>
-        <p>
-          {content.video.channel.channelTitle} ·{' '}
-          <a href={content.video.videoUrl} target="_blank" rel="noreferrer">
-            Open on YouTube
-          </a>
-        </p>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            gap: 14,
+            alignItems: 'flex-end',
+            flexWrap: 'wrap',
+          }}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div className="breadcrumbs">
+              <Link to="/library">Library</Link>
+              <span>/</span>
+              <Link
+                to={`/channel/${content.video.channel.platform}/${content.video.channel.channelId}`}
+              >
+                {content.video.channel.channelTitle}
+              </Link>
+              <span>/</span>
+              <span>{content.video.title}</span>
+            </div>
+            <h1>{content.video.title}</h1>
+            <p>
+              {content.video.channel.channelTitle} ·{' '}
+              <a href={content.video.videoUrl} target="_blank" rel="noreferrer">
+                Open on YouTube
+              </a>
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+            <Link
+              to={`/channel/${content.video.channel.platform}/${content.video.channel.channelId}`}
+              className="btn btn-ghost"
+              style={{ textDecoration: 'none' }}
+            >
+              View channel
+            </Link>
+            <Link
+              to="/library"
+              className="btn btn-ghost"
+              style={{ textDecoration: 'none' }}
+            >
+              Back to Library
+            </Link>
+          </div>
+        </div>
       </div>
 
       <div style={{ marginTop: 18 }} className="grid grid-3">
