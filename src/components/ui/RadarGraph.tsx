@@ -119,7 +119,7 @@ export function RadarGraph({
             />
             <Radar
               dataKey={RADAR_SERIES_DATA_KEY}
-              stroke="var(--brand, #2563eb)"
+              stroke="rgb(var(--brand-rgb, 37, 99, 235))"
               fill="rgba(var(--brand-rgb, 37, 99, 235), 0.16)"
               fillOpacity={1}
             />
