@@ -55,6 +55,7 @@ function TooltipContent({
         borderRadius: 10,
         padding: '10px 12px',
         boxShadow: 'var(--shadow-sm)',
+        color: 'var(--text)',
       }}
     >
       <div style={{ fontWeight: 650 }}>{datum.label}</div>
