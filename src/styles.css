@@ -103,7 +103,7 @@ button:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 2px solid rgba(var(--brand-rgb), 0.5);
+  outline: 2px solid rgba(var(--brand-rgb, 37, 99, 235), 0.5);
   outline-offset: 2px;
 }
 
@@ -206,8 +206,8 @@ textarea:focus-visible {
 
 .btn:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 4px rgba(var(--brand-rgb), 0.14);
-  border-color: rgba(var(--brand-rgb), 0.35);
+  box-shadow: 0 0 0 4px rgba(var(--brand-rgb, 37, 99, 235), 0.14);
+  border-color: rgba(var(--brand-rgb, 37, 99, 235), 0.35);
 }
 
 .btn:disabled {
@@ -241,8 +241,8 @@ textarea:focus-visible {
 
 .input:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 4px rgba(var(--brand-rgb), 0.12);
-  border-color: rgba(var(--brand-rgb), 0.35);
+  box-shadow: 0 0 0 4px rgba(var(--brand-rgb, 37, 99, 235), 0.12);
+  border-color: rgba(var(--brand-rgb, 37, 99, 235), 0.35);
 }
 
 .btn-primary:hover {
