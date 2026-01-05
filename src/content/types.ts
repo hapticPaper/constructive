@@ -30,6 +30,7 @@ export type VideoReachSnapshot = {
 };
 
 export type VideoReach = {
+  // `schema` is a versioned discriminator for the on-disk reach snapshot format.
   schema: 'constructive.video-reach@v1';
   platform: Platform;
   videoId: string;
@@ -38,6 +39,8 @@ export type VideoReach = {
 
 export type CommentRecord = {
   id: string;
+  // When true, `id` is synthetic (not a native YouTube `comment_id`).
+  syntheticId?: true;
   authorName?: string;
   publishedAt?: string;
   likeCount?: number;

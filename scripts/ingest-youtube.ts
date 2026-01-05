@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 
 import { Innertube } from 'youtubei.js';
@@ -36,22 +37,56 @@ function extractVideoId(input: string): string | null {
   return null;
 }
 
-function parseArgs(argv: string[]): { input: string; maxComments: number | null } {
-  const maxIndex = argv.indexOf('--max-comments');
-  const maxCommentsRaw = maxIndex >= 0 ? argv[maxIndex + 1] : undefined;
-  const maxComments = maxCommentsRaw ? Number(maxCommentsRaw) : null;
-  if (maxComments !== null && (!Number.isFinite(maxComments) || maxComments <= 0)) {
-    throw new Error('Invalid --max-comments value (must be a positive number).');
+function parseArgs(argv: string[]): {
+  input: string;
+  maxComments: number | 'all';
+  forceFullScan: boolean;
+} {
+  const positionals: string[] = [];
+  let maxComments: number | 'all' = 'all';
+  let forceFullScan = false;
+
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
+
+    if (arg === '--force-full-scan') {
+      forceFullScan = true;
+      continue;
+    }
+
+    if (arg === '--max-comments') {
+      const value = argv[i + 1];
+      if (!value) throw new Error('Missing value for --max-comments.');
+      i += 1;
+
+      if (value.toLowerCase() === 'all') {
+        maxComments = 'all';
+      } else {
+        const n = Number(value);
+        if (!Number.isFinite(n) || n <= 0) {
+          throw new Error(
+            'Invalid --max-comments value (must be a positive number or "all").',
+          );
+        }
+        maxComments = n;
+      }
+      continue;
+    }
+
+    if (arg.startsWith('-')) {
+      throw new Error(`Unknown flag: ${arg}`);
+    }
+
+    positionals.push(arg);
   }
 
-  const input = argv.find((a) => !a.startsWith('-'));
-  if (!input) {
+  if (positionals.length !== 1) {
     throw new Error(
-      'Usage: bun run ingest:youtube -- <videoUrlOrId> [--max-comments <N>]',
+      'Usage: bun run ingest:youtube -- <videoUrlOrId> [--max-comments <N|all>] [--force-full-scan]',
     );
   }
 
-  return { input, maxComments };
+  return { input: positionals[0], maxComments, forceFullScan };
 }
 
 function toStringSafe(value: unknown): string {
@@ -70,6 +105,10 @@ function toStringSafe(value: unknown): string {
 function asRecord(value: unknown): Record<string, unknown> | null {
   if (!value || typeof value !== 'object') return null;
   return value as Record<string, unknown>;
+}
+
+function normalizeCommentText(text: string): string {
+  return text.replace(/\s+/g, ' ').trim();
 }
 
 function parseCountFromText(text: string): number | undefined {
@@ -104,8 +143,9 @@ function parseCount(value: unknown): number | undefined {
   if (!asObj) return undefined;
 
   // youtubei.js uses "Text" objects in a few places.
-  const fromToString = parseCountFromText(toStringSafe(asObj));
-  if (typeof fromToString === 'number') return fromToString;
+  const directText = toStringSafe(asObj.text).trim();
+  const fromDirectText = parseCountFromText(directText);
+  if (typeof fromDirectText === 'number') return fromDirectText;
 
   const viewCount = asRecord(asObj.view_count);
   if (viewCount) {
@@ -122,6 +162,35 @@ function parseCount(value: unknown): number | undefined {
   }
 
   return undefined;
+}
+
+function extractCommentAuthorName(
+  commentRec: Record<string, unknown> | null,
+): string | undefined {
+  if (typeof commentRec?.author === 'string') return commentRec.author;
+  const authorRec = asRecord(commentRec?.author);
+  const name = toStringSafe(authorRec?.name).trim();
+  return name || undefined;
+}
+
+function extractCommentPublishedAt(
+  commentRec: Record<string, unknown> | null,
+): string | undefined {
+  if (typeof commentRec?.published === 'string') return commentRec.published;
+  if (typeof commentRec?.published_time === 'string') return commentRec.published_time;
+  return undefined;
+}
+
+function syntheticCommentId(params: {
+  videoId: string;
+  authorName?: string;
+  text: string;
+}): string {
+  const hash = createHash('sha256')
+    .update(`${params.videoId}\n${params.authorName ?? ''}\n${params.text}`)
+    .digest('hex')
+    .slice(0, 32);
+  return `synthetic:${hash}`;
 }
 
 async function readJsonMaybe(filePath: string): Promise<unknown | null> {
@@ -146,6 +215,7 @@ async function readExistingComments(filePath: string): Promise<CommentRecord[]> 
 
     out.push({
       id: rec.id,
+      syntheticId: rec.syntheticId === true ? true : undefined,
       authorName: typeof rec.authorName === 'string' ? rec.authorName : undefined,
       publishedAt: typeof rec.publishedAt === 'string' ? rec.publishedAt : undefined,
       likeCount: typeof rec.likeCount === 'number' ? rec.likeCount : undefined,
@@ -194,6 +264,7 @@ type YouTubeInfo = {
   primary_info?: {
     title?: unknown;
     published?: unknown;
+    like_count?: unknown;
     view_count?: unknown;
   };
   secondary_info?: {
@@ -215,7 +286,11 @@ type CommentsCursor = {
 };
 
 async function main(): Promise<void> {
-  const { input, maxComments: maxCommentsArg } = parseArgs(process.argv.slice(2));
+  const {
+    input,
+    maxComments: maxCommentsArg,
+    forceFullScan,
+  } = parseArgs(process.argv.slice(2));
   const videoId = extractVideoId(input);
   if (!videoId) throw new Error('Could not parse a YouTube video id from input.');
 
@@ -225,7 +300,9 @@ async function main(): Promise<void> {
   const existingIngestion = asRecord(
     await readJsonMaybe(ingestionMetaPath('youtube', videoId)),
   );
-  const wasPreviouslyComplete = existingIngestion?.commentsComplete === true;
+  const wasPreviouslyCompleteConfirmed =
+    existingIngestion?.commentsCompleteConfirmed === true;
+  const resumeEnabled = wasPreviouslyCompleteConfirmed && !forceFullScan;
 
   const yt = await Innertube.create();
   const info = (await yt.getInfo(videoId)) as unknown as YouTubeInfo;
@@ -260,29 +337,20 @@ async function main(): Promise<void> {
   const now = new Date().toISOString();
   const viewCount =
     parseCount(info.primary_info?.view_count) ?? parseCount(info.basic_info?.view_count);
-  const likeCount = parseCount(info.basic_info?.like_count);
+  const likeCount =
+    parseCount(info.basic_info?.like_count) ?? parseCount(info.primary_info?.like_count);
 
-  if (typeof viewCount === 'number' || typeof likeCount === 'number') {
-    const reachPath = reachJsonPath('youtube', videoId);
-    const existingReach = await readExistingReach(reachPath);
-    const reach: VideoReach = existingReach ?? {
-      schema: 'constructive.video-reach@v1',
-      platform: 'youtube',
-      videoId,
-      snapshots: [],
-    };
-    reach.snapshots.push({ capturedAt: now, viewCount, likeCount });
-    await writeJsonFile(reachPath, reach);
-  }
-
+  const existingIds = new Set<string>();
   const existingById = new Map<string, CommentRecord>();
   for (const comment of existingComments) {
+    existingIds.add(comment.id);
     existingById.set(comment.id, comment);
   }
 
-  const maxComments = maxCommentsArg ?? Number.POSITIVE_INFINITY;
+  const maxComments =
+    maxCommentsArg === 'all' ? Number.POSITIVE_INFINITY : maxCommentsArg;
 
-  const commentRecords: CommentRecord[] = [];
+  const fetchedComments: CommentRecord[] = [];
   const seenIds = new Set<string>();
   let pagesFetched = 0;
   let newCommentCount = 0;
@@ -291,10 +359,44 @@ async function main(): Promise<void> {
     'NEWEST_FIRST',
   )) as unknown as CommentsCursor;
   let reachedEnd = false;
-  while (cursor && commentRecords.length < maxComments) {
+  let stoppedBecauseNoNew = false;
+  let consecutiveNoNewPages = 0;
+  let lastFingerprint: string | null = null;
+  let consecutiveFingerprintRepeats = 0;
+  let paginationLoopGuardTriggered = false;
+  while (cursor && fetchedComments.length < maxComments) {
     pagesFetched += 1;
     const maybeThreads = cursor.contents ?? cursor.comments ?? [];
     const threads = Array.isArray(maybeThreads) ? maybeThreads : [];
+
+    const fingerprint = (() => {
+      const ids: string[] = [];
+      const head = threads.slice(0, 3);
+      const tail = threads.slice(-3);
+      for (const thread of [...head, ...tail]) {
+        const threadRec = asRecord(thread);
+        const commentRaw = threadRec?.comment ?? thread;
+        const commentRec = asRecord(commentRaw);
+        const commentId =
+          typeof commentRec?.comment_id === 'string' ? commentRec.comment_id.trim() : '';
+        if (commentId) ids.push(commentId);
+      }
+      return ids.join('|');
+    })();
+
+    if (fingerprint) {
+      if (fingerprint === lastFingerprint) {
+        consecutiveFingerprintRepeats += 1;
+      } else {
+        lastFingerprint = fingerprint;
+        consecutiveFingerprintRepeats = 0;
+      }
+
+      if (consecutiveFingerprintRepeats >= 2) {
+        paginationLoopGuardTriggered = true;
+        break;
+      }
+    }
 
     let newThisPage = 0;
     for (const thread of threads) {
@@ -302,35 +404,39 @@ async function main(): Promise<void> {
       const commentRaw = threadRec?.comment ?? thread;
       const commentRec = asRecord(commentRaw);
 
-      const id =
+      const realId =
         typeof commentRec?.comment_id === 'string' ? commentRec.comment_id : null;
-      if (!id) continue;
+      const knownId = realId?.trim() || null;
+
+      let id = knownId;
+      let syntheticId = false;
+
+      if (!id) {
+        const rawText = toStringSafe(commentRec?.content ?? commentRec?.text);
+        const cleaned = normalizeCommentText(rawText);
+        if (!cleaned) continue;
+
+        const authorName = extractCommentAuthorName(commentRec);
+        id = syntheticCommentId({ videoId, authorName, text: cleaned });
+        syntheticId = true;
+      }
+
       if (seenIds.has(id)) continue;
 
       const existing = existingById.get(id);
       if (existing) {
-        commentRecords.push(existing);
+        fetchedComments.push(existing);
       } else {
         const text = toStringSafe(commentRec?.content ?? commentRec?.text);
-        const cleaned = text.replace(/\s+/g, ' ').trim();
+        const cleaned = normalizeCommentText(text);
         if (!cleaned) continue;
 
-        const authorName = (() => {
-          if (typeof commentRec?.author === 'string') return commentRec.author;
-          const authorRec = asRecord(commentRec?.author);
-          const name = toStringSafe(authorRec?.name).trim();
-          return name || undefined;
-        })();
+        const authorName = extractCommentAuthorName(commentRec);
+        const publishedAt = extractCommentPublishedAt(commentRec);
 
-        const publishedAt =
-          typeof commentRec?.published === 'string'
-            ? commentRec.published
-            : typeof commentRec?.published_time === 'string'
-              ? commentRec.published_time
-              : undefined;
-
-        commentRecords.push({
+        fetchedComments.push({
           id,
+          syntheticId: syntheticId ? true : undefined,
           authorName,
           publishedAt,
           likeCount: parseCount(commentRec?.like_count),
@@ -341,13 +447,18 @@ async function main(): Promise<void> {
       }
 
       seenIds.add(id);
-      if (commentRecords.length >= maxComments) break;
+      if (fetchedComments.length >= maxComments) break;
     }
 
-    if (commentRecords.length >= maxComments) break;
+    if (fetchedComments.length >= maxComments) break;
 
-    if (wasPreviouslyComplete && threads.length > 0 && newThisPage === 0) {
-      break;
+    if (threads.length > 0) {
+      consecutiveNoNewPages = newThisPage === 0 ? consecutiveNoNewPages + 1 : 0;
+
+      if (resumeEnabled && consecutiveNoNewPages >= 2) {
+        stoppedBecauseNoNew = true;
+        break;
+      }
     }
 
     if (typeof cursor.getContinuation !== 'function') {
@@ -358,26 +469,80 @@ async function main(): Promise<void> {
     cursor = (await cursor.getContinuation()) as unknown as CommentsCursor;
   }
 
-  // If we stopped early (or hit maxComments), preserve previously captured comments.
-  for (const comment of existingComments) {
-    if (commentRecords.length >= maxComments) break;
-    if (seenIds.has(comment.id)) continue;
-    commentRecords.push(comment);
+  if (paginationLoopGuardTriggered) {
+    process.stderr.write(
+      `Warning: detected possible pagination loop for ${videoId}; stopping early.\n`,
+    );
+    process.exitCode = 1;
   }
 
+  const remainingExisting = existingComments.filter(
+    (comment) => !seenIds.has(comment.id),
+  );
+  const fetchedPlusExisting = [...fetchedComments, ...remainingExisting];
+
+  const newComments = resumeEnabled
+    ? fetchedPlusExisting.filter((comment) => !existingIds.has(comment.id))
+    : [];
+  const newCommentIds = new Set<string>(newComments.map((comment) => comment.id));
+
+  const finalComments = resumeEnabled
+    ? [
+        ...newComments,
+        ...existingComments.filter((comment) => !newCommentIds.has(comment.id)),
+      ]
+    : fetchedPlusExisting;
+
+  const truncatedByLimit =
+    maxComments !== Number.POSITIVE_INFINITY && finalComments.length > maxComments;
+  const commentRecords = truncatedByLimit
+    ? finalComments.slice(0, maxComments)
+    : finalComments;
+
+  const commentsCompleteConfirmed =
+    !paginationLoopGuardTriggered &&
+    !truncatedByLimit &&
+    (wasPreviouslyCompleteConfirmed || reachedEnd);
   const commentsComplete =
-    commentRecords.length >= maxComments ? false : wasPreviouslyComplete || reachedEnd;
+    !paginationLoopGuardTriggered &&
+    !truncatedByLimit &&
+    (reachedEnd || stoppedBecauseNoNew);
+
+  const status = paginationLoopGuardTriggered ? 'warning-pagination-loop' : 'ok';
+
+  if (typeof viewCount === 'number' || typeof likeCount === 'number') {
+    const reachPath = reachJsonPath('youtube', videoId);
+    const existingReach = await readExistingReach(reachPath);
+    const reach: VideoReach = existingReach ?? {
+      schema: 'constructive.video-reach@v1',
+      platform: 'youtube',
+      videoId,
+      snapshots: [],
+    };
+    const lastSnapshot = reach.snapshots.at(-1);
+    if (
+      !lastSnapshot ||
+      lastSnapshot.viewCount !== viewCount ||
+      lastSnapshot.likeCount !== likeCount
+    ) {
+      reach.snapshots.push({ capturedAt: now, viewCount, likeCount });
+    }
+    await writeJsonFile(reachPath, reach);
+  }
 
   await writeJsonFile(videoJsonPath('youtube', videoId), video);
   await writeJsonFile(commentsJsonPath('youtube', videoId), commentRecords);
   await writeJsonFile(ingestionMetaPath('youtube', videoId), {
+    status,
     ingestedAt: now,
-    maxComments: maxCommentsArg ?? 'all',
+    maxComments: maxCommentsArg === 'all' ? null : maxCommentsArg,
     commentCount: commentRecords.length,
     commentsComplete,
+    commentsCompleteConfirmed,
     pagesFetched,
     newCommentCount,
     existingCommentCount: existingComments.length,
+    paginationLoopGuardTriggered: paginationLoopGuardTriggered ? true : undefined,
     reachCapturedAt:
       typeof viewCount === 'number' || typeof likeCount === 'number' ? now : undefined,
   });
