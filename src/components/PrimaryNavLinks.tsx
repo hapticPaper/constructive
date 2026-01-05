@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { NavLink, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 import { isPrimaryNavItemActive, PRIMARY_NAV_ITEMS } from '../lib/nav';
 
@@ -12,21 +12,20 @@ export function PrimaryNavLinks({
 
   return (
     <>
-      {PRIMARY_NAV_ITEMS.map((item) => (
-        <NavLink
-          key={item.to}
-          end={item.end}
-          to={item.to}
-          className={({ isActive }) =>
-            clsx(
-              linkClassName,
-              isPrimaryNavItemActive(item, location.pathname, isActive) && 'active',
-            )
-          }
-        >
-          {item.label}
-        </NavLink>
-      ))}
+      {PRIMARY_NAV_ITEMS.map((item) => {
+        const active = isPrimaryNavItemActive(item, location.pathname);
+
+        return (
+          <Link
+            key={item.to}
+            to={item.to}
+            className={clsx(linkClassName, active && 'active')}
+            aria-current={active ? 'page' : undefined}
+          >
+            {item.label}
+          </Link>
+        );
+      })}
     </>
   );
 }

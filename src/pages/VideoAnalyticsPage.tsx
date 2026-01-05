@@ -54,9 +54,9 @@ export function VideoAnalyticsPage(): JSX.Element {
 
   const channelHref = `/channel/${content.video.channel.platform}/${content.video.channel.channelId}`;
   const breadcrumbs: BreadcrumbItem[] = [
-    { label: 'Library', to: '/library' },
-    { label: content.video.channel.channelTitle, to: channelHref },
-    { label: content.video.title },
+    { key: '/library', label: 'Library', to: '/library' },
+    { key: channelHref, label: content.video.channel.channelTitle, to: channelHref },
+    { key: `video:${key}`, label: content.video.title },
   ];
 
   const headerActions = (

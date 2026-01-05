@@ -1,16 +1,14 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 
-export function HeroActionLink({
-  to,
-  href,
-  children,
-}: {
-  to?: string;
-  href?: string;
+type HeroActionLinkProps = {
   children: ReactNode;
-}): JSX.Element | null {
-  if (href) {
+} & ({ href: string; to?: never } | { to: string; href?: never });
+
+export function HeroActionLink(props: HeroActionLinkProps): JSX.Element {
+  if ('href' in props) {
+    const { href, children } = props;
+
     return (
       <a href={href} target="_blank" rel="noreferrer" className="btn btn-ghost">
         {children}
@@ -18,13 +16,11 @@ export function HeroActionLink({
     );
   }
 
-  if (to) {
-    return (
-      <Link to={to} className="btn btn-ghost">
-        {children}
-      </Link>
-    );
-  }
+  const { to, children } = props;
 
-  return null;
+  return (
+    <Link to={to} className="btn btn-ghost">
+      {children}
+    </Link>
+  );
 }

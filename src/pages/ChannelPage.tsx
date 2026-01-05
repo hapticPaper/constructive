@@ -95,8 +95,8 @@ export function ChannelPage(): JSX.Element {
   const channel = channelVideos[0].channel;
   const ChannelAggregateComponent = aggregateModule?.default;
   const breadcrumbs: BreadcrumbItem[] = [
-    { label: 'Library', to: '/library' },
-    { label: channel.channelTitle },
+    { key: '/library', label: 'Library', to: '/library' },
+    { key: `channel:${platform}:${channelId}`, label: channel.channelTitle },
   ];
 
   return (

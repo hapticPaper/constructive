@@ -201,11 +201,27 @@ textarea:focus-visible {
 }
 
 .breadcrumbs {
-  display: flex;
-  gap: 8px;
-  align-items: center;
   font-size: 13px;
   color: var(--muted-2);
+}
+
+.breadcrumbs ol {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.breadcrumbs li {
+  display: flex;
+  align-items: center;
+}
+
+.breadcrumbs li + li::before {
+  content: '/';
+  margin: 0 8px;
 }
 
 .breadcrumbs a {
@@ -412,7 +428,27 @@ textarea:focus-visible {
   }
 
   .sidebar {
-    display: none;
+    position: static;
+    top: auto;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 12px;
+  }
+
+  .sidebar-nav {
+    flex-direction: row;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+  }
+
+  .sidebar-link {
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 640px) {
+  .sidebar {
+    padding-bottom: 8px;
   }
 }
 
