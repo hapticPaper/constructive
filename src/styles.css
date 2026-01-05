@@ -216,9 +216,9 @@ textarea:focus-visible {
 }
 
 .btn-primary {
-  border-color: rgba(var(--brand-rgb), 0.25);
-  background: rgba(var(--brand-rgb), 0.08);
-  color: var(--brand);
+  border-color: rgba(var(--brand-rgb), 0.32);
+  background: rgba(var(--brand-rgb), 0.12);
+  color: var(--text);
 }
 
 .btn-ghost:hover {
@@ -246,8 +246,8 @@ textarea:focus-visible {
 }
 
 .btn-primary:hover {
-  background: rgba(var(--brand-rgb), 0.11);
-  border-color: rgba(var(--brand-rgb), 0.35);
+  background: rgba(var(--brand-rgb), 0.16);
+  border-color: rgba(var(--brand-rgb), 0.4);
 }
 
 .grid {
