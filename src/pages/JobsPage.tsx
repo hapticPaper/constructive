@@ -214,9 +214,7 @@ export function JobsPage(): JSX.Element {
                     <div style={{ fontWeight: 650 }}>{title}</div>
                     <div className="muted" style={{ marginTop: 4, fontSize: 13 }}>
                       {channel} ·{' '}
-                      <span style={{ color: 'var(--muted-2)' }}>
-                        {video.videoId}
-                      </span>
+                      <span style={{ color: 'var(--muted-2)' }}>{video.videoId}</span>
                     </div>
                     <div className="muted" style={{ marginTop: 8 }}>
                       <strong>{stage.label}:</strong> {stage.detail}
