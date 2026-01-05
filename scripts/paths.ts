@@ -20,6 +20,10 @@ export function analyticsJsonPath(platform: Platform, videoId: string): string {
   return path.join(videoRoot(platform, videoId), 'analytics.json');
 }
 
+export function reachJsonPath(platform: Platform, videoId: string): string {
+  return path.join(videoRoot(platform, videoId), 'reach.json');
+}
+
 export function reportMdxPath(platform: Platform, videoId: string): string {
   return path.join(videoRoot(platform, videoId), 'report.mdx');
 }

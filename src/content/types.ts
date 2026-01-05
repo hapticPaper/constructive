@@ -23,6 +23,19 @@ export type VideoMetadata = {
   thumbnailUrl?: string;
 };
 
+export type VideoReachSnapshot = {
+  capturedAt: string;
+  viewCount?: number;
+  likeCount?: number;
+};
+
+export type VideoReach = {
+  schema: 'constructive.video-reach@v1';
+  platform: Platform;
+  videoId: string;
+  snapshots: VideoReachSnapshot[];
+};
+
 export type CommentRecord = {
   id: string;
   authorName?: string;
@@ -89,6 +102,7 @@ export type VideoContent = {
   video: VideoMetadata;
   comments?: CommentRecord[];
   analytics?: CommentAnalytics;
+  reach?: VideoReach;
 };
 
 /**
