@@ -100,7 +100,7 @@ input::placeholder {
 
 a:not(.btn):focus-visible,
 button:not(.btn):focus-visible,
-input:not(.input):focus-visible,
+input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
   outline: 2px solid rgba(var(--brand-rgb, 37, 99, 235), 0.5);
@@ -206,7 +206,9 @@ textarea:focus-visible {
 
 .btn:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 4px rgba(var(--brand-rgb, 37, 99, 235), 0.14);
+  box-shadow:
+    0 0 0 4px rgba(var(--brand-rgb, 37, 99, 235), 0.14),
+    var(--shadow-sm);
   border-color: rgba(var(--brand-rgb, 37, 99, 235), 0.35);
 }
 
@@ -241,7 +243,9 @@ textarea:focus-visible {
 
 .input:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 4px rgba(var(--brand-rgb, 37, 99, 235), 0.12);
+  box-shadow:
+    0 0 0 4px rgba(var(--brand-rgb, 37, 99, 235), 0.12),
+    var(--shadow-sm);
   border-color: rgba(var(--brand-rgb, 37, 99, 235), 0.35);
 }
 

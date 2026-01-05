@@ -106,15 +106,15 @@ export function RadarGraph({
       <div style={{ width: '100%', height }}>
         <ResponsiveContainer>
           <RadarChart data={data} cx="50%" cy="50%">
-            <PolarGrid stroke="var(--border)" />
+            <PolarGrid stroke="var(--border, #e2e8f0)" />
             <PolarAngleAxis
               dataKey="label"
-              tick={{ fill: 'var(--muted)', fontSize: 12 }}
+              tick={{ fill: 'var(--muted, #475569)', fontSize: 12 }}
             />
             <PolarRadiusAxis
               domain={[0, 100]}
               tickCount={5}
-              tick={{ fill: 'var(--muted-2)', fontSize: 11 }}
+              tick={{ fill: 'var(--muted-2, #64748b)', fontSize: 11 }}
               axisLine={false}
               tickLine={false}
             />
