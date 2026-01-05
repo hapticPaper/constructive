@@ -48,15 +48,7 @@ export function LibraryPage(): JSX.Element {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search title or channel"
-          style={{
-            flex: '1 1 340px',
-            minWidth: 240,
-            padding: '10px 12px',
-            borderRadius: 10,
-            border: '1px solid var(--border)',
-            background: 'rgba(255,255,255,0.04)',
-            color: 'var(--text)',
-          }}
+          className="input input-fluid"
         />
       </div>
       {error ? (

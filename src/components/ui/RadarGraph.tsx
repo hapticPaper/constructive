@@ -50,10 +50,12 @@ function TooltipContent({
   return (
     <div
       style={{
-        background: 'rgba(7, 10, 19, 0.92)',
-        border: '1px solid rgba(255, 255, 255, 0.12)',
+        background: 'var(--panel-3)',
+        border: '1px solid var(--border)',
         borderRadius: 10,
         padding: '10px 12px',
+        boxShadow: 'var(--shadow-sm)',
+        color: 'var(--text)',
       }}
     >
       <div style={{ fontWeight: 650 }}>{datum.label}</div>
@@ -104,22 +106,22 @@ export function RadarGraph({
       <div style={{ width: '100%', height }}>
         <ResponsiveContainer>
           <RadarChart data={data} cx="50%" cy="50%">
-            <PolarGrid stroke="rgba(255,255,255,0.12)" />
+            <PolarGrid stroke="var(--border, #e2e8f0)" />
             <PolarAngleAxis
               dataKey="label"
-              tick={{ fill: 'rgba(255,255,255,0.72)', fontSize: 12 }}
+              tick={{ fill: 'var(--muted, #475569)', fontSize: 12 }}
             />
             <PolarRadiusAxis
               domain={[0, 100]}
               tickCount={5}
-              tick={{ fill: 'rgba(255,255,255,0.55)', fontSize: 11 }}
+              tick={{ fill: 'var(--muted-2, #64748b)', fontSize: 11 }}
               axisLine={false}
               tickLine={false}
             />
             <Radar
               dataKey={RADAR_SERIES_DATA_KEY}
-              stroke="#6aa9ff"
-              fill="rgba(106,169,255,0.28)"
+              stroke="rgb(var(--brand-rgb, 37, 99, 235))"
+              fill="rgba(var(--brand-rgb, 37, 99, 235), 0.16)"
               fillOpacity={1}
             />
             <Tooltip content={TooltipContent} />

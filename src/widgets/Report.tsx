@@ -40,9 +40,9 @@ export type CommentReport = {
 };
 
 const SENTIMENT_COLORS: Record<Sentiment, string> = {
-  positive: '#8cffcb',
-  neutral: 'rgba(255,255,255,0.65)',
-  negative: '#ff6376',
+  positive: 'var(--positive)',
+  neutral: 'var(--neutral)',
+  negative: 'var(--negative)',
 };
 
 const SENTIMENT_ORDER: Sentiment[] = ['positive', 'neutral', 'negative'];
@@ -162,7 +162,9 @@ export function Report({ report }: { report: CommentReport }): JSX.Element {
       <div style={{ marginTop: 14 }}>
         <WidgetGrid columns={3}>
           <WidgetPanel title="Snapshot">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 }}>
+            <div
+              style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 }}
+            >
               <StatRow
                 label="Comments analyzed"
                 value={report.snapshot.commentCount.toLocaleString()}
@@ -187,7 +189,12 @@ export function Report({ report }: { report: CommentReport }): JSX.Element {
                 Sentiment mix
               </div>
               <div
-                style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 10 }}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 8,
+                  marginTop: 10,
+                }}
               >
                 {SENTIMENT_ORDER.map((sentiment) => (
                   <div key={sentiment} className="row">
@@ -244,7 +251,9 @@ export function Report({ report }: { report: CommentReport }): JSX.Element {
       {quotes.length ? (
         <div style={{ marginTop: 14 }}>
           <WidgetPanel title="Representative quotes (safe)">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 }}>
+            <div
+              style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 }}
+            >
               {quotes.map((quote, index) => (
                 <div key={`${index}:${quote}`} className="callout">
                   <div className="muted">“{quote}”</div>

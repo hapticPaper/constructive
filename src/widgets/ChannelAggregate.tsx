@@ -1,6 +1,11 @@
 import type { CSSProperties } from 'react';
 
-import type { ChannelAggregate, CreatorTakeaway, Sentiment, ThemeBucket } from '../content/types';
+import type {
+  ChannelAggregate,
+  CreatorTakeaway,
+  Sentiment,
+  ThemeBucket,
+} from '../content/types';
 
 import { Callout } from './Callout';
 import { WidgetGrid } from './WidgetGrid';
@@ -11,9 +16,9 @@ type ThemeItem = ThemeBucket[number];
 const CHANNEL_AGGREGATE_SCHEMA = 'constructive.channel-aggregate@v1' as const;
 
 const SENTIMENT_COLORS: Record<Sentiment, string> = {
-  positive: '#8cffcb',
-  neutral: 'rgba(255,255,255,0.65)',
-  negative: '#ff6376',
+  positive: 'var(--positive)',
+  neutral: 'var(--neutral)',
+  negative: 'var(--negative)',
 };
 
 const SENTIMENT_ORDER: Sentiment[] = ['positive', 'neutral', 'negative'];
@@ -92,7 +97,8 @@ export function ChannelAggregate({
   if (channelAggregate.schema !== CHANNEL_AGGREGATE_SCHEMA) {
     return (
       <Callout title="Unsupported channel aggregate schema">
-        Expected <code>{CHANNEL_AGGREGATE_SCHEMA}</code>, got <code>{channelAggregate.schema}</code>.
+        Expected <code>{CHANNEL_AGGREGATE_SCHEMA}</code>, got{' '}
+        <code>{channelAggregate.schema}</code>.
       </Callout>
     );
   }
@@ -103,17 +109,21 @@ export function ChannelAggregate({
   return (
     <div>
       <p className="muted" style={{ marginTop: 0 }}>
-        Channel-level insights aggregated from {channelAggregate.videoCount} analyzed video{channelAggregate.videoCount !== 1 ? 's' : ''} for{' '}
+        Channel-level insights aggregated from {channelAggregate.videoCount} analyzed
+        video{channelAggregate.videoCount !== 1 ? 's' : ''} for{' '}
         <strong>{channelAggregate.channel.channelTitle}</strong>.
       </p>
       <Callout title="Channel view">
-        This aggregates patterns across all analyzed videos to help identify channel-wide trends and opportunities.
+        This aggregates patterns across all analyzed videos to help identify channel-wide
+        trends and opportunities.
       </Callout>
 
       <div style={{ marginTop: 14 }}>
         <WidgetGrid columns={3}>
           <WidgetPanel title="Channel summary">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 }}>
+            <div
+              style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 }}
+            >
               <StatRow
                 label="Videos analyzed"
                 value={channelAggregate.videoCount.toLocaleString()}
@@ -124,7 +134,9 @@ export function ChannelAggregate({
               />
               <StatRow
                 label="Avg per video"
-                value={Math.round(channelAggregate.totalComments / channelAggregate.videoCount).toLocaleString()}
+                value={Math.round(
+                  channelAggregate.totalComments / channelAggregate.videoCount,
+                ).toLocaleString()}
               />
             </div>
 
@@ -133,7 +145,12 @@ export function ChannelAggregate({
                 Sentiment breakdown
               </div>
               <div
-                style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 10 }}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 8,
+                  marginTop: 10,
+                }}
               >
                 {SENTIMENT_ORDER.map((sentiment) => (
                   <div key={sentiment} className="row">

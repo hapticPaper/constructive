@@ -51,8 +51,8 @@ function getJobStage(platform: Platform, videoId: string): JobStage {
 }
 
 const FOCUSED_JOB_STYLE = {
-  borderColor: 'rgba(106, 169, 255, 0.8)',
-  boxShadow: '0 0 0 1px rgba(106, 169, 255, 0.35)',
+  borderColor: 'rgba(var(--brand-rgb, 37, 99, 235), 0.35)',
+  boxShadow: '0 0 0 3px rgba(var(--brand-rgb, 37, 99, 235), 0.1)',
 } as const;
 
 export function JobsPage(): JSX.Element {
@@ -152,15 +152,7 @@ export function JobsPage(): JSX.Element {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="https://www.youtube.com/watch?v=..."
-            style={{
-              flex: '1 1 340px',
-              minWidth: 240,
-              padding: '10px 12px',
-              borderRadius: 10,
-              border: '1px solid var(--border)',
-              background: 'rgba(255,255,255,0.04)',
-              color: 'var(--text)',
-            }}
+            className="input input-fluid"
           />
           <Button variant="primary" onClick={addByInput}>
             Add
@@ -218,9 +210,7 @@ export function JobsPage(): JSX.Element {
                     <div style={{ fontWeight: 650 }}>{title}</div>
                     <div className="muted" style={{ marginTop: 4, fontSize: 13 }}>
                       {channel} ·{' '}
-                      <span style={{ color: 'rgba(255,255,255,0.55)' }}>
-                        {video.videoId}
-                      </span>
+                      <span style={{ color: 'var(--muted-2)' }}>{video.videoId}</span>
                     </div>
                     <div className="muted" style={{ marginTop: 8 }}>
                       <strong>{stage.label}:</strong> {stage.detail}
