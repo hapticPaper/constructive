@@ -23,8 +23,24 @@ export type VideoMetadata = {
   thumbnailUrl?: string;
 };
 
+export type VideoReachSnapshot = {
+  capturedAt: string;
+  viewCount?: number;
+  likeCount?: number;
+};
+
+export type VideoReach = {
+  // `schema` is a versioned discriminator for the on-disk reach snapshot format.
+  schema: 'constructive.video-reach@v1';
+  platform: Platform;
+  videoId: string;
+  snapshots: VideoReachSnapshot[];
+};
+
 export type CommentRecord = {
   id: string;
+  // When true, `id` is synthetic (not a native YouTube `comment_id`).
+  syntheticId?: true;
   authorName?: string;
   publishedAt?: string;
   likeCount?: number;
@@ -89,6 +105,7 @@ export type VideoContent = {
   video: VideoMetadata;
   comments?: CommentRecord[];
   analytics?: CommentAnalytics;
+  reach?: VideoReach;
 };
 
 /**

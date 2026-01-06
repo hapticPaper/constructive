@@ -237,21 +237,25 @@ async function main(): Promise<void> {
     const videoAbs = path.join(base, 'video.json');
     const commentsAbs = path.join(base, 'comments.json');
     const analyticsAbs = path.join(base, 'analytics.json');
+    const reachAbs = path.join(base, 'reach.json');
     const reportAbs = path.join(base, 'report.mdx');
 
     const hasComments = files.has('comments.json');
     const hasAnalytics = files.has('analytics.json');
+    const hasReach = files.has('reach.json');
     const hasReport = files.has('report.mdx');
 
     const videoPath = relFromGenerated(videoAbs);
     const commentsPath = relFromGenerated(commentsAbs);
     const analyticsPath = relFromGenerated(analyticsAbs);
+    const reachPath = relFromGenerated(reachAbs);
     const reportPath = relFromGenerated(reportAbs);
 
     contentImports.push(
       `import ${ident}_video from '${videoPath}';`,
       ...(hasComments ? [`import ${ident}_comments from '${commentsPath}';`] : []),
       ...(hasAnalytics ? [`import ${ident}_analytics from '${analyticsPath}';`] : []),
+      ...(hasReach ? [`import ${ident}_reach from '${reachPath}';`] : []),
       '',
     );
 
@@ -264,6 +268,7 @@ async function main(): Promise<void> {
       `    video: ${ident}_video as VideoContent['video'],`,
       `    comments: ${hasComments ? `${ident}_comments` : 'undefined'},`,
       `    analytics: ${hasAnalytics ? `${ident}_analytics as VideoContent['analytics']` : 'undefined'},`,
+      `    reach: ${hasReach ? `${ident}_reach as VideoContent['reach']` : 'undefined'},`,
       '  },',
     );
 
