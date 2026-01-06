@@ -136,16 +136,15 @@ export function JobsPage(): JSX.Element {
 
   return (
     <div>
-      <div className="hero">
+      <div className="page-header">
         <h1>Jobs</h1>
         <p>
-          This browser keeps a local library of the videos you’ve requested. Ingestion and
-          analysis are idempotent (keyed by video id): comments get captured first, then
-          playbook runs fill in analytics + MDX reports.
+          Track video ingestion and analysis jobs. Comments get captured first, then
+          playbook runs fill in analytics and generate MDX reports.
         </p>
       </div>
 
-      <div style={{ marginTop: 18 }} className="panel">
+      <div className="panel">
         <h2>Add a YouTube video</h2>
         <div style={{ marginTop: 12, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
           <input
@@ -165,7 +164,7 @@ export function JobsPage(): JSX.Element {
         ) : null}
       </div>
 
-      <div style={{ marginTop: 18, display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
         {videos.length === 0 ? (
           <div className="panel">
             <h2>No jobs yet</h2>

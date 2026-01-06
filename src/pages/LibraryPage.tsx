@@ -35,15 +35,15 @@ export function LibraryPage(): JSX.Element {
 
   return (
     <div>
-      <div className="hero">
-        <h1>Pick content to analyze</h1>
+      <div className="page-header">
+        <h1>Library</h1>
         <p>
-          The “backend” for this MVP is just structured files in git. Each video has its
-          own metadata, comments snapshot, computed analytics, and a report in MDX.
+          Browse and analyze your video content. Each video has its own metadata, comments
+          snapshot, computed analytics, and a report in MDX.
         </p>
       </div>
 
-      <div style={{ marginTop: 18, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 24 }}>
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -52,28 +52,30 @@ export function LibraryPage(): JSX.Element {
         />
       </div>
       {error ? (
-        <div style={{ marginTop: 10 }} className="callout">
+        <div style={{ marginBottom: 16 }} className="callout">
           <strong>Heads up:</strong> <span className="muted">{error}</span>
         </div>
       ) : null}
 
-      <div style={{ marginTop: 18, display: 'flex', flexDirection: 'column', gap: 18 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
         {Array.from(grouped.values()).map((channelVideos) => {
           const channel = channelVideos[0]?.channel;
           if (!channel) return null;
 
           return (
             <section key={`${channel.platform}:${channel.channelId}`}>
-              <div className="row" style={{ marginBottom: 10 }}>
+              <div className="row" style={{ marginBottom: 14 }}>
                 <div>
                   <Link
                     to={`/channel/${channel.platform}/${channel.channelId}`}
                     style={{ textDecoration: 'none', color: 'inherit' }}
                   >
-                    <div style={{ fontWeight: 650 }}>{channel.channelTitle}</div>
+                    <div style={{ fontWeight: 650, fontSize: 18 }}>
+                      {channel.channelTitle}
+                    </div>
                   </Link>
-                  <div className="muted" style={{ fontSize: 13 }}>
-                    {channelVideos.length} videos
+                  <div className="muted" style={{ fontSize: 13, marginTop: 2 }}>
+                    {channelVideos.length} {channelVideos.length === 1 ? 'video' : 'videos'}
                   </div>
                 </div>
                 <Link

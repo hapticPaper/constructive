@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 import {
   getAnalysisUsage,
@@ -14,6 +14,8 @@ import { Pill } from './ui/Pill';
 export function NavBar(): JSX.Element {
   const usage = getAnalysisUsage();
   const tier = getUserTier();
+  const location = useLocation();
+  const isOverview = location.pathname === '/';
 
   return (
     <header className="nav">
@@ -22,9 +24,11 @@ export function NavBar(): JSX.Element {
           <Link to="/" className="brand">
             Constructive
           </Link>
-          <nav className="nav-links">
-            <PrimaryNavLinks linkClassName="nav-link" />
-          </nav>
+          {isOverview && (
+            <nav className="nav-links">
+              <PrimaryNavLinks linkClassName="nav-link" />
+            </nav>
+          )}
         </div>
         <div className="nav-right">
           <Pill>
