@@ -45,6 +45,10 @@ body {
   height: 100%;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
   background:
@@ -65,6 +69,7 @@ body {
 a {
   color: var(--brand);
   text-decoration: none;
+  transition: color 0.15s ease;
 }
 
 a:hover {
@@ -73,6 +78,10 @@ a:hover {
 
 a.btn:hover {
   text-decoration: none;
+}
+
+a.brand {
+  font-size: 17px;
 }
 
 a.brand:hover,
@@ -148,12 +157,21 @@ textarea:focus-visible {
 
 .sidebar-link {
   padding: 9px 12px;
-  border-radius: 12px;
+  border-radius: 10px;
   color: var(--muted);
   text-decoration: none;
+  transition: all 0.15s ease;
+  font-size: 14px;
+  font-weight: 500;
 }
 
-.sidebar-link.active,
+.sidebar-link.active {
+  background: rgba(var(--brand-rgb), 0.1);
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 600;
+}
+
 .sidebar-link:hover {
   background: var(--panel-2);
   color: var(--text);
@@ -244,12 +262,20 @@ textarea:focus-visible {
 
 .nav-link {
   text-decoration: none;
-  padding: 6px 10px;
-  border-radius: 999px;
+  padding: 7px 12px;
+  border-radius: 8px;
   color: var(--muted);
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.15s ease;
 }
 
-.nav-link.active,
+.nav-link.active {
+  background: rgba(var(--brand-rgb), 0.1);
+  color: var(--text);
+  font-weight: 600;
+}
+
 .nav-link:hover {
   background: var(--panel-2);
   color: var(--text);
@@ -277,10 +303,12 @@ textarea:focus-visible {
   background: var(--panel);
   color: var(--text);
   border-radius: 10px;
-  padding: 10px 12px;
+  padding: 10px 16px;
   cursor: pointer;
   font-size: 14px;
+  font-weight: 500;
   box-shadow: var(--shadow-sm);
+  transition: all 0.15s ease;
 }
 
 .btn-ghost {
@@ -289,7 +317,15 @@ textarea:focus-visible {
 }
 
 .btn:hover {
-  border-color: rgba(15, 23, 42, 0.14);
+  border-color: rgba(15, 23, 42, 0.18);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.08);
+}
+
+.btn-ghost:hover {
+  background: var(--panel-2);
+  transform: translateY(0);
+  box-shadow: none;
 }
 
 .btn:focus-visible {
@@ -309,10 +345,13 @@ textarea:focus-visible {
   border-color: rgba(var(--brand-rgb), 0.32);
   background: rgba(var(--brand-rgb), 0.12);
   color: var(--text);
+  font-weight: 600;
 }
 
-.btn-ghost:hover {
-  background: var(--panel-2);
+.btn-primary:hover {
+  background: rgba(var(--brand-rgb), 0.18);
+  border-color: rgba(var(--brand-rgb), 0.45);
+  transform: translateY(-1px);
 }
 
 .input {
@@ -320,8 +359,10 @@ textarea:focus-visible {
   background: var(--panel);
   color: var(--text);
   border-radius: 10px;
-  padding: 10px 12px;
+  padding: 10px 14px;
   box-shadow: var(--shadow-sm);
+  transition: all 0.15s ease;
+  font-size: 14px;
 }
 
 .input-fluid {
@@ -329,17 +370,16 @@ textarea:focus-visible {
   min-width: 240px;
 }
 
+.input:hover {
+  border-color: rgba(15, 23, 42, 0.12);
+}
+
 .input:focus-visible {
   outline: none;
   box-shadow:
-    0 0 0 4px rgba(var(--brand-rgb, 37, 99, 235), 0.12),
+    0 0 0 4px rgba(var(--brand-rgb, 37, 99, 235), 0.1),
     var(--shadow-sm);
   border-color: rgba(var(--brand-rgb, 37, 99, 235), 0.35);
-}
-
-.btn-primary:hover {
-  background: rgba(var(--brand-rgb), 0.16);
-  border-color: rgba(var(--brand-rgb), 0.4);
 }
 
 .grid {
@@ -366,14 +406,20 @@ textarea:focus-visible {
 .panel {
   border: 1px solid var(--border);
   background: var(--panel);
-  border-radius: 14px;
-  padding: 14px;
+  border-radius: 12px;
+  padding: 20px;
   box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s ease;
+}
+
+.panel:hover {
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
 }
 
 .panel h2 {
   margin: 0 0 6px;
-  font-size: 16px;
+  font-size: 17px;
+  font-weight: 650;
 }
 
 .muted {
@@ -506,10 +552,16 @@ textarea:focus-visible {
 .card {
   overflow: hidden;
   padding: 0;
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
 }
 
 .card .card-body {
-  padding: 12px;
+  padding: 14px;
 }
 
 .thumb {
