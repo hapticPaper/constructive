@@ -6,9 +6,7 @@ export function Layout(): JSX.Element {
   return (
     <div className="app-shell">
       <NavBar />
-      <main className="main">
-        <Outlet />
-      </main>
+      <Outlet />
     </div>
   );
 }

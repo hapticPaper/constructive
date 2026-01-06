@@ -6,6 +6,8 @@ import { Link, useParams } from 'react-router-dom';
 import { getVideoContent, getVideoReportComponent } from '../content/content';
 import { getValidRadarFromAnalytics } from '../content/radar';
 import type { Platform } from '../content/types';
+import { Hero, type BreadcrumbItem } from '../components/Hero';
+import { HeroActionLink } from '../components/HeroActionLink';
 import { canRunAnalysis, isVideoUnlocked, unlockVideo } from '../lib/freemium';
 import { Button } from '../components/ui/Button';
 import { RadarGraph } from '../components/ui/RadarGraph';
@@ -50,20 +52,34 @@ export function VideoAnalyticsPage(): JSX.Element {
     );
   }
 
+  const channelHref = `/channel/${content.video.channel.platform}/${content.video.channel.channelId}`;
+  const breadcrumbs: BreadcrumbItem[] = [
+    { key: '/library', label: 'Library', to: '/library' },
+    { key: channelHref, label: content.video.channel.channelTitle, to: channelHref },
+    { key: `video:${key}`, label: content.video.title },
+  ];
+
+  const headerActions = (
+    <>
+      <HeroActionLink href={content.video.videoUrl}>Open on YouTube</HeroActionLink>
+      <HeroActionLink to={channelHref}>View channel</HeroActionLink>
+      <HeroActionLink to="/library">Back to Library</HeroActionLink>
+    </>
+  );
+
+  const videoMetaDescription = content.video.channel.channelTitle;
+
   if (!content.analytics) {
     const commentCount = content.comments?.length;
 
     return (
       <div>
-        <div className="hero">
-          <h1>{content.video.title}</h1>
-          <p>
-            {content.video.channel.channelTitle} ·{' '}
-            <a href={content.video.videoUrl} target="_blank" rel="noreferrer">
-              Open on YouTube
-            </a>
-          </p>
-        </div>
+        <Hero
+          breadcrumbs={breadcrumbs}
+          heading={content.video.title}
+          description={videoMetaDescription}
+          actions={headerActions}
+        />
 
         <div className="panel" style={{ marginTop: 18 }}>
           <h2>Analysis pending</h2>
@@ -94,14 +110,16 @@ export function VideoAnalyticsPage(): JSX.Element {
 
     return (
       <div>
-        <div className="hero">
-          <h1>{gate.ok ? 'Unlock this report' : 'Daily limit reached'}</h1>
-          <p>
-            {gate.ok
+        <Hero
+          breadcrumbs={breadcrumbs}
+          heading={gate.ok ? 'Unlock this report' : 'Daily limit reached'}
+          description={
+            gate.ok
               ? 'Unlocking uses 1 run from your daily quota. Re-opening this same video won’t consume again.'
-              : gate.reason}
-          </p>
-        </div>
+              : gate.reason
+          }
+          actions={headerActions}
+        />
         <div className="panel" style={{ marginTop: 18 }}>
           <h2>Access</h2>
           <p className="muted" style={{ marginTop: 6 }}>
@@ -140,15 +158,12 @@ export function VideoAnalyticsPage(): JSX.Element {
 
   return (
     <div>
-      <div className="hero">
-        <h1>{content.video.title}</h1>
-        <p>
-          {content.video.channel.channelTitle} ·{' '}
-          <a href={content.video.videoUrl} target="_blank" rel="noreferrer">
-            Open on YouTube
-          </a>
-        </p>
-      </div>
+      <Hero
+        breadcrumbs={breadcrumbs}
+        heading={content.video.title}
+        description={videoMetaDescription}
+        actions={headerActions}
+      />
 
       <div style={{ marginTop: 18 }} className="grid grid-3">
         <section className="panel kpi">

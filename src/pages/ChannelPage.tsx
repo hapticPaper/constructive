@@ -5,6 +5,8 @@ import { Link, useParams } from 'react-router-dom';
 
 import { getVideoContent, listVideos } from '../content/content';
 import type { Platform, VideoMetadata } from '../content/types';
+import { Hero, type BreadcrumbItem } from '../components/Hero';
+import { HeroActionLink } from '../components/HeroActionLink';
 import { Button } from '../components/ui/Button';
 import * as Widgets from '../widgets';
 
@@ -18,7 +20,9 @@ export function ChannelPage(): JSX.Element {
   const platform = (params.platform as Platform | undefined) ?? 'youtube';
   const channelId = params.channelId ?? '';
 
-  const [aggregateModule, setAggregateModule] = useState<ChannelAggregateModule | null>(null);
+  const [aggregateModule, setAggregateModule] = useState<ChannelAggregateModule | null>(
+    null,
+  );
   const [aggregateLoading, setAggregateLoading] = useState(true);
 
   // Load channel aggregate dynamically
@@ -72,11 +76,15 @@ export function ChannelPage(): JSX.Element {
       <div className="panel">
         <h2>Channel not found</h2>
         <p className="muted" style={{ marginTop: 6 }}>
-          No videos found for channel {channelId} on {platform}. Add videos via the ingestion
-          workflow.
+          No videos found for channel {channelId} on {platform}. Add videos via the
+          ingestion workflow.
         </p>
         <div style={{ marginTop: 12 }}>
-          <Link to="/library" className="btn btn-primary" style={{ textDecoration: 'none' }}>
+          <Link
+            to="/library"
+            className="btn btn-primary"
+            style={{ textDecoration: 'none' }}
+          >
             Back to Library
           </Link>
         </div>
@@ -86,22 +94,26 @@ export function ChannelPage(): JSX.Element {
 
   const channel = channelVideos[0].channel;
   const ChannelAggregateComponent = aggregateModule?.default;
+  const breadcrumbs: BreadcrumbItem[] = [
+    { key: '/library', label: 'Library', to: '/library' },
+    { key: `channel:${platform}:${channelId}`, label: channel.channelTitle },
+  ];
 
   return (
     <div>
-      <div className="hero">
-        <h1>{channel.channelTitle}</h1>
-        <p>
-          {channelVideos.length} video{channelVideos.length !== 1 ? 's' : ''} ·{' '}
-          {channel.channelUrl ? (
-            <a href={channel.channelUrl} target="_blank" rel="noreferrer">
-              Open on YouTube
-            </a>
-          ) : (
-            <span className="muted">YouTube Channel</span>
-          )}
-        </p>
-      </div>
+      <Hero
+        breadcrumbs={breadcrumbs}
+        heading={channel.channelTitle}
+        description={`${channelVideos.length} video${channelVideos.length !== 1 ? 's' : ''}`}
+        actions={
+          <>
+            {channel.channelUrl ? (
+              <HeroActionLink href={channel.channelUrl}>Open on YouTube</HeroActionLink>
+            ) : null}
+            <HeroActionLink to="/library">Back to Library</HeroActionLink>
+          </>
+        }
+      />
 
       {/* Channel Aggregate Section */}
       {aggregateLoading ? (
@@ -124,8 +136,8 @@ export function ChannelPage(): JSX.Element {
         <div className="panel" style={{ marginTop: 18 }}>
           <h2>Channel insights</h2>
           <p className="muted" style={{ marginTop: 6 }}>
-            No channel aggregate available yet. Run the channel analysis script to generate
-            insights across all videos.
+            No channel aggregate available yet. Run the channel analysis script to
+            generate insights across all videos.
           </p>
           <div className="callout" style={{ marginTop: 10 }}>
             <strong>How to generate:</strong>
@@ -170,7 +182,9 @@ export function ChannelPage(): JSX.Element {
                       />
                     )}
                     <div>
-                      <div style={{ fontWeight: 650, lineHeight: 1.3 }}>{video.title}</div>
+                      <div style={{ fontWeight: 650, lineHeight: 1.3 }}>
+                        {video.title}
+                      </div>
                       <div className="muted" style={{ marginTop: 4, fontSize: 13 }}>
                         {typeof commentCount === 'number'
                           ? `${commentCount.toLocaleString()} comments`
@@ -221,7 +235,9 @@ export function ChannelPage(): JSX.Element {
                       />
                     )}
                     <div>
-                      <div style={{ fontWeight: 650, lineHeight: 1.3 }}>{video.title}</div>
+                      <div style={{ fontWeight: 650, lineHeight: 1.3 }}>
+                        {video.title}
+                      </div>
                       <div className="muted" style={{ marginTop: 4, fontSize: 13 }}>
                         {typeof commentCount === 'number'
                           ? `${commentCount.toLocaleString()} comments captured`

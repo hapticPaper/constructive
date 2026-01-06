@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 import {
   getAnalysisUsage,
@@ -7,44 +7,23 @@ import {
   signInWithGoogle,
   signOut,
 } from '../lib/freemium';
+import { PrimaryNavLinks } from './PrimaryNavLinks';
 import { Button } from './ui/Button';
 import { Pill } from './ui/Pill';
 
 export function NavBar(): JSX.Element {
-  const location = useLocation();
   const usage = getAnalysisUsage();
   const tier = getUserTier();
 
   return (
     <header className="nav">
-      <div className="nav-inner">
+      <div className="app-container nav-inner">
         <div className="nav-left">
           <Link to="/" className="brand">
             Constructive
           </Link>
           <nav className="nav-links">
-            <Link
-              to="/"
-              className={location.pathname === '/' ? 'nav-link active' : 'nav-link'}
-            >
-              Onboard
-            </Link>
-            <Link
-              to="/library"
-              className={
-                location.pathname.startsWith('/library') ? 'nav-link active' : 'nav-link'
-              }
-            >
-              Library
-            </Link>
-            <Link
-              to="/jobs"
-              className={
-                location.pathname.startsWith('/jobs') ? 'nav-link active' : 'nav-link'
-              }
-            >
-              Jobs
-            </Link>
+            <PrimaryNavLinks linkClassName="nav-link" />
           </nav>
         </div>
         <div className="nav-right">
