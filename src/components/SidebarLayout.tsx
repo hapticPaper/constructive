@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router-dom';
 
+import { Breadcrumbs } from './Breadcrumbs';
 import { SideNav } from './SideNav';
 
 export function SidebarLayout(): JSX.Element {
@@ -8,6 +9,7 @@ export function SidebarLayout(): JSX.Element {
       <div className="app-content">
         <SideNav />
         <main className="main">
+          <Breadcrumbs />
           <Outlet />
         </main>
       </div>

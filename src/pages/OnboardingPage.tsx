@@ -43,7 +43,7 @@ export function OnboardingPage(): JSX.Element {
 
   return (
     <div>
-      <div className="hero">
+      <div className="page-header">
         <h1>Comment analytics that protects your energy.</h1>
         <p>
           Pick a video, pull the comments, and generate a creator-friendly report: what
@@ -51,63 +51,74 @@ export function OnboardingPage(): JSX.Element {
         </p>
       </div>
 
-      <div style={{ marginTop: 18 }} className="panel">
-        <h2>Connect a platform</h2>
-        <p className="muted" style={{ marginTop: 6 }}>
-          This MVP is wired for YouTube (no API key required for ingestion).
-          TikTok/Instagram are treated as fast follows via the connector interfaces.
-        </p>
-
-        <div style={{ marginTop: 12, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          <span className="pill">YouTube (enabled)</span>
-          <span className="pill">TikTok (stub)</span>
-          <span className="pill">Instagram (stub)</span>
-        </div>
-      </div>
-
-      <div style={{ marginTop: 18 }} className="panel">
-        <h2>Analyze a YouTube video</h2>
-        <p className="muted" style={{ marginTop: 6 }}>
-          Paste a link to add it to your library and start capture + analysis.
-        </p>
-        <div style={{ marginTop: 12, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          <input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="https://www.youtube.com/watch?v=..."
-            className="input input-fluid"
-          />
-          <Button variant="primary" onClick={goToVideoByInput}>
-            Analyze
-          </Button>
-          <Button variant="ghost" onClick={() => navigate('/jobs')}>
-            Jobs dashboard
-          </Button>
-        </div>
-        {error ? (
-          <div style={{ marginTop: 10 }} className="callout">
-            <strong>Heads up:</strong> <span className="muted">{error}</span>
+      <div className="section">
+        <div className="panel">
+          <h2>Analyze a YouTube video</h2>
+          <p className="muted" style={{ marginTop: 6 }}>
+            Paste a link to add it to your library and start capture + analysis.
+          </p>
+          <div style={{ marginTop: 16, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="https://www.youtube.com/watch?v=..."
+              className="input input-fluid"
+            />
+            <Button variant="primary" onClick={goToVideoByInput}>
+              Analyze
+            </Button>
+            <Button variant="ghost" onClick={() => navigate('/jobs')}>
+              Jobs dashboard
+            </Button>
           </div>
-        ) : null}
+          {error ? (
+            <div style={{ marginTop: 10 }} className="callout">
+              <strong>Heads up:</strong> <span className="muted">{error}</span>
+            </div>
+          ) : null}
+        </div>
       </div>
 
-      <div className="cards">
-        {videos.map((video) => (
-          <VideoCard
-            key={video.videoId}
-            video={video}
-            ctaLabel="View analytics"
-            onCtaClick={(event) => {
-              setError(null);
-              const unlocked = unlockVideo(`${video.platform}:${video.videoId}`);
-              if (!unlocked.ok) {
-                event.preventDefault();
-                setError(unlocked.reason);
-              }
-            }}
-          />
-        ))}
+      <div className="section">
+        <div className="panel">
+          <h2>Platform Support</h2>
+          <p className="muted" style={{ marginTop: 6 }}>
+            This MVP is wired for YouTube (no API key required for ingestion).
+            TikTok/Instagram are treated as fast follows via the connector interfaces.
+          </p>
+          <div style={{ marginTop: 12, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <span className="pill">YouTube (enabled)</span>
+            <span className="pill">TikTok (stub)</span>
+            <span className="pill">Instagram (stub)</span>
+          </div>
+        </div>
       </div>
+
+      {videos.length > 0 && (
+        <div className="section">
+          <div className="section-header">
+            <h2>Sample Videos</h2>
+            <p>Explore pre-analyzed content to see what Constructive can do</p>
+          </div>
+          <div className="cards">
+            {videos.map((video) => (
+              <VideoCard
+                key={video.videoId}
+                video={video}
+                ctaLabel="View analytics"
+                onCtaClick={(event) => {
+                  setError(null);
+                  const unlocked = unlockVideo(`${video.platform}:${video.videoId}`);
+                  if (!unlocked.ok) {
+                    event.preventDefault();
+                    setError(unlocked.reason);
+                  }
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
