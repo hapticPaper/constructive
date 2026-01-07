@@ -22,6 +22,10 @@ Not every video will have every section: the report is split into **core** and *
 1. Ingest video metadata + comments:
 
    ```bash
+   # Defaults to fetching all comments.
+   bun run ingest:youtube -- <YOUTUBE_URL_OR_ID>
+
+   # Optional: use a smaller max when iterating.
    bun run ingest:youtube -- <YOUTUBE_URL_OR_ID> --max-comments <N>
    ```
 

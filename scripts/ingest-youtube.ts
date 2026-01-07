@@ -410,38 +410,37 @@ async function main(): Promise<void> {
 
       let id = knownId;
       let syntheticId = false;
+      const fetchedAuthorName = extractCommentAuthorName(commentRec);
+      const fetchedRawText = toStringSafe(commentRec?.content ?? commentRec?.text);
+      const fetchedText = normalizeCommentText(fetchedRawText);
 
       if (!id) {
-        const rawText = toStringSafe(commentRec?.content ?? commentRec?.text);
-        const cleaned = normalizeCommentText(rawText);
-        if (!cleaned) continue;
+        if (!fetchedText) continue;
 
-        const authorName = extractCommentAuthorName(commentRec);
-        id = syntheticCommentId({ videoId, authorName, text: cleaned });
+        id = syntheticCommentId({ videoId, authorName: fetchedAuthorName, text: fetchedText });
         syntheticId = true;
       }
 
       if (seenIds.has(id)) continue;
 
       const existing = existingById.get(id);
-      if (existing) {
-        fetchedComments.push(existing);
-      } else {
-        const text = toStringSafe(commentRec?.content ?? commentRec?.text);
-        const cleaned = normalizeCommentText(text);
-        if (!cleaned) continue;
 
-        const authorName = extractCommentAuthorName(commentRec);
-        const publishedAt = extractCommentPublishedAt(commentRec);
+      const text = fetchedText || existing?.text;
+      if (!text) continue;
 
-        fetchedComments.push({
-          id,
-          syntheticId: syntheticId ? true : undefined,
-          authorName,
-          publishedAt,
-          likeCount: parseCount(commentRec?.like_count),
-          text: cleaned,
-        });
+      const publishedAt = extractCommentPublishedAt(commentRec);
+      const likeCount = parseCount(commentRec?.like_count);
+
+      fetchedComments.push({
+        id,
+        syntheticId: syntheticId || existing?.syntheticId ? true : undefined,
+        authorName: fetchedAuthorName ?? existing?.authorName,
+        publishedAt: publishedAt ?? existing?.publishedAt,
+        likeCount: likeCount ?? existing?.likeCount,
+        text,
+      });
+
+      if (!existing) {
         newThisPage += 1;
         newCommentCount += 1;
       }
@@ -466,7 +465,16 @@ async function main(): Promise<void> {
       break;
     }
 
-    cursor = (await cursor.getContinuation()) as unknown as CommentsCursor;
+    try {
+      cursor = (await cursor.getContinuation()) as unknown as CommentsCursor;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (message.includes('Continuation not found')) {
+        reachedEnd = true;
+        break;
+      }
+      throw error;
+    }
   }
 
   if (paginationLoopGuardTriggered) {
