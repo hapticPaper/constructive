@@ -122,6 +122,8 @@ function capMessage(message: string, maxLength = MAX_ERROR_MESSAGE_LENGTH): stri
   return `${message.slice(0, headLength)}${suffix}`;
 }
 
+const SAFE_ERROR_KEYS = ['name', 'message', 'code', 'status', 'statusCode'] as const;
+
 const REDACT_KEYS = new Set([
   'authorization',
   'cookie',
@@ -142,13 +144,12 @@ function redactObject(record: Record<string, unknown>): Record<string, unknown> 
 }
 
 function safeErrorRecord(errorRecord: Record<string, unknown>): Record<string, unknown> {
-  const safe: Record<string, unknown> = {};
-  for (const key of ['name', 'message', 'code', 'status', 'statusCode']) {
-    if (key in errorRecord) safe[key] = errorRecord[key];
+  const projected: Record<string, unknown> = {};
+  for (const key of SAFE_ERROR_KEYS) {
+    if (key in errorRecord) projected[key] = errorRecord[key];
   }
 
-  if (Object.keys(safe).length > 0) return redactObject(safe);
-  return redactObject(errorRecord);
+  return redactObject(projected);
 }
 
 function rawErrorMessage(error: unknown): string {
@@ -623,6 +624,7 @@ async function main(): Promise<void> {
     } catch (error) {
       if (isContinuationNotFoundError(error)) {
         stoppedBecauseContinuationNotFound = true;
+        // Store a redacted, length-capped message for diagnostics only.
         continuationNotFoundErrorMessage = rawErrorMessage(error) || undefined;
         break;
       }
