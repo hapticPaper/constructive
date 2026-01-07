@@ -12,6 +12,8 @@ const CATEGORY_COLORS: Partial<Record<RadarCategory, string>> = {
  * Builds prevalence-style bar items where `rate` is derived from `count / total`.
  *
  * `total` should be the denominator you want to present as 100%.
+ *
+ * Labels are expected to be stable and unique within a list.
  */
 export function barListItemsFromCounts(
   items: ReadonlyArray<{ label: string; count: number }>,
