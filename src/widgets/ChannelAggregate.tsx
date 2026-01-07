@@ -108,8 +108,8 @@ function TakeawayList({ takeaways }: { takeaways: CreatorTakeaway[] }): JSX.Elem
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 }}>
-      {takeaways.map((takeaway, index) => (
-        <div key={index}>
+      {takeaways.map((takeaway) => (
+        <div key={takeaway.title}>
           <div style={{ fontWeight: 650 }}>{takeaway.title}</div>
           <div className="muted" style={{ marginTop: 4, lineHeight: 1.35 }}>
             {takeaway.detail}
@@ -208,6 +208,9 @@ export function ChannelAggregate({
           </WidgetPanel>
 
           <WidgetPanel title="Top topics across channel">
+            <p className="muted" style={{ marginTop: 6 }}>
+              Themes are counted as “comments mentioning the term” (they can overlap).
+            </p>
             <HistogramList
               items={channelAggregate.topTopics}
               total={channelAggregate.totalComments}

@@ -40,6 +40,7 @@ export function SignalBreakdown({
               </span>
             </div>
             <div
+              aria-hidden="true"
               style={{
                 marginTop: 6,
                 height: 8,

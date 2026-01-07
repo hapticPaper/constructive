@@ -392,6 +392,8 @@ const STOPWORDS = new Set([
 const LIKE_SCORE_CAP = 25;
 const THEME_BUCKET_SIZE = 8;
 const THEME_RANKED_CANDIDATES = 16;
+const THEME_MAX_COMMENT_SHARE = 0.6;
+const THEME_MAX_SHARE_MIN_COMMENTS = 25;
 const HIGHLIGHT_LIMIT = 3;
 const TAKEAWAY_LIMIT = 3;
 const HIGHLIGHT_TEXT_LEN = 140;
@@ -399,13 +401,16 @@ const QUOTE_TEXT_LEN = 160;
 const HIGHLIGHT_LEN_SCORE_DENOM = 200;
 const QUOTE_LEN_SCORE_DENOM = 220;
 
-function tokenize(text: string): string[] {
+function tokenizeRaw(text: string): string[] {
   return text
-    .toLowerCase()
     .replace(/[^\p{L}\p{N}\s]/gu, ' ')
     .split(/\s+/u)
     .map((t) => t.trim())
     .filter(Boolean);
+}
+
+function tokenizeLowered(loweredText: string): string[] {
+  return tokenizeRaw(loweredText);
 }
 
 function isThemeToken(token: string): boolean {
@@ -424,8 +429,7 @@ type ToxicSignals = {
 
 function getToxicSignals(text: string, tokens: string[]): ToxicSignals {
   const hard = tokens.some((token) => TOXIC_WORDS.has(token));
-  const lowered = text.toLowerCase();
-  const soft = TOXIC_PHRASES.some((phrase) => phrase.test(lowered));
+  const soft = TOXIC_PHRASES.some((phrase) => phrase.test(text));
   return { hard, soft };
 }
 
@@ -475,22 +479,39 @@ function formatPercent(value: number): string {
   return `${pct}%`;
 }
 
+function isTitleCaseToken(token: string): boolean {
+  return /^\p{Lu}\p{Ll}+$/u.test(token);
+}
+
 function buildVideoPersonTokens(video: VideoMetadata): Set<string> {
-  const tokens = tokenize(`${video.title} ${video.channel.channelTitle}`);
+  const rawTokens = tokenizeRaw(`${video.title} ${video.channel.channelTitle}`);
+  const tokens = rawTokens.map((token) => token.toLowerCase());
   const out = new Set<string>();
 
   for (let index = 0; index < tokens.length; index += 1) {
     const token = tokens[index];
     if (!COMMON_FIRST_NAMES.has(token)) continue;
 
-    const next = tokens[index + 1];
-    if (typeof next === 'string' && isThemeToken(next)) {
-      out.add(next);
+    const nextToken = tokens[index + 1];
+    const nextRaw = rawTokens[index + 1];
+    if (
+      typeof nextToken === 'string' &&
+      typeof nextRaw === 'string' &&
+      isTitleCaseToken(nextRaw) &&
+      isThemeToken(nextToken)
+    ) {
+      out.add(nextToken);
     }
 
-    const prev = tokens[index - 1];
-    if (typeof prev === 'string' && isThemeToken(prev)) {
-      out.add(prev);
+    const prevToken = tokens[index - 1];
+    const prevRaw = rawTokens[index - 1];
+    if (
+      typeof prevToken === 'string' &&
+      typeof prevRaw === 'string' &&
+      isTitleCaseToken(prevRaw) &&
+      isThemeToken(prevToken)
+    ) {
+      out.add(prevToken);
     }
   }
 
@@ -546,9 +567,10 @@ function analyzeComments(
     const cleaned = normalizeText(comment.text);
     if (!cleaned) continue;
     analyzedCount += 1;
-    const tokens = tokenize(cleaned);
+    const lowered = cleaned.toLowerCase();
+    const tokens = tokenizeLowered(lowered);
 
-    const toxicity = getToxicSignals(cleaned, tokens);
+    const toxicity = getToxicSignals(lowered, tokens);
     if (toxicity.hard) toxicCount += 1;
     const unsafeForHighlights = toxicity.hard || toxicity.soft;
 
@@ -614,6 +636,14 @@ function analyzeComments(
         score: likeScore + lengthScore + sentimentScore,
         text: cleaned,
       });
+    }
+  }
+
+  if (analyzedCount >= THEME_MAX_SHARE_MIN_COMMENTS) {
+    for (const [label, count] of themeCounts) {
+      if (count / analyzedCount > THEME_MAX_COMMENT_SHARE) {
+        themeCounts.delete(label);
+      }
     }
   }
 

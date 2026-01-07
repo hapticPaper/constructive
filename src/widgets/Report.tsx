@@ -253,8 +253,8 @@ export function Report({ report }: { report: CommentReport }): JSX.Element {
 
           <WidgetPanel title="Topics (content)">
             <p className="muted" style={{ marginTop: 6 }}>
-              Themes are counted as “comments mentioning the term”, not raw word
-              frequency.
+              Themes are counted as “comments mentioning the term” (they can overlap), not
+              raw word frequency.
             </p>
             <HistogramList
               items={report.core.topics}
