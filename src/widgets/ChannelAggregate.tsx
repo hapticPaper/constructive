@@ -8,6 +8,7 @@ import type {
 } from '../content/types';
 
 import { BarList } from '../components/ui/BarList';
+import { barListItemsFromCounts } from '../components/ui/barListItems';
 
 import { Callout } from './Callout';
 import { WidgetGrid } from './WidgetGrid';
@@ -63,14 +64,7 @@ function HistogramList({
     );
   }
 
-  const denom = total > 0 ? total : 1;
-
-  const barItems = items.map((item) => ({
-    key: item.label,
-    label: item.label,
-    count: item.count,
-    rate: item.count / denom,
-  }));
+  const barItems = barListItemsFromCounts(items, total);
 
   return <BarList items={barItems} style={{ gap: 10, marginTop: 10 }} />;
 }

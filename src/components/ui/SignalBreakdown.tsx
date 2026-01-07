@@ -1,14 +1,8 @@
 import { radarBucketsWithRates } from '../../content/radar';
-import type { RadarCategory, RadarCategoryCounts } from '../../content/types';
+import type { RadarCategoryCounts } from '../../content/types';
 
-import type { BarListItem } from './BarList';
 import { BarList } from './BarList';
-
-const CATEGORY_COLORS: Partial<Record<RadarCategory, string>> = {
-  praise: 'var(--positive)',
-  criticism: 'var(--negative)',
-  toxic: 'var(--danger)',
-};
+import { barListItemsFromRadarBuckets } from './barListItems';
 
 export function SignalBreakdown({
   radar,
@@ -22,13 +16,7 @@ export function SignalBreakdown({
   }
 
   const buckets = radarBucketsWithRates(radar, totalComments);
-  const items: BarListItem[] = buckets.map((bucket) => ({
-    key: bucket.key,
-    label: bucket.label,
-    count: bucket.count,
-    rate: bucket.rate,
-    color: CATEGORY_COLORS[bucket.key],
-  }));
+  const items = barListItemsFromRadarBuckets(buckets);
 
   return <BarList items={items} />;
 }

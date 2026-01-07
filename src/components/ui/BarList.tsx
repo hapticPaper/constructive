@@ -5,6 +5,7 @@ export type BarListItem = {
   label: string;
   count: number;
   rate: number;
+  // Defaults to `var(--brand)`.
   color?: string;
 };
 
@@ -40,6 +41,7 @@ export function BarList({
               </span>
             </div>
             <div
+              // Decorative bar; the numeric value is conveyed in the text row above.
               aria-hidden="true"
               style={{
                 marginTop: 6,
