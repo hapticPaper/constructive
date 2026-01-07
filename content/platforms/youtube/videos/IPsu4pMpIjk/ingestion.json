@@ -1,5 +1,12 @@
 {
-  "ingestedAt": "2025-12-29T01:07:41.415Z",
-  "maxComments": 200,
-  "commentCount": 200
+  "status": "ok",
+  "ingestedAt": "2026-01-07T11:15:24.629Z",
+  "maxComments": null,
+  "commentCount": 1197,
+  "commentsComplete": true,
+  "commentsCompleteConfirmed": true,
+  "pagesFetched": 60,
+  "newCommentCount": 1177,
+  "existingCommentCount": 20,
+  "reachCapturedAt": "2026-01-07T11:15:24.629Z"
 }

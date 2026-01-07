@@ -24,14 +24,15 @@ This playbook produces **channel-level insights** to help creators understand pa
    For each video you want to include in the channel analysis, make sure both `comments.json` and `analytics.json` exist:
 
    ```bash
-   bun run ingest:youtube -- <YOUTUBE_URL_OR_ID> --max-comments <N>
+   # Defaults to fetching all comments.
+   bun run ingest:youtube -- <YOUTUBE_URL_OR_ID>
    bun run content:analyze -- --video youtube:<videoId>
    ```
 
 2. Run the channel aggregation script:
 
    ```bash
-   bun run content:analyze-channel -- youtube:<channelId>
+   bun run analyze:channel -- --channel youtube:<channelId>
    ```
 
    This script will:

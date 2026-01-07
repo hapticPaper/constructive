@@ -1,98 +1,98 @@
 {
   "schema": "constructive.comment-analytics@v3",
-  "commentCount": 200,
-  "analyzedAt": "2026-01-05T13:27:18.563Z",
+  "commentCount": 1197,
+  "analyzedAt": "2026-01-07T11:15:51.725Z",
   "sentimentBreakdown": {
-    "positive": 18,
-    "neutral": 182,
-    "negative": 0
+    "positive": 35,
+    "neutral": 1154,
+    "negative": 8
   },
-  "toxicCount": 4,
-  "questionCount": 19,
-  "suggestionCount": 11,
+  "toxicCount": 41,
+  "questionCount": 214,
+  "suggestionCount": 123,
   "radar": {
-    "praise": 18,
-    "criticism": 0,
-    "question": 19,
-    "suggestion": 11,
-    "toxic": 4,
-    "people": 91
+    "praise": 35,
+    "criticism": 8,
+    "question": 214,
+    "suggestion": 123,
+    "toxic": 41,
+    "people": 380
   },
   "themes": {
     "topics": [
       {
         "label": "israel",
-        "count": 36
+        "count": 348
       },
       {
-        "label": "great",
-        "count": 22
+        "label": "trump",
+        "count": 122
       },
       {
-        "label": "conversation",
-        "count": 18
-      },
-      {
-        "label": "thank",
-        "count": 17
-      },
-      {
-        "label": "brand",
-        "count": 15
-      },
-      {
-        "label": "klein",
-        "count": 13
+        "label": "think",
+        "count": 110
       },
       {
         "label": "pete",
-        "count": 13
+        "count": 97
+      },
+      {
+        "label": "need",
+        "count": 92
       },
       {
         "label": "being",
-        "count": 12
+        "count": 90
+      },
+      {
+        "label": "america",
+        "count": 81
+      },
+      {
+        "label": "right",
+        "count": 80
       }
     ],
     "people": [
       {
-        "label": "scott",
-        "count": 61
+        "label": "ezra",
+        "count": 223
       },
       {
-        "label": "ezra",
-        "count": 55
+        "label": "scott",
+        "count": 208
       }
     ]
   },
   "highlights": {
     "questions": [
-      "I'm amazed at how hesitant Americans are to condemn the clearly horrific atrocities being committed by Israel in Gaza. How could there be…",
-      "How can we take Galloway seriously as an academic if he refuses to believe the academic consensus on Gaza? Mr. Galloway, are you that…",
-      "I am a huge Fan of both of you! I wish I could’ve seen more energy from Scott but maybe it was just a down day? No worries. The right…"
+      "Thank-you for speaking about Diaspora Jews regarding Israel. Is it a possibility for us to formally divorce ourselves from Israel?…",
+      "I love how Scott is concerned with Israel's global \"brand.\" Scott, theyre committing GENOCIDE. WHO THE HELL CARES ABOUT THEIR BRAND? So…",
+      "You need to seriously take a long hard look at yourself Galloway. ‘Branding’- that’s where your concern and empathy is? Good grief.…"
     ],
     "suggestions": [
       "Much respect to Ezra for calling things as they are. Gaza’s children are being deliberately starved by Isreal, and you’re worried about…",
-      "By far two of the best voices in media. Thank you Scott and Ezra. Please keep your voices loud and clear. Hope Pete or Beto will join…",
-      "I'm amazed at how hesitant Americans are to condemn the clearly horrific atrocities being committed by Israel in Gaza. How could there be…"
+      "Scott is clearly uncomfortable talking about Israel in any way other than shining terms. It would be great to have Medi Hasan on the show…",
+      "Make intelligence great again! Thank you so so much for such a deep and meaningful conversation! I am a huge fan of both of your work!…"
     ],
     "quotes": [
-      "\"Parenting yourself is hard....you poorly parent your child when you poorly parent yourself. Taking care of yourself, realistically, with dicipline, and it's…",
-      "Interesting to hear Ezra confirm that his primary source of information is books. I’ve long thought that must be the case and part of why he is a step above…",
-      "I agree with the Prof, 6ft white man, but I love the idea of Pete, incredible communicator who can talk to anyone and make them feel comfortable. Thank you for…"
+      "Make intelligence great again! Thank you so so much for such a deep and meaningful conversation! I am a huge fan of both of your work! Please stay engaged ❤",
+      "What a great interviewee and interviewer. Scott asking a question and listening attentively and thoughtfully to Ezra. Brilliant from both of you",
+      "I don't think I've ever seen Scott listen this hard before.🙂 What a great conversation. I think it might be a keeper. Thank you."
     ]
   },
   "takeaways": [
     {
-      "title": "The conversation is partly about the people",
-      "detail": "A meaningful slice of comments mention: scott, ezra. Treat those as “host/guest” feedback, not topic feedback."
+      "title": "Viewers want clarity",
+      "detail": "Questions make up 18% of comments (214 total)."
     },
     {
-      "title": "Viewers want clarity",
-      "detail": "Questions make up 10% of comments (19 total)."
+      "title": "The conversation is partly about the people",
+      "detail": "A meaningful slice of comments mention: ezra, scott. Treat those as “host/guest” feedback, not topic feedback."
     },
     {
       "title": "There are clear improvement requests",
-      "detail": "Suggestions show up in 6% of comments (11 total)."
+      "detail": "Suggestions show up in 10% of comments (123 total)."
     }
   ]
 }

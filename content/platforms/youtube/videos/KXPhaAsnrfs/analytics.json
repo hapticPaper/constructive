@@ -1,56 +1,56 @@
 {
   "schema": "constructive.comment-analytics@v3",
-  "commentCount": 200,
-  "analyzedAt": "2026-01-05T13:27:18.584Z",
+  "commentCount": 897,
+  "analyzedAt": "2026-01-07T11:15:54.947Z",
   "sentimentBreakdown": {
-    "positive": 9,
-    "neutral": 190,
-    "negative": 1
+    "positive": 13,
+    "neutral": 882,
+    "negative": 2
   },
-  "toxicCount": 3,
-  "questionCount": 38,
-  "suggestionCount": 19,
+  "toxicCount": 11,
+  "questionCount": 248,
+  "suggestionCount": 87,
   "radar": {
-    "praise": 9,
-    "criticism": 1,
-    "question": 38,
-    "suggestion": 19,
-    "toxic": 3,
-    "people": 9
+    "praise": 13,
+    "criticism": 2,
+    "question": 248,
+    "suggestion": 87,
+    "toxic": 11,
+    "people": 23
   },
   "themes": {
     "topics": [
       {
-        "label": "mass",
-        "count": 42
-      },
-      {
         "label": "infinity",
-        "count": 41
+        "count": 331
       },
       {
         "label": "electron",
-        "count": 29
+        "count": 204
+      },
+      {
+        "label": "mass",
+        "count": 198
+      },
+      {
+        "label": "energy",
+        "count": 156
       },
       {
         "label": "infinite",
-        "count": 24
+        "count": 112
       },
       {
-        "label": "negative",
-        "count": 17
+        "label": "universe",
+        "count": 91
       },
       {
-        "label": "higgs",
-        "count": 14
+        "label": "time",
+        "count": 88
       },
       {
-        "label": "video",
-        "count": 14
-      },
-      {
-        "label": "infinities",
-        "count": 13
+        "label": "quantum",
+        "count": 78
       }
     ],
     "people": []
@@ -58,32 +58,32 @@
   "highlights": {
     "questions": [
       "Entity 1: Our last hack blew up the mass of particles. Entity 2: Let's just set the internal mass to negative to counter that. Entity 1:…",
-      "At 4:45, the parenthesis makes it confusing, since it would normally be negative 511 eV in the way you present it. You have minus sign…",
-      "You mentioned that the electron's mass is \"protected by the chiral symmetry of the particle\" (14:30). This is my ignorance, but in what way…"
+      "When Feynman and Schwinger were awarded the Nobel prize in 1965 there was a third scientist Tomonaga who independently discovered…",
+      "\"May you remove your self-energy mass so I can measure your bare mass?\" That should be a fun pickup line for parties."
     ],
     "suggestions": [
       "Entity 1: Our last hack blew up the mass of particles. Entity 2: Let's just set the internal mass to negative to counter that. Entity 1:…",
-      "You mentioned that the electron's mass is \"protected by the chiral symmetry of the particle\" (14:30). This is my ignorance, but in what way…",
+      "\"May you remove your self-energy mass so I can measure your bare mass?\" That should be a fun pickup line for parties.",
       "Here is my, hand wavy, alternative approach. Actually I expect that this has been investigated before and proved wrong or irrelevant. But…"
     ],
     "quotes": [
-      "Great video. The last video was amazing. Seeing how you visually presented pair productions that occurred around the \"real\" electron and then randomly…",
-      "O.K., it sounds like what you're saying is that--in a way--electrons aren't more massive because they only exist part of the time. The est of the time, they're…",
-      "The idea of \"infinity minus infinity\" is a great reminder that infinity isn’t a number, but a concept. It’s fascinating how quantum field theory deals with…"
+      "Entity 1: Our last hack blew up the mass of particles. Entity 2: Let's just set the internal mass to negative to counter that. Entity 1: Yeah, that should…",
+      "This question reminds me of the arguments I used to have in 2nd grade. \"Oh yeah well I have infinity points.\" \"Yeah well I have infinity plus one points.\" \"You…",
+      "The mass of the electron field being infinite if the electron is point like, sounds a bit like the ultraviolet catastrophe where the graph suggested an…"
     ]
   },
   "takeaways": [
     {
       "title": "Viewers want clarity",
-      "detail": "Questions make up 19% of comments (38 total)."
+      "detail": "Questions make up 28% of comments (248 total)."
     },
     {
       "title": "There are clear improvement requests",
-      "detail": "Suggestions show up in 10% of comments (19 total)."
+      "detail": "Suggestions show up in 10% of comments (87 total)."
     },
     {
       "title": "What people latched onto",
-      "detail": "Most discussion clusters around: mass, infinity, electron."
+      "detail": "Most discussion clusters around: infinity, electron, mass."
     }
   ]
 }
