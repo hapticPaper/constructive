@@ -27,12 +27,15 @@ export function barListItemsFromCounts(
   }
 
   const denom = total;
-  return items.map((item) => ({
-    key: item.label,
-    label: item.label,
-    count: item.count,
-    rate: Math.max(0, Math.min(1, item.count / denom)),
-  }));
+  return items.map((item) => {
+    const countForRate = Math.max(0, Math.min(item.count, denom));
+    return {
+      key: item.label,
+      label: item.label,
+      count: item.count,
+      rate: countForRate / denom,
+    };
+  });
 }
 
 export function barListItemsFromRadarBuckets(
