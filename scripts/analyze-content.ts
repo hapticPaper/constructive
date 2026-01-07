@@ -409,6 +409,14 @@ function tokenizeRaw(text: string): string[] {
     .filter(Boolean);
 }
 
+function tokenize(text: string): string[] {
+  return tokenizeRaw(text.toLowerCase());
+}
+
+function tokenizeLoweredText(loweredText: string): string[] {
+  return tokenizeRaw(loweredText);
+}
+
 function isThemeToken(token: string): boolean {
   if (token.length < 4) return false;
   if (/^\d+$/u.test(token)) return false;
@@ -547,10 +555,9 @@ function analyzeComments(
     isLikelyPersonToken(token, videoPeople);
 
   const videoThemeSeeds = new Set<string>();
-  for (const token of tokenizeRaw(`${video.title} ${video.channel.channelTitle}`)) {
-    const lowered = token.toLowerCase();
-    if (!isThemeToken(lowered)) continue;
-    videoThemeSeeds.add(lowered);
+  for (const token of tokenize(video.title)) {
+    if (!isThemeToken(token)) continue;
+    videoThemeSeeds.add(token);
   }
 
   const radar = emptyRadarCounts();
@@ -571,7 +578,7 @@ function analyzeComments(
     if (!cleaned) continue;
     analyzedCount += 1;
     const lowered = cleaned.toLowerCase();
-    const tokens = tokenizeRaw(lowered);
+    const tokens = tokenizeLoweredText(lowered);
 
     const toxicity = getToxicSignals(lowered, tokens);
     if (toxicity.hard) toxicCount += 1;
