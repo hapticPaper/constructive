@@ -117,6 +117,7 @@ export const COMMON_FIRST_NAMES = new Set([
   'pat',
   'patrick',
   'paul',
+  'pete',
   'peter',
   'rachel',
   'ray',

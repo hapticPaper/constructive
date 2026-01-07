@@ -47,6 +47,12 @@ const SENTIMENT_COLORS: Record<Sentiment, string> = {
 
 const SENTIMENT_ORDER: Sentiment[] = ['positive', 'neutral', 'negative'];
 
+const SENTIMENT_LABELS: Record<Sentiment, string> = {
+  positive: 'positive',
+  neutral: 'neutral / informational',
+  negative: 'negative',
+};
+
 function StatRow({
   label,
   value,
@@ -64,7 +70,13 @@ function StatRow({
   );
 }
 
-function HistogramList({ items }: { items: ThemeItem[] }): JSX.Element {
+function HistogramList({
+  items,
+  total,
+}: {
+  items: ThemeItem[];
+  total: number;
+}): JSX.Element {
   // Theme labels are derived from tokenized text and filtered by the analyzer
   // (stopwords + toxic words), so they should be short and safe to render.
   if (items.length === 0) {
@@ -75,12 +87,36 @@ function HistogramList({ items }: { items: ThemeItem[] }): JSX.Element {
     );
   }
 
+  const denom = total > 0 ? total : 1;
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 }}>
       {items.map((item) => (
-        <div key={`${item.label}:${item.count}`} className="row">
-          <span style={{ fontWeight: 650 }}>{item.label}</span>
-          <span className="muted">{item.count.toLocaleString()}</span>
+        <div key={`${item.label}:${item.count}`}>
+          <div className="row" style={{ gap: 12 }}>
+            <span style={{ fontWeight: 650 }}>{item.label}</span>
+            <span className="muted" style={{ fontVariantNumeric: 'tabular-nums' }}>
+              {formatPercent(item.count / denom)} · {item.count.toLocaleString()}
+            </span>
+          </div>
+          <div
+            style={{
+              marginTop: 6,
+              height: 8,
+              borderRadius: 999,
+              background: 'rgba(148, 163, 184, 0.22)',
+              overflow: 'hidden',
+            }}
+          >
+            <div
+              style={{
+                height: '100%',
+                width: `${Math.max(0, Math.min(1, item.count / denom)) * 100}%`,
+                background: 'var(--brand)',
+                borderRadius: 999,
+              }}
+            />
+          </div>
         </div>
       ))}
     </div>
@@ -198,11 +234,10 @@ export function Report({ report }: { report: CommentReport }): JSX.Element {
               >
                 {SENTIMENT_ORDER.map((sentiment) => (
                   <div key={sentiment} className="row">
-                    <span className="muted">{sentiment}</span>
+                    <span className="muted">{SENTIMENT_LABELS[sentiment]}</span>
                     <span style={{ fontWeight: 650, color: SENTIMENT_COLORS[sentiment] }}>
-                      {formatPercent(
-                        report.snapshot.sentimentBreakdown[sentiment] / denom,
-                      )}
+                      {formatPercent(report.snapshot.sentimentBreakdown[sentiment] / denom)} ·{' '}
+                      {report.snapshot.sentimentBreakdown[sentiment].toLocaleString()}
                     </span>
                   </div>
                 ))}
@@ -215,7 +250,10 @@ export function Report({ report }: { report: CommentReport }): JSX.Element {
           </WidgetPanel>
 
           <WidgetPanel title="Topics (content)">
-            <HistogramList items={report.core.topics} />
+            <p className="muted" style={{ marginTop: 6 }}>
+              Themes are counted as “comments mentioning the term”, not raw word frequency.
+            </p>
+            <HistogramList items={report.core.topics} total={report.snapshot.commentCount} />
           </WidgetPanel>
         </WidgetGrid>
       </div>
@@ -229,7 +267,7 @@ export function Report({ report }: { report: CommentReport }): JSX.Element {
                   These are often “host/guest” reactions (separate from content/topic
                   reactions).
                 </p>
-                <HistogramList items={people} />
+                <HistogramList items={people} total={report.snapshot.commentCount} />
               </WidgetPanel>
             ) : null}
 

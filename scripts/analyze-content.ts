@@ -211,18 +211,25 @@ const TOXIC_WORDS = new Set([
 const POSITIVE_WORDS = new Set([
   'amazing',
   'awesome',
+  'best',
   'beautiful',
   'brilliant',
+  'cool',
+  'enjoy',
+  'enjoyed',
   'excellent',
   'fantastic',
+  'good',
   'great',
   'helpful',
+  'impressive',
   'insight',
   'insightful',
   'interesting',
   'love',
   'loved',
   'nice',
+  'respect',
   'smart',
   'thank',
   'thanks',
@@ -240,6 +247,7 @@ const NEGATIVE_WORDS = new Set([
   'hate',
   'horrible',
   'idiot',
+  'misleading',
   'nonsense',
   'terrible',
   'wrong',
@@ -344,6 +352,11 @@ const STOPWORDS = new Set([
   'would',
   'you',
   'your',
+  // A few common high-frequency words that tend to pollute “topics”.
+  'being',
+  'need',
+  'right',
+  'think',
 ]);
 
 const LIKE_SCORE_CAP = 25;
@@ -367,7 +380,9 @@ function tokenize(text: string): string[] {
 
 function isThemeToken(token: string): boolean {
   if (token.length < 4) return false;
+  if (/^\d+$/u.test(token)) return false;
   if (STOPWORDS.has(token)) return false;
+  if (POSITIVE_WORDS.has(token) || NEGATIVE_WORDS.has(token)) return false;
   if (TOXIC_WORDS.has(token)) return false;
   return true;
 }
@@ -386,8 +401,8 @@ function sentimentForTokens(tokens: string[]): Sentiment {
     if (NEGATIVE_WORDS.has(token)) score -= 1;
   }
 
-  if (score >= 2) return 'positive';
-  if (score <= -2) return 'negative';
+  if (score >= 1) return 'positive';
+  if (score <= -1) return 'negative';
   return 'neutral';
 }
 
@@ -425,12 +440,34 @@ function formatPercent(value: number): string {
   return `${pct}%`;
 }
 
-function isLikelyPersonToken(token: string): boolean {
+function buildVideoPersonTokens(video: VideoMetadata): Set<string> {
+  const tokens = tokenize(`${video.title} ${video.channel.channelTitle}`);
+  const out = new Set<string>();
+
+  for (let index = 0; index < tokens.length; index += 1) {
+    const token = tokens[index];
+    if (!COMMON_FIRST_NAMES.has(token)) continue;
+
+    const next = tokens[index + 1];
+    if (typeof next === 'string' && isThemeToken(next)) {
+      out.add(next);
+    }
+
+    const prev = tokens[index - 1];
+    if (typeof prev === 'string' && isThemeToken(prev)) {
+      out.add(prev);
+    }
+  }
+
+  return out;
+}
+
+function isLikelyPersonToken(token: string, videoPeople: ReadonlySet<string>): boolean {
   // Intentionally small heuristic: we only classify single-word, lowercased tokens.
   // Multi-word names and edge cases (e.g. last names) will be treated as topics.
   if (!/^[a-z]+$/u.test(token)) return false;
   if (!isThemeToken(token)) return false;
-  return COMMON_FIRST_NAMES.has(token);
+  return COMMON_FIRST_NAMES.has(token) || videoPeople.has(token);
 }
 
 function summarizeThemeLabels(
@@ -443,12 +480,15 @@ function summarizeThemeLabels(
     .join(', ');
 }
 
-function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
+function analyzeComments(comments: CommentRecord[], video: VideoMetadata): CommentAnalytics {
   const sentimentBreakdown: Record<Sentiment, number> = {
     positive: 0,
     neutral: 0,
     negative: 0,
   };
+
+  const videoPeople = buildVideoPersonTokens(video);
+  const isPersonToken = (token: string): boolean => isLikelyPersonToken(token, videoPeople);
 
   const radar = emptyRadarCounts();
 
@@ -503,14 +543,21 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
       }
     }
 
+    const themeTokens = new Set<string>();
     for (const token of tokens) {
       if (!isThemeToken(token)) continue;
-      themeCounts.set(token, (themeCounts.get(token) ?? 0) + 1);
+      themeTokens.add(token);
+    }
+
+    // Count “themes” as the number of comments that mention the token (not raw token
+    // occurrences). This reduces noise from repeated words within a single comment.
+    for (const theme of themeTokens) {
+      themeCounts.set(theme, (themeCounts.get(theme) ?? 0) + 1);
     }
 
     // Count comments that mention at least one likely person token (same heuristic as
     // `themes.people`; not total mentions).
-    if (tokens.some(isLikelyPersonToken)) {
+    if (tokens.some(isPersonToken)) {
       radar.people += 1;
     }
 
@@ -536,7 +583,7 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
 
   const themes = rankedThemes.slice(0, THEME_RANKED_CANDIDATES).reduce(
     (acc, theme) => {
-      if (isLikelyPersonToken(theme.label)) {
+      if (isPersonToken(theme.label)) {
         acc.people.push(theme);
       } else {
         acc.topics.push(theme);
@@ -865,11 +912,11 @@ async function main(): Promise<void> {
       if (isCommentAnalytics(existing)) {
         analytics = existing;
       } else {
-        analytics = analyzeComments(comments);
+        analytics = analyzeComments(comments, video);
         await writeJsonFile(analyticsPath, analytics);
       }
     } else {
-      analytics = analyzeComments(comments);
+      analytics = analyzeComments(comments, video);
       await writeJsonFile(analyticsPath, analytics);
     }
 

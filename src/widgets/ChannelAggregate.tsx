@@ -23,6 +23,12 @@ const SENTIMENT_COLORS: Record<Sentiment, string> = {
 
 const SENTIMENT_ORDER: Sentiment[] = ['positive', 'neutral', 'negative'];
 
+const SENTIMENT_LABELS: Record<Sentiment, string> = {
+  positive: 'positive',
+  neutral: 'neutral / informational',
+  negative: 'negative',
+};
+
 function StatRow({
   label,
   value,
@@ -40,7 +46,13 @@ function StatRow({
   );
 }
 
-function HistogramList({ items }: { items: ThemeItem[] }): JSX.Element {
+function HistogramList({
+  items,
+  total,
+}: {
+  items: ThemeItem[];
+  total: number;
+}): JSX.Element {
   if (items.length === 0) {
     return (
       <p className="muted" style={{ marginTop: 8 }}>
@@ -49,12 +61,36 @@ function HistogramList({ items }: { items: ThemeItem[] }): JSX.Element {
     );
   }
 
+  const denom = total > 0 ? total : 1;
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 }}>
       {items.map((item, index) => (
-        <div key={`${index}-${item.label}`} className="row">
-          <span style={{ fontWeight: 650 }}>{item.label}</span>
-          <span className="muted">{item.count.toLocaleString()}</span>
+        <div key={`${index}-${item.label}`}>
+          <div className="row" style={{ gap: 12 }}>
+            <span style={{ fontWeight: 650 }}>{item.label}</span>
+            <span className="muted" style={{ fontVariantNumeric: 'tabular-nums' }}>
+              {formatPercent(item.count / denom)} · {item.count.toLocaleString()}
+            </span>
+          </div>
+          <div
+            style={{
+              marginTop: 6,
+              height: 8,
+              borderRadius: 999,
+              background: 'rgba(148, 163, 184, 0.22)',
+              overflow: 'hidden',
+            }}
+          >
+            <div
+              style={{
+                height: '100%',
+                width: `${Math.max(0, Math.min(1, item.count / denom)) * 100}%`,
+                background: 'var(--brand)',
+                borderRadius: 999,
+              }}
+            />
+          </div>
         </div>
       ))}
     </div>
@@ -154,11 +190,10 @@ export function ChannelAggregate({
               >
                 {SENTIMENT_ORDER.map((sentiment) => (
                   <div key={sentiment} className="row">
-                    <span className="muted">{sentiment}</span>
+                    <span className="muted">{SENTIMENT_LABELS[sentiment]}</span>
                     <span style={{ fontWeight: 650, color: SENTIMENT_COLORS[sentiment] }}>
-                      {formatPercent(
-                        channelAggregate.sentimentBreakdown[sentiment] / denom,
-                      )}
+                      {formatPercent(channelAggregate.sentimentBreakdown[sentiment] / denom)} ·{' '}
+                      {channelAggregate.sentimentBreakdown[sentiment].toLocaleString()}
                     </span>
                   </div>
                 ))}
@@ -171,7 +206,7 @@ export function ChannelAggregate({
           </WidgetPanel>
 
           <WidgetPanel title="Top topics across channel">
-            <HistogramList items={channelAggregate.topTopics} />
+            <HistogramList items={channelAggregate.topTopics} total={channelAggregate.totalComments} />
           </WidgetPanel>
         </WidgetGrid>
       </div>
