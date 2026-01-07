@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 
 export type BarListItem = {
-  key: string;
+  id: string;
   label: string;
   count: number;
   rate: number;
@@ -33,7 +33,7 @@ export function BarList({
         const fillColor = item.color ?? 'var(--brand)';
 
         return (
-          <div key={item.key}>
+          <div key={item.id}>
             <div className="row" style={{ gap: 12 }}>
               <span style={{ fontWeight: 650 }}>{item.label}</span>
               <span className="muted" style={{ fontVariantNumeric: 'tabular-nums' }}>

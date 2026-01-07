@@ -19,7 +19,7 @@ export function barListItemsFromCounts(
 ): BarListItem[] {
   if (total <= 0) {
     return items.map((item) => ({
-      key: item.label,
+      id: item.label,
       label: item.label,
       count: item.count,
       rate: 0,
@@ -30,7 +30,7 @@ export function barListItemsFromCounts(
   return items.map((item) => {
     const countForRate = Math.max(0, Math.min(item.count, denom));
     return {
-      key: item.label,
+      id: item.label,
       label: item.label,
       count: item.count,
       rate: countForRate / denom,
@@ -47,7 +47,7 @@ export function barListItemsFromRadarBuckets(
   }>,
 ): BarListItem[] {
   return buckets.map((bucket) => ({
-    key: bucket.key,
+    id: bucket.key,
     label: bucket.label,
     count: bucket.count,
     rate: bucket.rate,
