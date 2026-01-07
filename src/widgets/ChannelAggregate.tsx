@@ -210,6 +210,7 @@ export function ChannelAggregate({
           <WidgetPanel title="Top topics across channel">
             <p className="muted" style={{ marginTop: 6 }}>
               Themes are counted as “comments mentioning the term” (they can overlap).
+              Very common filler terms are suppressed.
             </p>
             <HistogramList
               items={channelAggregate.topTopics}

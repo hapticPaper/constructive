@@ -409,10 +409,6 @@ function tokenizeRaw(text: string): string[] {
     .filter(Boolean);
 }
 
-function tokenizeLowered(loweredText: string): string[] {
-  return tokenizeRaw(loweredText);
-}
-
 function isThemeToken(token: string): boolean {
   if (token.length < 4) return false;
   if (/^\d+$/u.test(token)) return false;
@@ -427,9 +423,9 @@ type ToxicSignals = {
   soft: boolean;
 };
 
-function getToxicSignals(text: string, tokens: string[]): ToxicSignals {
+function getToxicSignals(loweredText: string, tokens: string[]): ToxicSignals {
   const hard = tokens.some((token) => TOXIC_WORDS.has(token));
-  const soft = TOXIC_PHRASES.some((phrase) => phrase.test(text));
+  const soft = TOXIC_PHRASES.some((phrase) => phrase.test(loweredText));
   return { hard, soft };
 }
 
@@ -550,6 +546,13 @@ function analyzeComments(
   const isPersonToken = (token: string): boolean =>
     isLikelyPersonToken(token, videoPeople);
 
+  const videoThemeSeeds = new Set<string>();
+  for (const token of tokenizeRaw(`${video.title} ${video.channel.channelTitle}`)) {
+    const lowered = token.toLowerCase();
+    if (!isThemeToken(lowered)) continue;
+    videoThemeSeeds.add(lowered);
+  }
+
   const radar = emptyRadarCounts();
 
   let toxicCount = 0;
@@ -568,7 +571,7 @@ function analyzeComments(
     if (!cleaned) continue;
     analyzedCount += 1;
     const lowered = cleaned.toLowerCase();
-    const tokens = tokenizeLowered(lowered);
+    const tokens = tokenizeRaw(lowered);
 
     const toxicity = getToxicSignals(lowered, tokens);
     if (toxicity.hard) toxicCount += 1;
@@ -640,9 +643,14 @@ function analyzeComments(
   }
 
   if (analyzedCount >= THEME_MAX_SHARE_MIN_COMMENTS) {
+    const maxCount = Math.floor(THEME_MAX_COMMENT_SHARE * analyzedCount);
     for (const [label, count] of themeCounts) {
       if (count / analyzedCount > THEME_MAX_COMMENT_SHARE) {
-        themeCounts.delete(label);
+        if (videoThemeSeeds.has(label)) {
+          themeCounts.set(label, Math.max(1, maxCount));
+        } else {
+          themeCounts.delete(label);
+        }
       }
     }
   }
