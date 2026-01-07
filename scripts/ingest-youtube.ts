@@ -112,8 +112,8 @@ function normalizeCommentText(text: string): string {
 }
 
 function isContinuationNotFoundError(error: unknown): boolean {
-  const message = error instanceof Error ? error.message : String(error);
-  return message.includes('Continuation not found');
+  const message = (error instanceof Error ? error.message : String(error)).toLowerCase();
+  return message.includes('continuation') && message.includes('not found');
 }
 
 function parseCountFromText(text: string): number | undefined {
@@ -434,10 +434,12 @@ async function main(): Promise<void> {
 
       const publishedAt = extractCommentPublishedAt(commentRec);
       const likeCount = parseCount(commentRec?.like_count);
+      const commentSyntheticId =
+        existing?.syntheticId ?? (id.startsWith('synthetic:') ? true : undefined);
 
       fetchedComments.push({
         id,
-        syntheticId: id.startsWith('synthetic:') ? true : undefined,
+        syntheticId: commentSyntheticId,
         authorName: fetchedAuthorName ?? existing?.authorName,
         publishedAt: publishedAt ?? existing?.publishedAt,
         likeCount: likeCount ?? existing?.likeCount,
