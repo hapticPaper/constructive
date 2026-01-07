@@ -214,7 +214,7 @@ export function Report({ report }: { report: CommentReport }): JSX.Element {
                 value={report.snapshot.suggestionCount.toLocaleString()}
               />
               <StatRow
-                label="Toxic / harsh (filtered)"
+                label="Toxic language (filtered)"
                 value={report.snapshot.toxicCount.toLocaleString()}
                 valueStyle={{ color: 'var(--danger)' }}
               />

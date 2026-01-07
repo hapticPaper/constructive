@@ -1,21 +1,21 @@
 {
   "schema": "constructive.comment-analytics@v3",
   "commentCount": 1197,
-  "analyzedAt": "2026-01-07T17:38:03.280Z",
+  "analyzedAt": "2026-01-07T19:09:10.993Z",
   "sentimentBreakdown": {
-    "positive": 249,
-    "neutral": 867,
-    "negative": 81
+    "positive": 266,
+    "neutral": 829,
+    "negative": 102
   },
-  "toxicCount": 41,
+  "toxicCount": 51,
   "questionCount": 214,
   "suggestionCount": 123,
   "radar": {
-    "praise": 249,
-    "criticism": 81,
+    "praise": 266,
+    "criticism": 102,
     "question": 214,
     "suggestion": 123,
-    "toxic": 41,
+    "toxic": 51,
     "people": 478
   },
   "themes": {
@@ -75,8 +75,8 @@
   "highlights": {
     "questions": [
       "Thank-you for speaking about Diaspora Jews regarding Israel. Is it a possibility for us to formally divorce ourselves from Israel?…",
-      "I love how Scott is concerned with Israel's global \"brand.\" Scott, theyre committing GENOCIDE. WHO THE HELL CARES ABOUT THEIR BRAND? So…",
-      "You need to seriously take a long hard look at yourself Galloway. ‘Branding’- that’s where your concern and empathy is? Good grief.…"
+      "You need to seriously take a long hard look at yourself Galloway. ‘Branding’- that’s where your concern and empathy is? Good grief.…",
+      "What a great interviewee and interviewer. Scott asking a question and listening attentively and thoughtfully to Ezra. Brilliant from both…"
     ],
     "suggestions": [
       "Much respect to Ezra for calling things as they are. Gaza’s children are being deliberately starved by Isreal, and you’re worried about…",

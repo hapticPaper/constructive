@@ -202,26 +202,38 @@ const TOXIC_WORDS = new Set([
   'dick',
   'fuck',
   'fucking',
+  'moron',
   'pissed',
   'shit',
   'stfu',
+  'stupid',
   'wtf',
 ]);
 
+// Match against lowercased comment text.
+const TOXIC_PHRASES = [/\b(who|what|why|how) the hell\b/u];
+
 const POSITIVE_WORDS = new Set([
+  'agree',
+  'agreed',
   'amazing',
   'awesome',
   'best',
   'beautiful',
   'brilliant',
   'cool',
+  'favorite',
   'enjoy',
   'enjoyed',
   'excellent',
   'fantastic',
+  'fascinating',
   'good',
   'great',
+  'grateful',
   'helpful',
+  'incredible',
+  'incredibly',
   'impressive',
   'insight',
   'insightful',
@@ -233,7 +245,10 @@ const POSITIVE_WORDS = new Set([
   'smart',
   'thank',
   'thanks',
+  'thankful',
   'thoughtful',
+  'valuable',
+  'wow',
   'wonderful',
 ]);
 
@@ -241,7 +256,10 @@ const NEGATIVE_WORDS = new Set([
   'awful',
   'bad',
   'boring',
+  'clueless',
   'disappointing',
+  'disgusting',
+  'dumb',
   'garbage',
   'gross',
   'hate',
@@ -249,7 +267,13 @@ const NEGATIVE_WORDS = new Set([
   'idiot',
   'misleading',
   'nonsense',
+  'pathetic',
+  'ridiculous',
+  'sad',
+  'shame',
+  'shameful',
   'terrible',
+  'unfortunate',
   'wrong',
 ]);
 
@@ -357,6 +381,12 @@ const STOPWORDS = new Set([
   'need',
   'right',
   'think',
+  // Platform meta words that are rarely useful as “topics”.
+  'channel',
+  'episode',
+  'interview',
+  'podcast',
+  'video',
 ]);
 
 const LIKE_SCORE_CAP = 25;
@@ -387,11 +417,16 @@ function isThemeToken(token: string): boolean {
   return true;
 }
 
-function isToxicText(tokens: string[]): boolean {
-  for (const token of tokens) {
-    if (TOXIC_WORDS.has(token)) return true;
-  }
-  return false;
+type ToxicSignals = {
+  hard: boolean;
+  soft: boolean;
+};
+
+function getToxicSignals(text: string, tokens: string[]): ToxicSignals {
+  const hard = tokens.some((token) => TOXIC_WORDS.has(token));
+  const lowered = text.toLowerCase();
+  const soft = TOXIC_PHRASES.some((phrase) => phrase.test(lowered));
+  return { hard, soft };
 }
 
 function sentimentForTokens(tokens: string[]): Sentiment {
@@ -513,8 +548,9 @@ function analyzeComments(
     analyzedCount += 1;
     const tokens = tokenize(cleaned);
 
-    const toxic = isToxicText(tokens);
-    if (toxic) toxicCount += 1;
+    const toxicity = getToxicSignals(cleaned, tokens);
+    if (toxicity.hard) toxicCount += 1;
+    const unsafeForHighlights = toxicity.hard || toxicity.soft;
 
     const sentiment = sentimentForTokens(tokens);
     sentimentBreakdown[sentiment] += 1;
@@ -522,7 +558,7 @@ function analyzeComments(
     const isQuestion = isQuestionText(cleaned);
     if (isQuestion) {
       questionCount += 1;
-      if (!toxic) {
+      if (!unsafeForHighlights) {
         const likeScore =
           typeof comment.likeCount === 'number'
             ? Math.min(comment.likeCount, LIKE_SCORE_CAP)
@@ -536,7 +572,7 @@ function analyzeComments(
     const isSuggestion = isSuggestionText(cleaned);
     if (isSuggestion) {
       suggestionCount += 1;
-      if (!toxic) {
+      if (!unsafeForHighlights) {
         const likeScore =
           typeof comment.likeCount === 'number'
             ? Math.min(comment.likeCount, LIKE_SCORE_CAP)
@@ -565,7 +601,7 @@ function analyzeComments(
       radar.people += 1;
     }
 
-    if (!toxic) {
+    if (!unsafeForHighlights) {
       const likeScore =
         typeof comment.likeCount === 'number'
           ? Math.min(comment.likeCount, LIKE_SCORE_CAP)
