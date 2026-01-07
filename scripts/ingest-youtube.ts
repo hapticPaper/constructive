@@ -111,9 +111,42 @@ function normalizeCommentText(text: string): string {
   return text.replace(/\s+/g, ' ').trim();
 }
 
+// Keep error-derived strings bounded so warning logs stay readable.
+const MAX_ERROR_MESSAGE_LENGTH = 20_000;
+
+function capMessage(message: string, maxLength = MAX_ERROR_MESSAGE_LENGTH): string {
+  if (message.length <= maxLength) return message;
+  return `${message.slice(0, maxLength)}...[truncated]`;
+}
+
+function rawErrorMessage(error: unknown): string {
+  if (error instanceof Error) return capMessage(error.message);
+  const errorRecord = asRecord(error);
+  if (typeof errorRecord?.message === 'string') return capMessage(errorRecord.message);
+  if (error == null) return '';
+  if (typeof error === 'string') return capMessage(error);
+
+  if (errorRecord) {
+    try {
+      return capMessage(JSON.stringify(errorRecord));
+    } catch {
+      // fall through
+    }
+  }
+
+  return capMessage(String(error));
+}
+
 function isContinuationNotFoundError(error: unknown): boolean {
-  const message = (error instanceof Error ? error.message : String(error)).toLowerCase();
-  return message.includes('continuation not found');
+  const rawMessage = rawErrorMessage(error);
+  const message = rawMessage.toLowerCase();
+  if (!message) return false;
+
+  if (message.includes('continuation not found')) return true;
+  return (
+    /continuation.{0,40}not found/.test(message) ||
+    /not found.{0,40}continuation/.test(message)
+  );
 }
 
 function mergeCommentRecord(params: {
@@ -137,6 +170,38 @@ function mergeCommentRecord(params: {
     publishedAt: params.fetched.publishedAt ?? params.existing?.publishedAt,
     likeCount: params.fetched.likeCount ?? params.existing?.likeCount,
     text,
+  };
+}
+
+function computeCommentCompletionStatus(params: {
+  paginationLoopGuardTriggered: boolean;
+  truncatedByLimit: boolean;
+  stoppedBecauseContinuationNotFound: boolean;
+  hasDrops: boolean;
+  reachedEnd: boolean;
+  stoppedBecauseNoNew: boolean;
+  wasPreviouslyCompleteConfirmed: boolean;
+}): {
+  commentsComplete: boolean;
+  commentsCompleteConfirmed: boolean;
+} {
+  /**
+   * Completion means we have no known ingestion issues (pagination loop guard,
+   * truncation, continuation failure, or dropped comments) and either reached
+   * the natural end of pagination or observed no new comments while resuming.
+   */
+  const noKnownDataLossOrErrors =
+    !params.paginationLoopGuardTriggered &&
+    !params.truncatedByLimit &&
+    !params.stoppedBecauseContinuationNotFound &&
+    !params.hasDrops;
+
+  return {
+    commentsComplete:
+      noKnownDataLossOrErrors && (params.reachedEnd || params.stoppedBecauseNoNew),
+    commentsCompleteConfirmed:
+      noKnownDataLossOrErrors &&
+      (params.wasPreviouslyCompleteConfirmed || params.reachedEnd),
   };
 }
 
@@ -438,6 +503,7 @@ async function main(): Promise<void> {
       const realId =
         typeof commentRec?.comment_id === 'string' ? commentRec.comment_id : null;
       const knownId = realId?.trim() || null;
+      const isSyntheticId = !knownId;
 
       let id = knownId;
       const fetchedAuthorName = extractCommentAuthorName(commentRec);
@@ -460,7 +526,7 @@ async function main(): Promise<void> {
         id,
         existing,
         fetched: {
-          syntheticId: id.startsWith('synthetic:') ? true : undefined,
+          syntheticId: isSyntheticId ? true : undefined,
           authorName: fetchedAuthorName,
           publishedAt,
           likeCount,
@@ -510,19 +576,7 @@ async function main(): Promise<void> {
     }
   }
 
-  if (paginationLoopGuardTriggered) {
-    process.stderr.write(
-      `Warning: detected possible pagination loop for ${videoId}; stopping early.\n`,
-    );
-    process.exitCode = 1;
-  }
-
-  if (stoppedBecauseContinuationNotFound) {
-    process.stderr.write(
-      `Warning: continuation not found for ${videoId}; stopping comment pagination early.\n`,
-    );
-    process.exitCode = 1;
-  }
+  if (paginationLoopGuardTriggered) process.exitCode = 1;
 
   const remainingExisting = existingComments.filter(
     (comment) => !seenIds.has(comment.id),
@@ -547,22 +601,42 @@ async function main(): Promise<void> {
     ? finalComments.slice(0, maxComments)
     : finalComments;
 
-  const commentsCompleteConfirmed =
-    !paginationLoopGuardTriggered &&
-    !truncatedByLimit &&
-    !stoppedBecauseContinuationNotFound &&
-    (wasPreviouslyCompleteConfirmed || reachedEnd);
-  const commentsComplete =
-    !paginationLoopGuardTriggered &&
-    !truncatedByLimit &&
-    !stoppedBecauseContinuationNotFound &&
-    (reachedEnd || stoppedBecauseNoNew);
+  const hasDrops = droppedBecauseMissingTextCount > 0;
+  const { commentsComplete, commentsCompleteConfirmed } = computeCommentCompletionStatus({
+    paginationLoopGuardTriggered,
+    truncatedByLimit,
+    stoppedBecauseContinuationNotFound,
+    hasDrops,
+    reachedEnd,
+    stoppedBecauseNoNew,
+    wasPreviouslyCompleteConfirmed,
+  });
 
   const status = paginationLoopGuardTriggered
     ? 'warning-pagination-loop'
     : stoppedBecauseContinuationNotFound
       ? 'warning-continuation-not-found'
+      : hasDrops
+        ? 'warning-missing-text'
       : 'ok';
+
+  if (paginationLoopGuardTriggered) {
+    process.stderr.write(
+      `Warning: detected possible pagination loop for ${videoId}; stopped after ${pagesFetched} pages (${commentRecords.length} comments).\n`,
+    );
+  }
+
+  if (stoppedBecauseContinuationNotFound) {
+    process.stderr.write(
+      `Warning: continuation not found for ${videoId}; stopped after ${pagesFetched} pages (${commentRecords.length} comments).\n`,
+    );
+  }
+
+  if (hasDrops) {
+    process.stderr.write(
+      `Warning: ${droppedBecauseMissingTextCount} comments had missing text for ${videoId}; treating ingestion as incomplete.\n`,
+    );
+  }
 
   if (typeof viewCount === 'number' || typeof likeCount === 'number') {
     const reachPath = reachJsonPath('youtube', videoId);
@@ -596,8 +670,6 @@ async function main(): Promise<void> {
     pagesFetched,
     newCommentCount,
     existingCommentCount: existingComments.length,
-    paginationLoopGuardTriggered: paginationLoopGuardTriggered ? true : undefined,
-    continuationNotFound: stoppedBecauseContinuationNotFound ? true : undefined,
     droppedBecauseMissingTextCount:
       droppedBecauseMissingTextCount > 0 ? droppedBecauseMissingTextCount : undefined,
     reachCapturedAt:
