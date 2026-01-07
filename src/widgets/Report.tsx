@@ -208,7 +208,9 @@ export function Report({ report }: { report: CommentReport }): JSX.Element {
                   <div key={sentiment} className="row">
                     <span className="muted">{SENTIMENT_LABELS[sentiment]}</span>
                     <span style={{ fontWeight: 650, color: SENTIMENT_COLORS[sentiment] }}>
-                      {formatPercent(report.snapshot.sentimentBreakdown[sentiment] / denom)}{' '}
+                      {formatPercent(
+                        report.snapshot.sentimentBreakdown[sentiment] / denom,
+                      )}{' '}
                       · {report.snapshot.sentimentBreakdown[sentiment].toLocaleString()}
                     </span>
                   </div>
@@ -227,7 +229,10 @@ export function Report({ report }: { report: CommentReport }): JSX.Element {
               raw word frequency. Labels are curated to keep the list focused on the main
               discussion clusters.
             </p>
-            <HistogramList items={report.core.topics} total={report.snapshot.commentCount} />
+            <HistogramList
+              items={report.core.topics}
+              total={report.snapshot.commentCount}
+            />
           </WidgetPanel>
         </WidgetGrid>
       </div>

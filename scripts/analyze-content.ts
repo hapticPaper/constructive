@@ -407,10 +407,6 @@ function tokenizeRaw(text: string): string[] {
     .filter(Boolean);
 }
 
-function tokenize(text: string): string[] {
-  return tokenizeRaw(text.toLowerCase());
-}
-
 function isThemeToken(token: string): boolean {
   if (token.length < 4) return false;
   if (/^\d+$/u.test(token)) return false;

@@ -48,7 +48,6 @@ This playbook produces **channel-level insights** to help creators understand pa
 
 3. Optional: if the aggregated output still has near-duplicate labels (e.g. `ai` vs
    `artificial intelligence`), do a final reduction pass by editing:
-
    - `content/platforms/youtube/channels/<channelId>/channel-aggregate.mdx`
 
    Keep `topTopics` sorted by count, and cap any merged topic count at `totalComments`.
@@ -92,28 +91,30 @@ export const channelAggregate = {
     platform: 'youtube',
     channelId: 'UCxyz',
     channelTitle: 'My Channel',
-    channelUrl: 'https://www.youtube.com/channel/UCxyz'
+    channelUrl: 'https://www.youtube.com/channel/UCxyz',
   },
   videoCount: 10,
   totalComments: 2000,
   sentimentBreakdown: {
     positive: 180,
     neutral: 1700,
-    negative: 120
+    negative: 120,
   },
   topTopics: [
     { label: 'technology', count: 450 },
-    { label: 'innovation', count: 320 }
+    { label: 'innovation', count: 320 },
   ],
   takeaways: [
     {
       title: 'Your audience loves technical deep-dives',
-      detail: 'Videos with "technology" and "innovation" themes get 2.3x more positive engagement.'
-    }
-  ]
+      detail:
+        'Videos with "technology" and "innovation" themes get 2.3x more positive engagement.',
+    },
+  ],
 };
 
 {typeof ChannelAggregate !== 'undefined' ? (
+
   <ChannelAggregate channelAggregate={channelAggregate} />
 ) : (
   <div className="callout">

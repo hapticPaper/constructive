@@ -7,7 +7,7 @@ Ingest a YouTube video’s metadata + comment snapshot into `content/`, then gen
 This playbook produces **actionable, aggregated takeaways**. The goal is to avoid recreating the “scrolling experience” (lots of similar quotes) and instead surface:
 
 - The top things people cared about (topics)
-- The top things people cared about *re: the host/guest* (people)
+- The top things people cared about _re: the host/guest_ (people)
 - A short list of distilled, creator-friendly takeaways (think “30-second summary”)
 
 Not every video will have every section: the report is split into **core** and **optional** sections, and the UI only renders the sections that have signal.
@@ -46,12 +46,10 @@ Not every video will have every section: the report is split into **core** and *
    the outputs so they reflect real, human-readable clusters.
 
    Update **both** files so they stay in sync:
-
    - `content/platforms/youtube/videos/<videoId>/analytics.json`
    - `content/platforms/youtube/videos/<videoId>/report.mdx`
 
    What to edit:
-
    - `themes.topics`: merge token-level noise into a small set of real topics.
    - `themes.people`: convert single-name tokens into actual names being discussed
      (host/guest + recurring public figures).
@@ -59,7 +57,6 @@ Not every video will have every section: the report is split into **core** and *
      themes/questions/suggestions.
 
    Rules of thumb:
-
    - Prefer **short phrases** (1–4 words) over single tokens when needed.
    - **Drop** generic “background” terms unless they’re clearly central to the video.
    - **Merge** spelling/tense/singular-plural variants.
@@ -121,13 +118,26 @@ Core idea: `report.mdx` should be mostly **data**, not prose.
 export const report = {
   schema: 'constructive.comment-report@v2',
   generatedAt: '…',
-  video: { platform: 'youtube', videoId: '…', title: '…', channelTitle: '…', videoUrl: '…' },
-  snapshot: { commentCount: 0, sentimentBreakdown: { positive: 0, neutral: 0, negative: 0 }, toxicCount: 0, questionCount: 0, suggestionCount: 0 },
+  video: {
+    platform: 'youtube',
+    videoId: '…',
+    title: '…',
+    channelTitle: '…',
+    videoUrl: '…',
+  },
+  snapshot: {
+    commentCount: 0,
+    sentimentBreakdown: { positive: 0, neutral: 0, negative: 0 },
+    toxicCount: 0,
+    questionCount: 0,
+    suggestionCount: 0,
+  },
   core: { takeaways: [], topics: [], questions: [], suggestions: [] },
   optional: { people: [], quotes: [] },
 };
 
 {typeof Report !== 'undefined' ? <Report report={report} /> : (
+
   <div className="callout">
     <strong>Missing widget:</strong> Report
   </div>

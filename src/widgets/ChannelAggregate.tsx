@@ -164,7 +164,9 @@ export function ChannelAggregate({
                   <div key={sentiment} className="row">
                     <span className="muted">{SENTIMENT_LABELS[sentiment]}</span>
                     <span style={{ fontWeight: 650, color: SENTIMENT_COLORS[sentiment] }}>
-                      {formatPercent(channelAggregate.sentimentBreakdown[sentiment] / denom)}{' '}
+                      {formatPercent(
+                        channelAggregate.sentimentBreakdown[sentiment] / denom,
+                      )}{' '}
                       · {channelAggregate.sentimentBreakdown[sentiment].toLocaleString()}
                     </span>
                   </div>
@@ -179,10 +181,13 @@ export function ChannelAggregate({
 
           <WidgetPanel title="Top topics across channel">
             <p className="muted" style={{ marginTop: 6 }}>
-              Themes are counted as “comments mentioning the term” (they can overlap). This
-              list is curated to focus on the main recurring clusters.
+              Themes are counted as “comments mentioning the term” (they can overlap).
+              This list is curated to focus on the main recurring clusters.
             </p>
-            <HistogramList items={channelAggregate.topTopics} total={channelAggregate.totalComments} />
+            <HistogramList
+              items={channelAggregate.topTopics}
+              total={channelAggregate.totalComments}
+            />
           </WidgetPanel>
         </WidgetGrid>
       </div>

@@ -1,50 +1,52 @@
 export const channelAggregate = {
-  "schema": "constructive.channel-aggregate@v1",
-  "generatedAt": "2026-01-07T20:46:36.667Z",
-  "channel": {
-    "platform": "youtube",
-    "channelId": "UC1E1SVcVyU3ntWMSQEp38Yw",
-    "channelTitle": "The Prof G Pod – Scott Galloway",
-    "channelUrl": "https://www.youtube.com/@TheProfGPod"
+  schema: 'constructive.channel-aggregate@v1',
+  generatedAt: '2026-01-07T20:46:36.667Z',
+  channel: {
+    platform: 'youtube',
+    channelId: 'UC1E1SVcVyU3ntWMSQEp38Yw',
+    channelTitle: 'The Prof G Pod – Scott Galloway',
+    channelUrl: 'https://www.youtube.com/@TheProfGPod',
   },
-  "videoCount": 1,
-  "totalComments": 1197,
-  "sentimentBreakdown": {
-    "positive": 266,
-    "neutral": 829,
-    "negative": 102
+  videoCount: 1,
+  totalComments: 1197,
+  sentimentBreakdown: {
+    positive: 266,
+    neutral: 829,
+    negative: 102,
   },
-  "topTopics": [
+  topTopics: [
     {
-      "label": "Israel-Gaza war",
-      "count": 214
+      label: 'Israel-Gaza war',
+      count: 214,
     },
     {
-      "label": "U.S. politics",
-      "count": 191
+      label: 'U.S. politics',
+      count: 191,
     },
     {
-      "label": "Donald Trump",
-      "count": 94
+      label: 'Donald Trump',
+      count: 94,
     },
     {
-      "label": "Genocide framing",
-      "count": 64
-    }
+      label: 'Genocide framing',
+      count: 64,
+    },
   ],
-  "takeaways": [
+  takeaways: [
     {
-      "title": "Channel-wide topic patterns",
-      "detail": "Across 1 videos, viewers consistently discuss: Israel-Gaza war, U.S. politics, Donald Trump."
+      title: 'Channel-wide topic patterns',
+      detail:
+        'Across 1 videos, viewers consistently discuss: Israel-Gaza war, U.S. politics, Donald Trump.',
     },
     {
-      "title": "High engagement rate",
-      "detail": "Averaging 1,197 comments per video shows strong community interaction."
-    }
-  ]
-}
+      title: 'High engagement rate',
+      detail: 'Averaging 1,197 comments per video shows strong community interaction.',
+    },
+  ],
+};
 
 {typeof ChannelAggregate !== "undefined" ? <ChannelAggregate channelAggregate={channelAggregate} /> : (
+
   <div className="callout">
     <strong>Missing widget:</strong> ChannelAggregate
   </div>
