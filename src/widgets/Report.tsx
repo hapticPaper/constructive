@@ -92,7 +92,7 @@ function HistogramList({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 }}>
       {items.map((item) => (
-        <div key={`${item.label}:${item.count}`}>
+        <div key={item.label}>
           <div className="row" style={{ gap: 12 }}>
             <span style={{ fontWeight: 650 }}>{item.label}</span>
             <span className="muted" style={{ fontVariantNumeric: 'tabular-nums' }}>
