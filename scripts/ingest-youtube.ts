@@ -116,6 +116,30 @@ function isContinuationNotFoundError(error: unknown): boolean {
   return message.includes('continuation') && message.includes('not found');
 }
 
+function mergeCommentRecord(params: {
+  id: string;
+  existing: CommentRecord | undefined;
+  fetched: {
+    text: string | undefined;
+    authorName: string | undefined;
+    publishedAt: string | undefined;
+    likeCount: number | undefined;
+    syntheticId: true | undefined;
+  };
+}): CommentRecord | null {
+  const text = params.fetched.text || params.existing?.text;
+  if (!text) return null;
+
+  return {
+    id: params.id,
+    syntheticId: params.existing?.syntheticId ?? params.fetched.syntheticId,
+    authorName: params.fetched.authorName ?? params.existing?.authorName,
+    publishedAt: params.fetched.publishedAt ?? params.existing?.publishedAt,
+    likeCount: params.fetched.likeCount ?? params.existing?.likeCount,
+    text,
+  };
+}
+
 function parseCountFromText(text: string): number | undefined {
   const raw = text.trim();
   if (!raw) return undefined;
@@ -427,24 +451,23 @@ async function main(): Promise<void> {
       if (seenIds.has(id)) continue;
 
       const existing = existingById.get(id);
-
-      // Prefer the freshly-normalized text, but fall back to stored text when the API payload is empty.
-      const text = fetchedText || existing?.text;
-      if (!text) continue;
-
       const publishedAt = extractCommentPublishedAt(commentRec);
       const likeCount = parseCount(commentRec?.like_count);
-      const commentSyntheticId =
-        existing?.syntheticId ?? (id.startsWith('synthetic:') ? true : undefined);
 
-      fetchedComments.push({
+      const merged = mergeCommentRecord({
         id,
-        syntheticId: commentSyntheticId,
-        authorName: fetchedAuthorName ?? existing?.authorName,
-        publishedAt: publishedAt ?? existing?.publishedAt,
-        likeCount: likeCount ?? existing?.likeCount,
-        text,
+        existing,
+        fetched: {
+          syntheticId: id.startsWith('synthetic:') ? true : undefined,
+          authorName: fetchedAuthorName,
+          publishedAt,
+          likeCount,
+          text: fetchedText || undefined,
+        },
       });
+      if (!merged) continue;
+
+      fetchedComments.push(merged);
 
       if (!existing) {
         newThisPage += 1;
