@@ -111,6 +111,11 @@ function normalizeCommentText(text: string): string {
   return text.replace(/\s+/g, ' ').trim();
 }
 
+function isContinuationNotFoundError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return message.includes('Continuation not found');
+}
+
 function parseCountFromText(text: string): number | undefined {
   const raw = text.trim();
   if (!raw) return undefined;
@@ -409,7 +414,6 @@ async function main(): Promise<void> {
       const knownId = realId?.trim() || null;
 
       let id = knownId;
-      let syntheticId = false;
       const fetchedAuthorName = extractCommentAuthorName(commentRec);
       const fetchedRawText = toStringSafe(commentRec?.content ?? commentRec?.text);
       const fetchedText = normalizeCommentText(fetchedRawText);
@@ -418,13 +422,13 @@ async function main(): Promise<void> {
         if (!fetchedText) continue;
 
         id = syntheticCommentId({ videoId, authorName: fetchedAuthorName, text: fetchedText });
-        syntheticId = true;
       }
 
       if (seenIds.has(id)) continue;
 
       const existing = existingById.get(id);
 
+      // Prefer the freshly-normalized text, but fall back to stored text when the API payload is empty.
       const text = fetchedText || existing?.text;
       if (!text) continue;
 
@@ -433,7 +437,7 @@ async function main(): Promise<void> {
 
       fetchedComments.push({
         id,
-        syntheticId: syntheticId || existing?.syntheticId ? true : undefined,
+        syntheticId: id.startsWith('synthetic:') ? true : undefined,
         authorName: fetchedAuthorName ?? existing?.authorName,
         publishedAt: publishedAt ?? existing?.publishedAt,
         likeCount: likeCount ?? existing?.likeCount,
@@ -468,8 +472,7 @@ async function main(): Promise<void> {
     try {
       cursor = (await cursor.getContinuation()) as unknown as CommentsCursor;
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      if (message.includes('Continuation not found')) {
+      if (isContinuationNotFoundError(error)) {
         reachedEnd = true;
         break;
       }
