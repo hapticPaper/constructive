@@ -1,95 +1,96 @@
 export const report = {
-  "schema": "constructive.comment-report@v2",
-  "generatedAt": "2026-01-07T17:38:03.403Z",
-  "video": {
-    "platform": "youtube",
-    "videoId": "KXPhaAsnrfs",
-    "title": "Does Infinity - Infinity = an Electron?",
-    "channelTitle": "PBS Space Time",
-    "videoUrl": "https://www.youtube.com/watch?v=KXPhaAsnrfs"
+  schema: 'constructive.comment-report@v2',
+  generatedAt: '2026-01-07T17:38:03.403Z',
+  video: {
+    platform: 'youtube',
+    videoId: 'KXPhaAsnrfs',
+    title: 'Does Infinity - Infinity = an Electron?',
+    channelTitle: 'PBS Space Time',
+    videoUrl: 'https://www.youtube.com/watch?v=KXPhaAsnrfs',
   },
-  "snapshot": {
-    "commentCount": 897,
-    "sentimentBreakdown": {
-      "positive": 88,
-      "neutral": 770,
-      "negative": 39
+  snapshot: {
+    commentCount: 897,
+    sentimentBreakdown: {
+      positive: 88,
+      neutral: 770,
+      negative: 39,
     },
-    "toxicCount": 11,
-    "questionCount": 248,
-    "suggestionCount": 87
+    toxicCount: 11,
+    questionCount: 248,
+    suggestionCount: 87,
   },
-  "core": {
-    "takeaways": [
+  core: {
+    takeaways: [
       {
-        "title": "Viewers want clarity",
-        "detail": "Questions make up 28% of comments (248 total)."
+        title: 'Viewers want clarity',
+        detail: 'Questions make up 28% of comments (248 total).',
       },
       {
-        "title": "There are clear improvement requests",
-        "detail": "Suggestions show up in 10% of comments (87 total)."
+        title: 'There are clear improvement requests',
+        detail: 'Suggestions show up in 10% of comments (87 total).',
       },
       {
-        "title": "What people latched onto",
-        "detail": "Most discussion clusters around: infinity, electron, mass."
-      }
+        title: 'What people latched onto',
+        detail: 'Most discussion clusters around: infinity, electron, mass.',
+      },
     ],
-    "topics": [
+    topics: [
       {
-        "label": "infinity",
-        "count": 145
+        label: 'infinity',
+        count: 145,
       },
       {
-        "label": "electron",
-        "count": 122
+        label: 'electron',
+        count: 122,
       },
       {
-        "label": "mass",
-        "count": 108
+        label: 'mass',
+        count: 108,
       },
       {
-        "label": "infinite",
-        "count": 70
+        label: 'infinite',
+        count: 70,
       },
       {
-        "label": "energy",
-        "count": 68
+        label: 'energy',
+        count: 68,
       },
       {
-        "label": "time",
-        "count": 56
+        label: 'time',
+        count: 56,
       },
       {
-        "label": "universe",
-        "count": 55
+        label: 'universe',
+        count: 55,
       },
       {
-        "label": "math",
-        "count": 52
-      }
+        label: 'math',
+        count: 52,
+      },
     ],
-    "questions": [
+    questions: [
       "Entity 1: Our last hack blew up the mass of particles. Entity 2: Let's just set the internal mass to negative to counter that. Entity 1:…",
-      "When Feynman and Schwinger were awarded the Nobel prize in 1965 there was a third scientist Tomonaga who independently discovered…",
-      "\"May you remove your self-energy mass so I can measure your bare mass?\" That should be a fun pickup line for parties."
+      'When Feynman and Schwinger were awarded the Nobel prize in 1965 there was a third scientist Tomonaga who independently discovered…',
+      '"May you remove your self-energy mass so I can measure your bare mass?" That should be a fun pickup line for parties.',
     ],
-    "suggestions": [
+    suggestions: [
       "Entity 1: Our last hack blew up the mass of particles. Entity 2: Let's just set the internal mass to negative to counter that. Entity 1:…",
-      "\"May you remove your self-energy mass so I can measure your bare mass?\" That should be a fun pickup line for parties.",
-      "Here is my, hand wavy, alternative approach. Actually I expect that this has been investigated before and proved wrong or irrelevant. But…"
-    ]
+      '"May you remove your self-energy mass so I can measure your bare mass?" That should be a fun pickup line for parties.',
+      'Here is my, hand wavy, alternative approach. Actually I expect that this has been investigated before and proved wrong or irrelevant. But…',
+    ],
   },
-  "optional": {
-    "people": [],
-    "quotes": [
-      "Thanks to Radiacode for sponsoring this video! Use the promo code \"PBS\" to get an exclusive 10% discount at: https://103.radiacode.com/PBS",
-      "I love the \"You think your brain melted with electrons, just wait until we get to Higgs!\".",
-      "“Negative Bear Mass” is an excellent band name"
-    ]
-  }
-}
+  optional: {
+    people: [],
+    quotes: [
+      'Thanks to Radiacode for sponsoring this video! Use the promo code "PBS" to get an exclusive 10% discount at: https://103.radiacode.com/PBS',
+      'I love the "You think your brain melted with electrons, just wait until we get to Higgs!".',
+      '“Negative Bear Mass” is an excellent band name',
+    ],
+  },
+};
 
 {typeof Report !== "undefined" ? <Report report={report} /> : (
+
   <div className="callout">
     <strong>Missing widget:</strong> Report
   </div>

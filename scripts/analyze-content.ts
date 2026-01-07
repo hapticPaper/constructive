@@ -480,7 +480,10 @@ function summarizeThemeLabels(
     .join(', ');
 }
 
-function analyzeComments(comments: CommentRecord[], video: VideoMetadata): CommentAnalytics {
+function analyzeComments(
+  comments: CommentRecord[],
+  video: VideoMetadata,
+): CommentAnalytics {
   const sentimentBreakdown: Record<Sentiment, number> = {
     positive: 0,
     neutral: 0,
@@ -488,7 +491,8 @@ function analyzeComments(comments: CommentRecord[], video: VideoMetadata): Comme
   };
 
   const videoPeople = buildVideoPersonTokens(video);
-  const isPersonToken = (token: string): boolean => isLikelyPersonToken(token, videoPeople);
+  const isPersonToken = (token: string): boolean =>
+    isLikelyPersonToken(token, videoPeople);
 
   const radar = emptyRadarCounts();
 

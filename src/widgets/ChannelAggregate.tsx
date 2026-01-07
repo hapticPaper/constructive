@@ -192,8 +192,10 @@ export function ChannelAggregate({
                   <div key={sentiment} className="row">
                     <span className="muted">{SENTIMENT_LABELS[sentiment]}</span>
                     <span style={{ fontWeight: 650, color: SENTIMENT_COLORS[sentiment] }}>
-                      {formatPercent(channelAggregate.sentimentBreakdown[sentiment] / denom)} ·{' '}
-                      {channelAggregate.sentimentBreakdown[sentiment].toLocaleString()}
+                      {formatPercent(
+                        channelAggregate.sentimentBreakdown[sentiment] / denom,
+                      )}{' '}
+                      · {channelAggregate.sentimentBreakdown[sentiment].toLocaleString()}
                     </span>
                   </div>
                 ))}
@@ -206,7 +208,10 @@ export function ChannelAggregate({
           </WidgetPanel>
 
           <WidgetPanel title="Top topics across channel">
-            <HistogramList items={channelAggregate.topTopics} total={channelAggregate.totalComments} />
+            <HistogramList
+              items={channelAggregate.topTopics}
+              total={channelAggregate.totalComments}
+            />
           </WidgetPanel>
         </WidgetGrid>
       </div>

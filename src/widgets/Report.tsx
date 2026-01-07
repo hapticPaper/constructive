@@ -236,8 +236,10 @@ export function Report({ report }: { report: CommentReport }): JSX.Element {
                   <div key={sentiment} className="row">
                     <span className="muted">{SENTIMENT_LABELS[sentiment]}</span>
                     <span style={{ fontWeight: 650, color: SENTIMENT_COLORS[sentiment] }}>
-                      {formatPercent(report.snapshot.sentimentBreakdown[sentiment] / denom)} ·{' '}
-                      {report.snapshot.sentimentBreakdown[sentiment].toLocaleString()}
+                      {formatPercent(
+                        report.snapshot.sentimentBreakdown[sentiment] / denom,
+                      )}{' '}
+                      · {report.snapshot.sentimentBreakdown[sentiment].toLocaleString()}
                     </span>
                   </div>
                 ))}
@@ -251,9 +253,13 @@ export function Report({ report }: { report: CommentReport }): JSX.Element {
 
           <WidgetPanel title="Topics (content)">
             <p className="muted" style={{ marginTop: 6 }}>
-              Themes are counted as “comments mentioning the term”, not raw word frequency.
+              Themes are counted as “comments mentioning the term”, not raw word
+              frequency.
             </p>
-            <HistogramList items={report.core.topics} total={report.snapshot.commentCount} />
+            <HistogramList
+              items={report.core.topics}
+              total={report.snapshot.commentCount}
+            />
           </WidgetPanel>
         </WidgetGrid>
       </div>
