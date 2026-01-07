@@ -81,6 +81,8 @@ type ChannelAggregate = {
 };
 ```
 
+Note: after any manual merging, keep `topTopics[*].count <= totalComments`.
+
 **Example MDX structure:**
 
 ```mdx

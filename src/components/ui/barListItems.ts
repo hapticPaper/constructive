@@ -17,7 +17,16 @@ export function barListItemsFromCounts(
   items: ReadonlyArray<{ label: string; count: number }>,
   total: number,
 ): BarListItem[] {
-  const denom = total > 0 ? total : 1;
+  if (total <= 0) {
+    return items.map((item) => ({
+      key: item.label,
+      label: item.label,
+      count: item.count,
+      rate: 0,
+    }));
+  }
+
+  const denom = total;
   return items.map((item) => ({
     key: item.label,
     label: item.label,
