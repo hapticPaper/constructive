@@ -2,6 +2,8 @@ import type { CSSProperties } from 'react';
 
 import type { CreatorTakeaway, Sentiment, ThemeBucket } from '../content/types';
 
+import { BarList } from '../components/ui/BarList';
+
 import { Callout } from './Callout';
 import { WidgetGrid } from './WidgetGrid';
 import { WidgetPanel } from './WidgetPanel';
@@ -89,38 +91,14 @@ function HistogramList({
 
   const denom = total > 0 ? total : 1;
 
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 }}>
-      {items.map((item) => (
-        <div key={item.label}>
-          <div className="row" style={{ gap: 12 }}>
-            <span style={{ fontWeight: 650 }}>{item.label}</span>
-            <span className="muted" style={{ fontVariantNumeric: 'tabular-nums' }}>
-              {formatPercent(item.count / denom)} · {item.count.toLocaleString()}
-            </span>
-          </div>
-          <div
-            style={{
-              marginTop: 6,
-              height: 8,
-              borderRadius: 999,
-              background: 'rgba(148, 163, 184, 0.22)',
-              overflow: 'hidden',
-            }}
-          >
-            <div
-              style={{
-                height: '100%',
-                width: `${Math.max(0, Math.min(1, item.count / denom)) * 100}%`,
-                background: 'var(--brand)',
-                borderRadius: 999,
-              }}
-            />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
+  const barItems = items.map((item) => ({
+    key: item.label,
+    label: item.label,
+    count: item.count,
+    rate: item.count / denom,
+  }));
+
+  return <BarList items={barItems} style={{ gap: 10, marginTop: 10 }} />;
 }
 
 function BulletList({ items }: { items: string[] }): JSX.Element {
