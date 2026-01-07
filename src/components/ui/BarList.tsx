@@ -2,11 +2,9 @@ import type { CSSProperties } from 'react';
 
 export type BarListItem = {
   /**
-   * Unique identifier for this item within a single `BarList` render (used as the
-   * React `key`).
+   * Identifier used as the React `key` for this row.
    *
-   * Callers should provide a stable domain identifier when possible. Otherwise, the
-   * adapter helpers derive one from the label.
+   * For simple lists, using a stable label/category key is fine.
    */
   id: string;
   label: string;
