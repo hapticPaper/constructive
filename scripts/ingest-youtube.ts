@@ -550,7 +550,7 @@ async function main(): Promise<void> {
   const commentsComplete =
     !paginationLoopGuardTriggered &&
     !truncatedByLimit &&
-    (reachedEnd || stoppedBecauseNoNew || stoppedBecauseContinuationNotFound);
+    (reachedEnd || stoppedBecauseNoNew);
 
   const status = paginationLoopGuardTriggered
     ? 'warning-pagination-loop'
