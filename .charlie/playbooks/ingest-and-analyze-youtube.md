@@ -39,6 +39,36 @@ Not every video will have every section: the report is split into **core** and *
    bun run content:analyze -- --video youtube:<videoId>
    ```
 
+4. **Dimensionality reduction (do this yourself)**
+
+   The analyzer stays deterministic and lightweight — it extracts candidate tokens, but
+   it can’t do semantic clustering well. Before committing, do an LLM pass and rewrite
+   the outputs so they reflect real, human-readable clusters.
+
+   Update **both** files so they stay in sync:
+
+   - `content/platforms/youtube/videos/<videoId>/analytics.json`
+   - `content/platforms/youtube/videos/<videoId>/report.mdx`
+
+   What to edit:
+
+   - `themes.topics`: merge token-level noise into a small set of real topics.
+   - `themes.people`: convert single-name tokens into actual names being discussed
+     (host/guest + recurring public figures).
+   - `takeaways`: rewrite into 2–3 creator-friendly takeaways grounded in the
+     themes/questions/suggestions.
+
+   Rules of thumb:
+
+   - Prefer **short phrases** (1–4 words) over single tokens when needed.
+   - **Drop** generic “background” terms unless they’re clearly central to the video.
+   - **Merge** spelling/tense/singular-plural variants.
+   - Keep counts meaningful:
+     - For strict variants (e.g. `infinite` vs `infinity`), prefer `max()`.
+     - For broader clusters (merging multiple related tokens), `sum()` is fine,
+       but always cap at `commentCount`.
+   - Keep `themes.*` sorted by `count` descending.
+
 ## Output formats
 
 ### `analytics.json`
@@ -49,13 +79,17 @@ Key fields (current schema):
 
 ```ts
 type CommentAnalytics = {
-  schema: 'constructive.comment-analytics@v2';
+  schema: 'constructive.comment-analytics@v3';
   commentCount: number;
   analyzedAt: string;
   sentimentBreakdown: { positive: number; neutral: number; negative: number };
   toxicCount: number;
   questionCount: number;
   suggestionCount: number;
+  radar: Record<
+    'praise' | 'criticism' | 'question' | 'suggestion' | 'toxic' | 'people',
+    number
+  >;
 
   // Core: separate “topic” words from “people” words so host/guest chatter doesn’t pollute topic histograms.
   themes: {
@@ -104,13 +138,13 @@ export const report = {
 
 **Optional sections** (rendered only when non-empty): People mentioned (host/guest), Questions, Suggestions, Representative quotes.
 
-4. Refresh the build-time content index:
+5. Refresh the build-time content index:
 
    ```bash
    bun run content:generate
    ```
 
-5. Commit and open (or update) a PR with:
+6. Commit and open (or update) a PR with:
    - the new/updated `content/` artifacts
    - updated `src/content/generated/*`
 

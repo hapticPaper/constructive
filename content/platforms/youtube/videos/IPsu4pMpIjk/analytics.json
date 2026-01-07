@@ -1,7 +1,7 @@
 {
   "schema": "constructive.comment-analytics@v3",
   "commentCount": 1197,
-  "analyzedAt": "2026-01-07T20:22:41.134Z",
+  "analyzedAt": "2026-01-07T20:43:34.984Z",
   "sentimentBreakdown": {
     "positive": 266,
     "neutral": 829,
@@ -16,59 +16,39 @@
     "question": 214,
     "suggestion": 123,
     "toxic": 51,
-    "people": 478
+    "people": 445
   },
   "themes": {
     "topics": [
       {
-        "label": "israel",
+        "label": "Israel-Gaza war",
         "count": 214
       },
       {
-        "label": "trump",
+        "label": "Donald Trump",
         "count": 94
       },
       {
-        "label": "america",
-        "count": 67
+        "label": "U.S. politics",
+        "count": 191
       },
       {
-        "label": "president",
-        "count": 65
-      },
-      {
-        "label": "genocide",
+        "label": "Genocide framing",
         "count": 64
-      },
-      {
-        "label": "party",
-        "count": 59
-      },
-      {
-        "label": "world",
-        "count": 56
-      },
-      {
-        "label": "state",
-        "count": 54
       }
     ],
     "people": [
       {
-        "label": "ezra",
+        "label": "Ezra Klein",
         "count": 193
       },
       {
-        "label": "scott",
+        "label": "Scott Galloway",
         "count": 179
       },
       {
-        "label": "pete",
+        "label": "Pete Buttigieg",
         "count": 86
-      },
-      {
-        "label": "klein",
-        "count": 57
       }
     ]
   },
@@ -91,16 +71,16 @@
   },
   "takeaways": [
     {
-      "title": "Viewers want clarity",
-      "detail": "Questions make up 18% of comments (214 total)."
+      "title": "Israel-Gaza dominates the thread",
+      "detail": "Most discussion clusters around Israel-Gaza (214 mentions), often framed through humanitarian and genocide language."
     },
     {
-      "title": "The conversation is partly about the people",
-      "detail": "A meaningful slice of comments mention: ezra, scott, pete. Treat those as “host/guest” feedback, not topic feedback."
+      "title": "High question rate: people want framing",
+      "detail": "Questions show up in 18% of comments (214). Consider a pinned comment clarifying the core thesis + sources."
     },
     {
-      "title": "There are clear improvement requests",
-      "detail": "Suggestions show up in 10% of comments (123 total)."
+      "title": "A lot of feedback is about the guests",
+      "detail": "Many comments explicitly reference Ezra Klein, Scott Galloway, and Pete Buttigieg; treat that as host/guest feedback, not topic feedback."
     }
   ]
 }

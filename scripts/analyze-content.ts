@@ -392,8 +392,6 @@ const STOPWORDS = new Set([
 const LIKE_SCORE_CAP = 25;
 const THEME_BUCKET_SIZE = 8;
 const THEME_RANKED_CANDIDATES = 16;
-const THEME_MAX_COMMENT_SHARE = 0.6;
-const THEME_MAX_SHARE_MIN_COMMENTS = 25;
 const HIGHLIGHT_LIMIT = 3;
 const TAKEAWAY_LIMIT = 3;
 const HIGHLIGHT_TEXT_LEN = 140;
@@ -479,51 +477,12 @@ function formatPercent(value: number): string {
   return `${pct}%`;
 }
 
-function isTitleCaseToken(token: string): boolean {
-  return /^\p{Lu}\p{Ll}+$/u.test(token);
-}
-
-function buildVideoPersonTokens(video: VideoMetadata): Set<string> {
-  const rawTokens = tokenizeRaw(`${video.title} ${video.channel.channelTitle}`);
-  const tokens = rawTokens.map((token) => token.toLowerCase());
-  const out = new Set<string>();
-
-  for (let index = 0; index < tokens.length; index += 1) {
-    const token = tokens[index];
-    if (!COMMON_FIRST_NAMES.has(token)) continue;
-
-    const nextToken = tokens[index + 1];
-    const nextRaw = rawTokens[index + 1];
-    if (
-      typeof nextToken === 'string' &&
-      typeof nextRaw === 'string' &&
-      isTitleCaseToken(nextRaw) &&
-      isThemeToken(nextToken)
-    ) {
-      out.add(nextToken);
-    }
-
-    const prevToken = tokens[index - 1];
-    const prevRaw = rawTokens[index - 1];
-    if (
-      typeof prevToken === 'string' &&
-      typeof prevRaw === 'string' &&
-      isTitleCaseToken(prevRaw) &&
-      isThemeToken(prevToken)
-    ) {
-      out.add(prevToken);
-    }
-  }
-
-  return out;
-}
-
-function isLikelyPersonToken(token: string, videoPeople: ReadonlySet<string>): boolean {
+function isLikelyPersonToken(token: string): boolean {
   // Intentionally small heuristic: we only classify single-word, lowercased tokens.
   // Multi-word names and edge cases (e.g. last names) will be treated as topics.
   if (!/^[a-z]+$/u.test(token)) return false;
   if (!isThemeToken(token)) return false;
-  return COMMON_FIRST_NAMES.has(token) || videoPeople.has(token);
+  return COMMON_FIRST_NAMES.has(token);
 }
 
 function summarizeThemeLabels(
@@ -536,25 +495,14 @@ function summarizeThemeLabels(
     .join(', ');
 }
 
-function analyzeComments(
-  comments: CommentRecord[],
-  video: VideoMetadata,
-): CommentAnalytics {
+function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
   const sentimentBreakdown: Record<Sentiment, number> = {
     positive: 0,
     neutral: 0,
     negative: 0,
   };
 
-  const videoPeople = buildVideoPersonTokens(video);
-  const isPersonToken = (token: string): boolean =>
-    isLikelyPersonToken(token, videoPeople);
-
-  const videoThemeSeeds = new Set<string>();
-  for (const token of tokenize(video.title)) {
-    if (!isThemeToken(token)) continue;
-    videoThemeSeeds.add(token);
-  }
+  const isPersonToken = (token: string): boolean => isLikelyPersonToken(token);
 
   const radar = emptyRadarCounts();
 
@@ -642,19 +590,6 @@ function analyzeComments(
         score: likeScore + lengthScore + sentimentScore,
         text: cleaned,
       });
-    }
-  }
-
-  if (analyzedCount >= THEME_MAX_SHARE_MIN_COMMENTS) {
-    const maxCount = Math.floor(THEME_MAX_COMMENT_SHARE * analyzedCount);
-    for (const [label, count] of themeCounts) {
-      if (count / analyzedCount > THEME_MAX_COMMENT_SHARE) {
-        if (videoThemeSeeds.has(label)) {
-          themeCounts.set(label, Math.max(1, maxCount));
-        } else {
-          themeCounts.delete(label);
-        }
-      }
     }
   }
 
@@ -993,11 +928,11 @@ async function main(): Promise<void> {
       if (isCommentAnalytics(existing)) {
         analytics = existing;
       } else {
-        analytics = analyzeComments(comments, video);
+        analytics = analyzeComments(comments);
         await writeJsonFile(analyticsPath, analytics);
       }
     } else {
-      analytics = analyzeComments(comments, video);
+      analytics = analyzeComments(comments);
       await writeJsonFile(analyticsPath, analytics);
     }
 

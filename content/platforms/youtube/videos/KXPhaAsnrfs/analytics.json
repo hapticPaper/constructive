@@ -1,7 +1,7 @@
 {
   "schema": "constructive.comment-analytics@v3",
   "commentCount": 897,
-  "analyzedAt": "2026-01-07T20:22:41.261Z",
+  "analyzedAt": "2026-01-07T20:43:35.114Z",
   "sentimentBreakdown": {
     "positive": 98,
     "neutral": 752,
@@ -21,35 +21,31 @@
   "themes": {
     "topics": [
       {
-        "label": "infinity",
+        "label": "Infinity",
         "count": 145
       },
       {
-        "label": "electron",
+        "label": "Electrons",
         "count": 122
       },
       {
-        "label": "mass",
+        "label": "Mass",
         "count": 108
       },
       {
-        "label": "infinite",
-        "count": 70
-      },
-      {
-        "label": "energy",
+        "label": "Energy",
         "count": 68
       },
       {
-        "label": "time",
+        "label": "Time",
         "count": 56
       },
       {
-        "label": "universe",
+        "label": "Universe",
         "count": 55
       },
       {
-        "label": "math",
+        "label": "Math",
         "count": 52
       }
     ],
@@ -74,16 +70,16 @@
   },
   "takeaways": [
     {
-      "title": "Viewers want clarity",
-      "detail": "Questions make up 28% of comments (248 total)."
+      "title": "Infinity is the hook",
+      "detail": "Most discussion clusters around infinity and its implications (145 mentions), with a lot of follow-up questions."
     },
     {
-      "title": "There are clear improvement requests",
-      "detail": "Suggestions show up in 10% of comments (87 total)."
+      "title": "Highly technical audience: lots of questions",
+      "detail": "Questions show up in 28% of comments (248). Consider adding a short recap section with the key definitions/assumptions."
     },
     {
-      "title": "What people latched onto",
-      "detail": "Most discussion clusters around: infinity, electron, mass."
+      "title": "Secondary clusters are core physics primitives",
+      "detail": "Beyond infinity, the most common threads are about electrons, mass, and energy (often as a unit)."
     }
   ]
 }
