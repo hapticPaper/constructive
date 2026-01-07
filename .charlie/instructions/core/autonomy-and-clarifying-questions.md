@@ -15,6 +15,7 @@ Applies to all tasks in this repo.
   - correct for the current prompt
   - easy to extend later
   - not over-engineered
+  - consistent with existing repo conventions (if present); otherwise choose the simplest common option
 - [R3] When you proceed without asking, state your assumption(s) in the PR/issue comment (not in source).
 - [R4] If multiple clarifications are possible, ask only the 1–2 that most affect intended functionality; otherwise proceed.
 
