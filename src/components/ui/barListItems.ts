@@ -8,14 +8,6 @@ const CATEGORY_COLORS: Partial<Record<RadarCategory, string>> = {
   toxic: 'var(--danger)',
 };
 
-function uniqueId(baseId: string, counts: Map<string, number>): string {
-  // Note: suffixes are based on encounter order within this call, so ids for
-  // duplicate base ids may change if the input array is reordered.
-  const count = counts.get(baseId) ?? 0;
-  counts.set(baseId, count + 1);
-  return count === 0 ? baseId : `${baseId}:${count}`;
-}
-
 /**
  * Builds prevalence-style bar items where `rate` is derived from `count / total`.
  *
@@ -25,11 +17,9 @@ export function barListItemsFromCounts(
   items: ReadonlyArray<{ id?: string; label: string; count: number }>,
   total: number,
 ): BarListItem[] {
-  const idCounts = new Map<string, number>();
-
   if (total <= 0) {
     return items.map((item) => ({
-      id: uniqueId(item.id ?? item.label, idCounts),
+      id: item.id ?? item.label,
       label: item.label,
       count: item.count,
       rate: 0,
@@ -40,7 +30,7 @@ export function barListItemsFromCounts(
   return items.map((item) => {
     const countForRate = Math.max(0, Math.min(item.count, denom));
     return {
-      id: uniqueId(item.id ?? item.label, idCounts),
+      id: item.id ?? item.label,
       label: item.label,
       count: item.count,
       rate: countForRate / denom,
@@ -57,10 +47,8 @@ export function barListItemsFromRadarBuckets(
     rate: number;
   }>,
 ): BarListItem[] {
-  const idCounts = new Map<string, number>();
-
   return buckets.map((bucket) => ({
-    id: uniqueId(bucket.id ?? bucket.key, idCounts),
+    id: bucket.id ?? bucket.key,
     label: bucket.label,
     count: bucket.count,
     rate: bucket.rate,

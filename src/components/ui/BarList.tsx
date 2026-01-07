@@ -6,7 +6,7 @@ export type BarListItem = {
    * React `key`).
    *
    * Callers should provide a stable domain identifier when possible. Otherwise, the
-   * adapter helpers derive one from the label and append a suffix if needed.
+   * adapter helpers derive one from the label.
    */
   id: string;
   label: string;
