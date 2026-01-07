@@ -113,7 +113,7 @@ function normalizeCommentText(text: string): string {
 
 function isContinuationNotFoundError(error: unknown): boolean {
   const message = (error instanceof Error ? error.message : String(error)).toLowerCase();
-  return message.includes('continuation') && message.includes('not found');
+  return message.includes('continuation not found');
 }
 
 function mergeCommentRecord(params: {
