@@ -389,6 +389,7 @@ async function main(): Promise<void> {
   )) as unknown as CommentsCursor;
   let reachedEnd = false;
   let stoppedBecauseNoNew = false;
+  let stoppedBecauseContinuationNotFound = false;
   let consecutiveNoNewPages = 0;
   let lastFingerprint: string | null = null;
   let consecutiveFingerprintRepeats = 0;
@@ -498,7 +499,7 @@ async function main(): Promise<void> {
       cursor = (await cursor.getContinuation()) as unknown as CommentsCursor;
     } catch (error) {
       if (isContinuationNotFoundError(error)) {
-        reachedEnd = true;
+        stoppedBecauseContinuationNotFound = true;
         break;
       }
       throw error;
@@ -508,6 +509,13 @@ async function main(): Promise<void> {
   if (paginationLoopGuardTriggered) {
     process.stderr.write(
       `Warning: detected possible pagination loop for ${videoId}; stopping early.\n`,
+    );
+    process.exitCode = 1;
+  }
+
+  if (stoppedBecauseContinuationNotFound) {
+    process.stderr.write(
+      `Warning: continuation not found for ${videoId}; stopping comment pagination early.\n`,
     );
     process.exitCode = 1;
   }
@@ -542,9 +550,13 @@ async function main(): Promise<void> {
   const commentsComplete =
     !paginationLoopGuardTriggered &&
     !truncatedByLimit &&
-    (reachedEnd || stoppedBecauseNoNew);
+    (reachedEnd || stoppedBecauseNoNew || stoppedBecauseContinuationNotFound);
 
-  const status = paginationLoopGuardTriggered ? 'warning-pagination-loop' : 'ok';
+  const status = paginationLoopGuardTriggered
+    ? 'warning-pagination-loop'
+    : stoppedBecauseContinuationNotFound
+      ? 'warning-continuation-not-found'
+      : 'ok';
 
   if (typeof viewCount === 'number' || typeof likeCount === 'number') {
     const reachPath = reachJsonPath('youtube', videoId);
@@ -571,7 +583,7 @@ async function main(): Promise<void> {
   await writeJsonFile(ingestionMetaPath('youtube', videoId), {
     status,
     ingestedAt: now,
-    maxComments: maxCommentsArg === 'all' ? null : maxCommentsArg,
+    maxComments: maxCommentsArg === 'all' ? undefined : maxCommentsArg,
     commentCount: commentRecords.length,
     commentsComplete,
     commentsCompleteConfirmed,
@@ -579,6 +591,7 @@ async function main(): Promise<void> {
     newCommentCount,
     existingCommentCount: existingComments.length,
     paginationLoopGuardTriggered: paginationLoopGuardTriggered ? true : undefined,
+    continuationNotFound: stoppedBecauseContinuationNotFound ? true : undefined,
     reachCapturedAt:
       typeof viewCount === 'number' || typeof likeCount === 'number' ? now : undefined,
   });
