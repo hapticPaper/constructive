@@ -2,9 +2,11 @@ import type { CSSProperties } from 'react';
 
 export type BarListItem = {
   /**
-   * Unique identifier for this item (used as the React `key`).
+   * Unique identifier for this item within a single `BarList` render (used as the
+   * React `key`).
    *
-   * If multiple items share the same base id, a suffix may be appended.
+   * Callers should provide a stable domain identifier when possible. Otherwise, the
+   * adapter helpers derive one from the label and append a suffix if needed.
    */
   id: string;
   label: string;

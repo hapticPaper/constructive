@@ -9,6 +9,8 @@ const CATEGORY_COLORS: Partial<Record<RadarCategory, string>> = {
 };
 
 function uniqueId(baseId: string, counts: Map<string, number>): string {
+  // Note: suffixes are based on encounter order within this call, so ids for
+  // duplicate base ids may change if the input array is reordered.
   const count = counts.get(baseId) ?? 0;
   counts.set(baseId, count + 1);
   return count === 0 ? baseId : `${baseId}:${count}`;
