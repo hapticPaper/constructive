@@ -383,6 +383,7 @@ async function main(): Promise<void> {
   const seenIds = new Set<string>();
   let pagesFetched = 0;
   let newCommentCount = 0;
+  let droppedBecauseMissingTextCount = 0;
   let cursor = (await yt.getComments(
     videoId,
     'NEWEST_FIRST',
@@ -466,7 +467,10 @@ async function main(): Promise<void> {
           text: fetchedText || undefined,
         },
       });
-      if (!merged) continue;
+      if (!merged) {
+        droppedBecauseMissingTextCount += 1;
+        continue;
+      }
 
       fetchedComments.push(merged);
 
@@ -546,10 +550,12 @@ async function main(): Promise<void> {
   const commentsCompleteConfirmed =
     !paginationLoopGuardTriggered &&
     !truncatedByLimit &&
+    !stoppedBecauseContinuationNotFound &&
     (wasPreviouslyCompleteConfirmed || reachedEnd);
   const commentsComplete =
     !paginationLoopGuardTriggered &&
     !truncatedByLimit &&
+    !stoppedBecauseContinuationNotFound &&
     (reachedEnd || stoppedBecauseNoNew);
 
   const status = paginationLoopGuardTriggered
@@ -583,7 +589,7 @@ async function main(): Promise<void> {
   await writeJsonFile(ingestionMetaPath('youtube', videoId), {
     status,
     ingestedAt: now,
-    maxComments: maxCommentsArg === 'all' ? undefined : maxCommentsArg,
+    maxComments: maxCommentsArg === 'all' ? null : maxCommentsArg,
     commentCount: commentRecords.length,
     commentsComplete,
     commentsCompleteConfirmed,
@@ -592,6 +598,8 @@ async function main(): Promise<void> {
     existingCommentCount: existingComments.length,
     paginationLoopGuardTriggered: paginationLoopGuardTriggered ? true : undefined,
     continuationNotFound: stoppedBecauseContinuationNotFound ? true : undefined,
+    droppedBecauseMissingTextCount:
+      droppedBecauseMissingTextCount > 0 ? droppedBecauseMissingTextCount : undefined,
     reachCapturedAt:
       typeof viewCount === 'number' || typeof likeCount === 'number' ? now : undefined,
   });
