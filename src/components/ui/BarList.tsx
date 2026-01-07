@@ -5,11 +5,11 @@ export type BarListItem = {
   label: string;
   count: number;
   rate: number;
-  // Defaults to `var(--brand)`.
   color?: string;
 };
 
 function clampRate(rate: number): number {
+  if (!Number.isFinite(rate)) return 0;
   return Math.max(0, Math.min(1, rate));
 }
 
@@ -41,7 +41,6 @@ export function BarList({
               </span>
             </div>
             <div
-              // Decorative bar; the numeric value is conveyed in the text row above.
               aria-hidden="true"
               style={{
                 marginTop: 6,
