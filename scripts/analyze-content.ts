@@ -413,10 +413,6 @@ function tokenize(text: string): string[] {
   return tokenizeRaw(text.toLowerCase());
 }
 
-function tokenizeLoweredText(loweredText: string): string[] {
-  return tokenizeRaw(loweredText);
-}
-
 function isThemeToken(token: string): boolean {
   if (token.length < 4) return false;
   if (/^\d+$/u.test(token)) return false;
@@ -578,7 +574,7 @@ function analyzeComments(
     if (!cleaned) continue;
     analyzedCount += 1;
     const lowered = cleaned.toLowerCase();
-    const tokens = tokenizeLoweredText(lowered);
+    const tokens = tokenizeRaw(lowered);
 
     const toxicity = getToxicSignals(lowered, tokens);
     if (toxicity.hard) toxicCount += 1;
