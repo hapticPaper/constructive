@@ -20,14 +20,14 @@ function uniqueId(baseId: string, counts: Map<string, number>): string {
  * `total` should be the denominator you want to present as 100%.
  */
 export function barListItemsFromCounts(
-  items: ReadonlyArray<{ label: string; count: number }>,
+  items: ReadonlyArray<{ id?: string; label: string; count: number }>,
   total: number,
 ): BarListItem[] {
   const idCounts = new Map<string, number>();
 
   if (total <= 0) {
     return items.map((item) => ({
-      id: uniqueId(item.label, idCounts),
+      id: uniqueId(item.id ?? item.label, idCounts),
       label: item.label,
       count: item.count,
       rate: 0,
@@ -38,7 +38,7 @@ export function barListItemsFromCounts(
   return items.map((item) => {
     const countForRate = Math.max(0, Math.min(item.count, denom));
     return {
-      id: uniqueId(item.label, idCounts),
+      id: uniqueId(item.id ?? item.label, idCounts),
       label: item.label,
       count: item.count,
       rate: countForRate / denom,
@@ -48,6 +48,7 @@ export function barListItemsFromCounts(
 
 export function barListItemsFromRadarBuckets(
   buckets: ReadonlyArray<{
+    id?: string;
     key: RadarCategory;
     label: string;
     count: number;
@@ -57,7 +58,7 @@ export function barListItemsFromRadarBuckets(
   const idCounts = new Map<string, number>();
 
   return buckets.map((bucket) => ({
-    id: uniqueId(bucket.key, idCounts),
+    id: uniqueId(bucket.id ?? bucket.key, idCounts),
     label: bucket.label,
     count: bucket.count,
     rate: bucket.rate,

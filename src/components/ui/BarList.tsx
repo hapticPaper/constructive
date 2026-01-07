@@ -1,6 +1,11 @@
 import type { CSSProperties } from 'react';
 
 export type BarListItem = {
+  /**
+   * Unique identifier for this item (used as the React `key`).
+   *
+   * If multiple items share the same base id, a suffix may be appended.
+   */
   id: string;
   label: string;
   count: number;
