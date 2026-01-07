@@ -116,7 +116,39 @@ const MAX_ERROR_MESSAGE_LENGTH = 20_000;
 
 function capMessage(message: string, maxLength = MAX_ERROR_MESSAGE_LENGTH): string {
   if (message.length <= maxLength) return message;
-  return `${message.slice(0, maxLength)}...[truncated]`;
+
+  const suffix = `...[truncated; originalLength=${message.length}]`;
+  const headLength = Math.max(0, maxLength - suffix.length);
+  return `${message.slice(0, headLength)}${suffix}`;
+}
+
+const REDACT_KEYS = new Set([
+  'authorization',
+  'cookie',
+  'set-cookie',
+  'token',
+  'access_token',
+  'refresh_token',
+  'apikey',
+  'api_key',
+]);
+
+function redactObject(record: Record<string, unknown>): Record<string, unknown> {
+  const redacted: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(record)) {
+    redacted[key] = REDACT_KEYS.has(key.toLowerCase()) ? '[redacted]' : value;
+  }
+  return redacted;
+}
+
+function safeErrorRecord(errorRecord: Record<string, unknown>): Record<string, unknown> {
+  const safe: Record<string, unknown> = {};
+  for (const key of ['name', 'message', 'code', 'status', 'statusCode']) {
+    if (key in errorRecord) safe[key] = errorRecord[key];
+  }
+
+  if (Object.keys(safe).length > 0) return redactObject(safe);
+  return redactObject(errorRecord);
 }
 
 function rawErrorMessage(error: unknown): string {
@@ -128,7 +160,7 @@ function rawErrorMessage(error: unknown): string {
 
   if (errorRecord) {
     try {
-      return capMessage(JSON.stringify(errorRecord));
+      return capMessage(JSON.stringify(safeErrorRecord(errorRecord)));
     } catch {
       // fall through
     }
@@ -137,16 +169,32 @@ function rawErrorMessage(error: unknown): string {
   return capMessage(String(error));
 }
 
+function rawErrorMessageForMatching(error: unknown): string {
+  if (error instanceof Error) return error.message;
+
+  const errorRecord = asRecord(error);
+  if (typeof errorRecord?.message === 'string') return errorRecord.message;
+  if (typeof error === 'string') return error;
+
+  return '';
+}
+
 function isContinuationNotFoundError(error: unknown): boolean {
-  const rawMessage = rawErrorMessage(error);
+  const rawMessage = rawErrorMessageForMatching(error);
   const message = rawMessage.toLowerCase();
   if (!message) return false;
 
-  if (message.includes('continuation not found')) return true;
-  return (
-    /continuation.{0,40}not found/.test(message) ||
-    /not found.{0,40}continuation/.test(message)
-  );
+  for (const phrase of [
+    'continuation not found',
+    'could not find continuation',
+    "couldn't find continuation",
+    'cannot find continuation',
+    'no continuation found',
+  ]) {
+    if (message.includes(phrase)) return true;
+  }
+
+  return false;
 }
 
 function mergeCommentRecord(params: {
@@ -456,6 +504,7 @@ async function main(): Promise<void> {
   let reachedEnd = false;
   let stoppedBecauseNoNew = false;
   let stoppedBecauseContinuationNotFound = false;
+  let continuationNotFoundErrorMessage: string | undefined;
   let consecutiveNoNewPages = 0;
   let lastFingerprint: string | null = null;
   let consecutiveFingerprintRepeats = 0;
@@ -513,7 +562,11 @@ async function main(): Promise<void> {
       if (!id) {
         if (!fetchedText) continue;
 
-        id = syntheticCommentId({ videoId, authorName: fetchedAuthorName, text: fetchedText });
+        id = syntheticCommentId({
+          videoId,
+          authorName: fetchedAuthorName,
+          text: fetchedText,
+        });
       }
 
       if (seenIds.has(id)) continue;
@@ -570,6 +623,7 @@ async function main(): Promise<void> {
     } catch (error) {
       if (isContinuationNotFoundError(error)) {
         stoppedBecauseContinuationNotFound = true;
+        continuationNotFoundErrorMessage = rawErrorMessage(error) || undefined;
         break;
       }
       throw error;
@@ -618,7 +672,7 @@ async function main(): Promise<void> {
       ? 'warning-continuation-not-found'
       : hasDrops
         ? 'warning-missing-text'
-      : 'ok';
+        : 'ok';
 
   if (paginationLoopGuardTriggered) {
     process.stderr.write(
@@ -670,6 +724,9 @@ async function main(): Promise<void> {
     pagesFetched,
     newCommentCount,
     existingCommentCount: existingComments.length,
+    continuationNotFoundErrorMessage: stoppedBecauseContinuationNotFound
+      ? continuationNotFoundErrorMessage
+      : undefined,
     droppedBecauseMissingTextCount:
       droppedBecauseMissingTextCount > 0 ? droppedBecauseMissingTextCount : undefined,
     reachCapturedAt:
