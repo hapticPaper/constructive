@@ -182,7 +182,8 @@ export function ChannelAggregate({
           <WidgetPanel title="Top topics across channel">
             <p className="muted" style={{ marginTop: 6 }}>
               Themes are counted as “comments mentioning the term” (they can overlap).
-              This list is curated to focus on the main recurring clusters.
+              This list assumes a manual curation pass to merge near-duplicates and drop
+              background noise.
             </p>
             <HistogramList
               items={channelAggregate.topTopics}

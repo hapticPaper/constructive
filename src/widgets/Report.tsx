@@ -226,8 +226,8 @@ export function Report({ report }: { report: CommentReport }): JSX.Element {
           <WidgetPanel title="Topics (content)">
             <p className="muted" style={{ marginTop: 6 }}>
               Themes are counted as “comments mentioning the term” (they can overlap), not
-              raw word frequency. Labels are curated to keep the list focused on the main
-              discussion clusters.
+              raw word frequency. Labels assume a manual curation pass to merge
+              near-duplicates and drop background noise.
             </p>
             <HistogramList
               items={report.core.topics}
