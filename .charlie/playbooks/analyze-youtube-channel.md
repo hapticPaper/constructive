@@ -29,6 +29,11 @@ This playbook produces **channel-level insights** to help creators understand pa
    bun run content:analyze -- --video youtube:<videoId>
    ```
 
+   For channel-level aggregation to work well, make sure you also do the **per-video
+   dimensionality reduction** step (merge synonyms, rewrite topic labels, rewrite
+   takeaways). The channel script aggregates by `label`, so label normalization happens
+   upstream.
+
 2. Run the channel aggregation script:
 
    ```bash
@@ -40,6 +45,12 @@ This playbook produces **channel-level insights** to help creators understand pa
    - Aggregate analytics across all videos
    - Generate channel-level insights
    - Create the channel aggregation MDX file
+
+3. Optional: if the aggregated output still has near-duplicate labels (e.g. `ai` vs
+   `artificial intelligence`), do a final reduction pass by editing:
+   - `content/platforms/youtube/channels/<channelId>/channel-aggregate.mdx`
+
+   Keep `topTopics` sorted by count, and cap any merged topic count at `totalComments`.
 
 ## Output format
 
@@ -61,53 +72,16 @@ type ChannelAggregate = {
     channelTitle: string;
     channelUrl?: string;
   };
-  
-  // Summary stats across all analyzed videos
-  summary: {
-    videoCount: number;
-    totalComments: number;
-    analyzedVideos: number;
-    avgCommentsPerVideo: number;
-    lastAnalyzedAt: string;
-  };
-  
-  // Aggregated sentiment across all videos
-  aggregateSentiment: {
-    positive: number;
-    neutral: number;
-    negative: number;
-    avgToxicRate: number;
-  };
-  
-  // Recurring themes across the channel
-  channelThemes: {
-    topics: Array<{ label: string; count: number; videoCount: number }>;
-    people: Array<{ label: string; count: number; videoCount: number }>;
-  };
-  
-  // Videos that need attention
-  videosNeedingAttention: Array<{
-    videoId: string;
-    title: string;
-    reason: string; // "High question rate" | "High negative sentiment" | "High toxic rate"
-    metric: number;
-  }>;
-  
-  // Top performing videos (by positive sentiment)
-  topVideos: Array<{
-    videoId: string;
-    title: string;
-    commentCount: number;
-    positiveRate: number;
-  }>;
-  
-  // Channel-level takeaways
-  takeaways: Array<{
-    title: string;
-    detail: string;
-  }>;
+
+  videoCount: number;
+  totalComments: number;
+  sentimentBreakdown: { positive: number; neutral: number; negative: number };
+  topTopics: Array<{ label: string; count: number }>;
+  takeaways: Array<{ title: string; detail: string }>;
 };
 ```
+
+Note: after any manual merging, keep `topTopics[*].count <= totalComments`.
 
 **Example MDX structure:**
 
@@ -119,55 +93,32 @@ export const channelAggregate = {
     platform: 'youtube',
     channelId: 'UCxyz',
     channelTitle: 'My Channel',
-    channelUrl: 'https://www.youtube.com/channel/UCxyz'
+    channelUrl: 'https://www.youtube.com/channel/UCxyz',
   },
-  summary: {
-    videoCount: 10,
-    totalComments: 2000,
-    analyzedVideos: 10,
-    avgCommentsPerVideo: 200,
-    lastAnalyzedAt: '2026-01-03T12:00:00.000Z'
-  },
-  aggregateSentiment: {
+  videoCount: 10,
+  totalComments: 2000,
+  sentimentBreakdown: {
     positive: 180,
     neutral: 1700,
     negative: 120,
-    avgToxicRate: 0.02
   },
-  channelThemes: {
-    topics: [
-      { label: 'technology', count: 450, videoCount: 8 },
-      { label: 'innovation', count: 320, videoCount: 7 }
-    ],
-    people: [
-      { label: 'john', count: 150, videoCount: 5 }
-    ]
-  },
-  videosNeedingAttention: [
-    {
-      videoId: 'abc123',
-      title: 'Controversial Topic Discussion',
-      reason: 'High negative sentiment',
-      metric: 0.35
-    }
-  ],
-  topVideos: [
-    {
-      videoId: 'xyz789',
-      title: 'Great Tutorial',
-      commentCount: 300,
-      positiveRate: 0.45
-    }
+  topTopics: [
+    { label: 'technology', count: 450 },
+    { label: 'innovation', count: 320 },
   ],
   takeaways: [
     {
       title: 'Your audience loves technical deep-dives',
-      detail: 'Videos with "technology" and "innovation" themes get 2.3x more positive engagement.'
-    }
-  ]
+      detail:
+        'Videos with "technology" and "innovation" themes get 2.3x more positive engagement.',
+    },
+  ],
 };
 
-{typeof ChannelAggregate !== 'undefined' ? <ChannelAggregate aggregate={channelAggregate} /> : (
+{typeof ChannelAggregate !== 'undefined' ? (
+
+  <ChannelAggregate channelAggregate={channelAggregate} />
+) : (
   <div className="callout">
     <strong>Missing widget:</strong> ChannelAggregate
   </div>
@@ -178,10 +129,9 @@ export const channelAggregate = {
 
 1. **File location**: `content/platforms/youtube/channels/<channelId>/channel-aggregate.mdx`
 2. **Data focus**: Aggregated, not duplicative. Don't list every video's full analytics.
-3. **Attention triggers**: Flag videos with question rates > 15%, negative sentiment > 25%, or toxic rates > 5%.
-4. **Themes**: Only include topics/people that appear in 3+ videos.
-5. **Top videos**: Limit to 5 videos, ranked by positive sentiment rate.
-6. **Takeaways**: Limit to 3 channel-level insights.
+3. **Topics**: Keep `topTopics` to 8 or fewer items; merge near-duplicates.
+4. **Counts**: If you merge topics, keep `count <= totalComments`.
+5. **Takeaways**: Limit to 3 channel-level insights.
 
 ## Verification
 

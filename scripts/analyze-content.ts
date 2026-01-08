@@ -202,31 +202,53 @@ const TOXIC_WORDS = new Set([
   'dick',
   'fuck',
   'fucking',
+  'moron',
   'pissed',
   'shit',
   'stfu',
+  'stupid',
   'wtf',
 ]);
 
+// Match against lowercased comment text.
+const TOXIC_PHRASES = [/\b(who|what|why|how) the hell\b/u];
+
 const POSITIVE_WORDS = new Set([
+  'agree',
+  'agreed',
   'amazing',
   'awesome',
+  'best',
   'beautiful',
   'brilliant',
+  'cool',
+  'favorite',
+  'enjoy',
+  'enjoyed',
   'excellent',
   'fantastic',
+  'fascinating',
+  'good',
   'great',
+  'grateful',
   'helpful',
+  'incredible',
+  'incredibly',
+  'impressive',
   'insight',
   'insightful',
   'interesting',
   'love',
   'loved',
   'nice',
+  'respect',
   'smart',
   'thank',
   'thanks',
+  'thankful',
   'thoughtful',
+  'valuable',
+  'wow',
   'wonderful',
 ]);
 
@@ -234,14 +256,24 @@ const NEGATIVE_WORDS = new Set([
   'awful',
   'bad',
   'boring',
+  'clueless',
   'disappointing',
+  'disgusting',
+  'dumb',
   'garbage',
   'gross',
   'hate',
   'horrible',
   'idiot',
+  'misleading',
   'nonsense',
+  'pathetic',
+  'ridiculous',
+  'sad',
+  'shame',
+  'shameful',
   'terrible',
+  'unfortunate',
   'wrong',
 ]);
 
@@ -344,6 +376,17 @@ const STOPWORDS = new Set([
   'would',
   'you',
   'your',
+  // A few common high-frequency words that tend to pollute “topics”.
+  'being',
+  'need',
+  'right',
+  'think',
+  // Platform meta words that are rarely useful as “topics”.
+  'channel',
+  'episode',
+  'interview',
+  'podcast',
+  'video',
 ]);
 
 const LIKE_SCORE_CAP = 25;
@@ -356,9 +399,8 @@ const QUOTE_TEXT_LEN = 160;
 const HIGHLIGHT_LEN_SCORE_DENOM = 200;
 const QUOTE_LEN_SCORE_DENOM = 220;
 
-function tokenize(text: string): string[] {
+function tokenizeRaw(text: string): string[] {
   return text
-    .toLowerCase()
     .replace(/[^\p{L}\p{N}\s]/gu, ' ')
     .split(/\s+/u)
     .map((t) => t.trim())
@@ -367,16 +409,22 @@ function tokenize(text: string): string[] {
 
 function isThemeToken(token: string): boolean {
   if (token.length < 4) return false;
+  if (/^\d+$/u.test(token)) return false;
   if (STOPWORDS.has(token)) return false;
+  if (POSITIVE_WORDS.has(token) || NEGATIVE_WORDS.has(token)) return false;
   if (TOXIC_WORDS.has(token)) return false;
   return true;
 }
 
-function isToxicText(tokens: string[]): boolean {
-  for (const token of tokens) {
-    if (TOXIC_WORDS.has(token)) return true;
-  }
-  return false;
+type ToxicSignals = {
+  hard: boolean;
+  soft: boolean;
+};
+
+function getToxicSignals(loweredText: string, tokens: string[]): ToxicSignals {
+  const hard = tokens.some((token) => TOXIC_WORDS.has(token));
+  const soft = TOXIC_PHRASES.some((phrase) => phrase.test(loweredText));
+  return { hard, soft };
 }
 
 function sentimentForTokens(tokens: string[]): Sentiment {
@@ -386,8 +434,8 @@ function sentimentForTokens(tokens: string[]): Sentiment {
     if (NEGATIVE_WORDS.has(token)) score -= 1;
   }
 
-  if (score >= 2) return 'positive';
-  if (score <= -2) return 'negative';
+  if (score >= 1) return 'positive';
+  if (score <= -1) return 'negative';
   return 'neutral';
 }
 
@@ -450,6 +498,8 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
     negative: 0,
   };
 
+  const isPersonToken = (token: string): boolean => isLikelyPersonToken(token);
+
   const radar = emptyRadarCounts();
 
   let toxicCount = 0;
@@ -467,10 +517,12 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
     const cleaned = normalizeText(comment.text);
     if (!cleaned) continue;
     analyzedCount += 1;
-    const tokens = tokenize(cleaned);
+    const lowered = cleaned.toLowerCase();
+    const tokens = tokenizeRaw(lowered);
 
-    const toxic = isToxicText(tokens);
-    if (toxic) toxicCount += 1;
+    const toxicity = getToxicSignals(lowered, tokens);
+    if (toxicity.hard) toxicCount += 1;
+    const unsafeForHighlights = toxicity.hard || toxicity.soft;
 
     const sentiment = sentimentForTokens(tokens);
     sentimentBreakdown[sentiment] += 1;
@@ -478,7 +530,7 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
     const isQuestion = isQuestionText(cleaned);
     if (isQuestion) {
       questionCount += 1;
-      if (!toxic) {
+      if (!unsafeForHighlights) {
         const likeScore =
           typeof comment.likeCount === 'number'
             ? Math.min(comment.likeCount, LIKE_SCORE_CAP)
@@ -492,7 +544,7 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
     const isSuggestion = isSuggestionText(cleaned);
     if (isSuggestion) {
       suggestionCount += 1;
-      if (!toxic) {
+      if (!unsafeForHighlights) {
         const likeScore =
           typeof comment.likeCount === 'number'
             ? Math.min(comment.likeCount, LIKE_SCORE_CAP)
@@ -503,18 +555,25 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
       }
     }
 
+    const themeTokens = new Set<string>();
     for (const token of tokens) {
       if (!isThemeToken(token)) continue;
-      themeCounts.set(token, (themeCounts.get(token) ?? 0) + 1);
+      themeTokens.add(token);
+    }
+
+    // Count “themes” as the number of comments that mention the token (not raw token
+    // occurrences). This reduces noise from repeated words within a single comment.
+    for (const theme of themeTokens) {
+      themeCounts.set(theme, (themeCounts.get(theme) ?? 0) + 1);
     }
 
     // Count comments that mention at least one likely person token (same heuristic as
     // `themes.people`; not total mentions).
-    if (tokens.some(isLikelyPersonToken)) {
+    if (tokens.some(isPersonToken)) {
       radar.people += 1;
     }
 
-    if (!toxic) {
+    if (!unsafeForHighlights) {
       const likeScore =
         typeof comment.likeCount === 'number'
           ? Math.min(comment.likeCount, LIKE_SCORE_CAP)
@@ -536,7 +595,7 @@ function analyzeComments(comments: CommentRecord[]): CommentAnalytics {
 
   const themes = rankedThemes.slice(0, THEME_RANKED_CANDIDATES).reduce(
     (acc, theme) => {
-      if (isLikelyPersonToken(theme.label)) {
+      if (isPersonToken(theme.label)) {
         acc.people.push(theme);
       } else {
         acc.topics.push(theme);

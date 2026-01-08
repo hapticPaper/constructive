@@ -2,6 +2,9 @@ import type { CSSProperties } from 'react';
 
 import type { CreatorTakeaway, Sentiment, ThemeBucket } from '../content/types';
 
+import { BarList } from '../components/ui/BarList';
+import { barListItemsFromCounts } from '../components/ui/barListItems';
+
 import { Callout } from './Callout';
 import { WidgetGrid } from './WidgetGrid';
 import { WidgetPanel } from './WidgetPanel';
@@ -47,6 +50,12 @@ const SENTIMENT_COLORS: Record<Sentiment, string> = {
 
 const SENTIMENT_ORDER: Sentiment[] = ['positive', 'neutral', 'negative'];
 
+const SENTIMENT_LABELS: Record<Sentiment, string> = {
+  positive: 'positive',
+  neutral: 'neutral / informational',
+  negative: 'negative',
+};
+
 function StatRow({
   label,
   value,
@@ -64,7 +73,13 @@ function StatRow({
   );
 }
 
-function HistogramList({ items }: { items: ThemeItem[] }): JSX.Element {
+function HistogramList({
+  items,
+  total,
+}: {
+  items: ThemeItem[];
+  total: number;
+}): JSX.Element {
   // Theme labels are derived from tokenized text and filtered by the analyzer
   // (stopwords + toxic words), so they should be short and safe to render.
   if (items.length === 0) {
@@ -75,16 +90,9 @@ function HistogramList({ items }: { items: ThemeItem[] }): JSX.Element {
     );
   }
 
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 }}>
-      {items.map((item) => (
-        <div key={`${item.label}:${item.count}`} className="row">
-          <span style={{ fontWeight: 650 }}>{item.label}</span>
-          <span className="muted">{item.count.toLocaleString()}</span>
-        </div>
-      ))}
-    </div>
-  );
+  const barItems = barListItemsFromCounts(items, total);
+
+  return <BarList items={barItems} style={{ gap: 10, marginTop: 10 }} />;
 }
 
 function BulletList({ items }: { items: string[] }): JSX.Element {
@@ -178,7 +186,7 @@ export function Report({ report }: { report: CommentReport }): JSX.Element {
                 value={report.snapshot.suggestionCount.toLocaleString()}
               />
               <StatRow
-                label="Toxic / harsh (filtered)"
+                label="Toxic language (filtered)"
                 value={report.snapshot.toxicCount.toLocaleString()}
                 valueStyle={{ color: 'var(--danger)' }}
               />
@@ -198,11 +206,12 @@ export function Report({ report }: { report: CommentReport }): JSX.Element {
               >
                 {SENTIMENT_ORDER.map((sentiment) => (
                   <div key={sentiment} className="row">
-                    <span className="muted">{sentiment}</span>
+                    <span className="muted">{SENTIMENT_LABELS[sentiment]}</span>
                     <span style={{ fontWeight: 650, color: SENTIMENT_COLORS[sentiment] }}>
                       {formatPercent(
                         report.snapshot.sentimentBreakdown[sentiment] / denom,
-                      )}
+                      )}{' '}
+                      · {report.snapshot.sentimentBreakdown[sentiment].toLocaleString()}
                     </span>
                   </div>
                 ))}
@@ -215,7 +224,15 @@ export function Report({ report }: { report: CommentReport }): JSX.Element {
           </WidgetPanel>
 
           <WidgetPanel title="Topics (content)">
-            <HistogramList items={report.core.topics} />
+            <p className="muted" style={{ marginTop: 6 }}>
+              Themes are counted as “comments mentioning the term” (they can overlap), not
+              raw word frequency. Labels assume a manual curation pass to merge
+              near-duplicates and drop background noise.
+            </p>
+            <HistogramList
+              items={report.core.topics}
+              total={report.snapshot.commentCount}
+            />
           </WidgetPanel>
         </WidgetGrid>
       </div>
@@ -229,7 +246,7 @@ export function Report({ report }: { report: CommentReport }): JSX.Element {
                   These are often “host/guest” reactions (separate from content/topic
                   reactions).
                 </p>
-                <HistogramList items={people} />
+                <HistogramList items={people} total={report.snapshot.commentCount} />
               </WidgetPanel>
             ) : null}
 

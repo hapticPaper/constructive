@@ -1,66 +1,63 @@
 export const channelAggregate = {
-  "schema": "constructive.channel-aggregate@v1",
-  "generatedAt": "2026-01-07T11:16:06.187Z",
-  "channel": {
-    "platform": "youtube",
-    "channelId": "UC7_gcs09iThXybpVgjHZ_7g",
-    "channelTitle": "PBS Space Time",
-    "channelUrl": "https://www.youtube.com/@pbsspacetime"
+  schema: 'constructive.channel-aggregate@v1',
+  generatedAt: '2026-01-07T20:46:36.734Z',
+  channel: {
+    platform: 'youtube',
+    channelId: 'UC7_gcs09iThXybpVgjHZ_7g',
+    channelTitle: 'PBS Space Time',
+    channelUrl: 'https://www.youtube.com/@pbsspacetime',
   },
-  "videoCount": 1,
-  "totalComments": 897,
-  "sentimentBreakdown": {
-    "positive": 13,
-    "neutral": 882,
-    "negative": 2
+  videoCount: 1,
+  totalComments: 897,
+  sentimentBreakdown: {
+    positive: 98,
+    neutral: 752,
+    negative: 47,
   },
-  "topTopics": [
+  topTopics: [
     {
-      "label": "infinity",
-      "count": 331
+      label: 'Infinity',
+      count: 145,
     },
     {
-      "label": "electron",
-      "count": 204
+      label: 'Electrons',
+      count: 122,
     },
     {
-      "label": "mass",
-      "count": 198
+      label: 'Mass',
+      count: 108,
     },
     {
-      "label": "energy",
-      "count": 156
+      label: 'Energy',
+      count: 68,
     },
     {
-      "label": "infinite",
-      "count": 112
+      label: 'Time',
+      count: 56,
     },
     {
-      "label": "universe",
-      "count": 91
+      label: 'Universe',
+      count: 55,
     },
     {
-      "label": "time",
-      "count": 88
+      label: 'Math',
+      count: 52,
     },
-    {
-      "label": "quantum",
-      "count": 78
-    }
   ],
-  "takeaways": [
+  takeaways: [
     {
-      "title": "Channel-wide topic patterns",
-      "detail": "Across 1 videos, viewers consistently discuss: infinity, electron, mass."
+      title: 'Channel-wide topic patterns',
+      detail: 'Across 1 videos, viewers consistently discuss: Infinity, Electrons, Mass.',
     },
     {
-      "title": "High engagement rate",
-      "detail": "Averaging 897 comments per video shows strong community interaction."
-    }
-  ]
-}
+      title: 'High engagement rate',
+      detail: 'Averaging 897 comments per video shows strong community interaction.',
+    },
+  ],
+};
 
 {typeof ChannelAggregate !== "undefined" ? <ChannelAggregate channelAggregate={channelAggregate} /> : (
+
   <div className="callout">
     <strong>Missing widget:</strong> ChannelAggregate
   </div>

@@ -7,6 +7,9 @@ import type {
   ThemeBucket,
 } from '../content/types';
 
+import { BarList } from '../components/ui/BarList';
+import { barListItemsFromCounts } from '../components/ui/barListItems';
+
 import { Callout } from './Callout';
 import { WidgetGrid } from './WidgetGrid';
 import { WidgetPanel } from './WidgetPanel';
@@ -22,6 +25,12 @@ const SENTIMENT_COLORS: Record<Sentiment, string> = {
 };
 
 const SENTIMENT_ORDER: Sentiment[] = ['positive', 'neutral', 'negative'];
+
+const SENTIMENT_LABELS: Record<Sentiment, string> = {
+  positive: 'positive',
+  neutral: 'neutral / informational',
+  negative: 'negative',
+};
 
 function StatRow({
   label,
@@ -40,7 +49,13 @@ function StatRow({
   );
 }
 
-function HistogramList({ items }: { items: ThemeItem[] }): JSX.Element {
+function HistogramList({
+  items,
+  total,
+}: {
+  items: ThemeItem[];
+  total: number;
+}): JSX.Element {
   if (items.length === 0) {
     return (
       <p className="muted" style={{ marginTop: 8 }}>
@@ -49,16 +64,9 @@ function HistogramList({ items }: { items: ThemeItem[] }): JSX.Element {
     );
   }
 
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 }}>
-      {items.map((item, index) => (
-        <div key={`${index}-${item.label}`} className="row">
-          <span style={{ fontWeight: 650 }}>{item.label}</span>
-          <span className="muted">{item.count.toLocaleString()}</span>
-        </div>
-      ))}
-    </div>
-  );
+  const barItems = barListItemsFromCounts(items, total);
+
+  return <BarList items={barItems} style={{ gap: 10, marginTop: 10 }} />;
 }
 
 function TakeawayList({ takeaways }: { takeaways: CreatorTakeaway[] }): JSX.Element {
@@ -72,8 +80,8 @@ function TakeawayList({ takeaways }: { takeaways: CreatorTakeaway[] }): JSX.Elem
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 }}>
-      {takeaways.map((takeaway, index) => (
-        <div key={index}>
+      {takeaways.map((takeaway) => (
+        <div key={takeaway.title}>
           <div style={{ fontWeight: 650 }}>{takeaway.title}</div>
           <div className="muted" style={{ marginTop: 4, lineHeight: 1.35 }}>
             {takeaway.detail}
@@ -154,11 +162,12 @@ export function ChannelAggregate({
               >
                 {SENTIMENT_ORDER.map((sentiment) => (
                   <div key={sentiment} className="row">
-                    <span className="muted">{sentiment}</span>
+                    <span className="muted">{SENTIMENT_LABELS[sentiment]}</span>
                     <span style={{ fontWeight: 650, color: SENTIMENT_COLORS[sentiment] }}>
                       {formatPercent(
                         channelAggregate.sentimentBreakdown[sentiment] / denom,
-                      )}
+                      )}{' '}
+                      · {channelAggregate.sentimentBreakdown[sentiment].toLocaleString()}
                     </span>
                   </div>
                 ))}
@@ -171,7 +180,15 @@ export function ChannelAggregate({
           </WidgetPanel>
 
           <WidgetPanel title="Top topics across channel">
-            <HistogramList items={channelAggregate.topTopics} />
+            <p className="muted" style={{ marginTop: 6 }}>
+              Themes are counted as “comments mentioning the term” (they can overlap).
+              This list assumes a manual curation pass to merge near-duplicates and drop
+              background noise.
+            </p>
+            <HistogramList
+              items={channelAggregate.topTopics}
+              total={channelAggregate.totalComments}
+            />
           </WidgetPanel>
         </WidgetGrid>
       </div>

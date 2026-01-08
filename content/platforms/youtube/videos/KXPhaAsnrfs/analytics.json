@@ -1,56 +1,52 @@
 {
   "schema": "constructive.comment-analytics@v3",
   "commentCount": 897,
-  "analyzedAt": "2026-01-07T11:15:54.947Z",
+  "analyzedAt": "2026-01-07T20:43:35.114Z",
   "sentimentBreakdown": {
-    "positive": 13,
-    "neutral": 882,
-    "negative": 2
+    "positive": 98,
+    "neutral": 752,
+    "negative": 47
   },
-  "toxicCount": 11,
+  "toxicCount": 16,
   "questionCount": 248,
   "suggestionCount": 87,
   "radar": {
-    "praise": 13,
-    "criticism": 2,
+    "praise": 98,
+    "criticism": 47,
     "question": 248,
     "suggestion": 87,
-    "toxic": 11,
+    "toxic": 16,
     "people": 23
   },
   "themes": {
     "topics": [
       {
-        "label": "infinity",
-        "count": 331
+        "label": "Infinity",
+        "count": 145
       },
       {
-        "label": "electron",
-        "count": 204
+        "label": "Electrons",
+        "count": 122
       },
       {
-        "label": "mass",
-        "count": 198
+        "label": "Mass",
+        "count": 108
       },
       {
-        "label": "energy",
-        "count": 156
+        "label": "Energy",
+        "count": 68
       },
       {
-        "label": "infinite",
-        "count": 112
+        "label": "Time",
+        "count": 56
       },
       {
-        "label": "universe",
-        "count": 91
+        "label": "Universe",
+        "count": 55
       },
       {
-        "label": "time",
-        "count": 88
-      },
-      {
-        "label": "quantum",
-        "count": 78
+        "label": "Math",
+        "count": 52
       }
     ],
     "people": []
@@ -67,23 +63,23 @@
       "Here is my, hand wavy, alternative approach. Actually I expect that this has been investigated before and proved wrong or irrelevant. But…"
     ],
     "quotes": [
-      "Entity 1: Our last hack blew up the mass of particles. Entity 2: Let's just set the internal mass to negative to counter that. Entity 1: Yeah, that should…",
-      "This question reminds me of the arguments I used to have in 2nd grade. \"Oh yeah well I have infinity points.\" \"Yeah well I have infinity plus one points.\" \"You…",
-      "The mass of the electron field being infinite if the electron is point like, sounds a bit like the ultraviolet catastrophe where the graph suggested an…"
+      "Thanks to Radiacode for sponsoring this video! Use the promo code \"PBS\" to get an exclusive 10% discount at: https://103.radiacode.com/PBS",
+      "I love the \"You think your brain melted with electrons, just wait until we get to Higgs!\".",
+      "“Negative Bear Mass” is an excellent band name"
     ]
   },
   "takeaways": [
     {
-      "title": "Viewers want clarity",
-      "detail": "Questions make up 28% of comments (248 total)."
+      "title": "Infinity is the hook",
+      "detail": "Most discussion clusters around infinity and its implications (145 mentions), with a lot of follow-up questions."
     },
     {
-      "title": "There are clear improvement requests",
-      "detail": "Suggestions show up in 10% of comments (87 total)."
+      "title": "Highly technical audience: lots of questions",
+      "detail": "Questions show up in 28% of comments (248). Consider adding a short recap section with the key definitions/assumptions."
     },
     {
-      "title": "What people latched onto",
-      "detail": "Most discussion clusters around: infinity, electron, mass."
+      "title": "Secondary clusters are core physics primitives",
+      "detail": "Beyond infinity, the most common threads are about electrons, mass, and energy (often as a unit)."
     }
   ]
 }

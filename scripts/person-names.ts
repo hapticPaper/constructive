@@ -1,10 +1,10 @@
 /**
-* A tiny heuristic lexicon for separating “people” mentions (host/guest) from topical
-* comment themes.
-*
-* This is intentionally lightweight (no NER model). It is expected to miss multi-word
-* names and some edge cases.
-*/
+ * A tiny heuristic lexicon for separating “people” mentions (host/guest) from topical
+ * comment themes.
+ *
+ * This is intentionally lightweight (no NER model). It is expected to miss multi-word
+ * names and some edge cases.
+ */
 export const COMMON_FIRST_NAMES = new Set([
   'aaron',
   'adam',
@@ -117,6 +117,7 @@ export const COMMON_FIRST_NAMES = new Set([
   'pat',
   'patrick',
   'paul',
+  'pete',
   'peter',
   'rachel',
   'ray',

@@ -10,7 +10,7 @@ import { Hero, type BreadcrumbItem } from '../components/Hero';
 import { HeroActionLink } from '../components/HeroActionLink';
 import { canRunAnalysis, isVideoUnlocked, unlockVideo } from '../lib/freemium';
 import { Button } from '../components/ui/Button';
-import { RadarGraph } from '../components/ui/RadarGraph';
+import { SignalBreakdown } from '../components/ui/SignalBreakdown';
 import * as Widgets from '../widgets';
 
 export function VideoAnalyticsPage(): JSX.Element {
@@ -181,26 +181,17 @@ export function VideoAnalyticsPage(): JSX.Element {
       </div>
 
       <div style={{ marginTop: 14 }} className="panel">
-        <h2>Radar breakdown</h2>
+        <h2>Signal breakdown</h2>
         <p className="muted" style={{ marginTop: 6, lineHeight: 1.45 }}>
-          Each axis is the share of analyzed comments that match a standardized category.
-          Categories can overlap, and “People” counts comments that mention at least one
-          likely person name.
+          A quick read on what people are doing in the comments. Categories can overlap,
+          and “People” counts comments that mention at least one likely person name.
         </p>
         <div style={{ marginTop: 12 }}>
           {radar ? (
-            <RadarGraph
-              radar={radar}
-              totalComments={analytics.commentCount}
-              footer={
-                <div className="muted" style={{ fontSize: 13, lineHeight: 1.4 }}>
-                  Hover a category to see the underlying count.
-                </div>
-              }
-            />
+            <SignalBreakdown radar={radar} totalComments={analytics.commentCount} />
           ) : (
             <div className="callout">
-              <strong>Radar data missing:</strong>{' '}
+              <strong>Signal data missing:</strong>{' '}
               <span className="muted">re-run the analysis playbook to regenerate.</span>
             </div>
           )}
