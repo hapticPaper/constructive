@@ -1,0 +1,12 @@
+{
+  "schema": "constructive.video-reach@v1",
+  "platform": "youtube",
+  "videoId": "tvq4nsaWRCY",
+  "snapshots": [
+    {
+      "capturedAt": "2026-03-30T17:59:49.063Z",
+      "viewCount": 614424,
+      "likeCount": 19600
+    }
+  ]
+}

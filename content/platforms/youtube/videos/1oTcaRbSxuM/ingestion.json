@@ -1,0 +1,13 @@
+{
+  "status": "warning-continuation-not-found",
+  "ingestedAt": "2026-03-30T18:00:28.148Z",
+  "maxComments": null,
+  "commentCount": 109,
+  "commentsComplete": false,
+  "commentsCompleteConfirmed": false,
+  "pagesFetched": 6,
+  "newCommentCount": 109,
+  "existingCommentCount": 0,
+  "continuationNotFoundErrorMessage": "Continuation not found",
+  "reachCapturedAt": "2026-03-30T18:00:28.148Z"
+}

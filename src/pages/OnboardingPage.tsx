@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { getVideoContent, listVideos } from '../content/content';
+import { getVideoContent } from '../content/content';
+import { getCuratedVideos, ONBOARDING_SAMPLE_VIDEOS } from '../content/collections';
 import type { Platform } from '../content/types';
 import { unlockVideo } from '../lib/freemium';
 import {
@@ -17,7 +18,7 @@ export function OnboardingPage(): JSX.Element {
   const [input, setInput] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  const videos = useMemo(() => listVideos().filter((v) => v.platform === 'youtube'), []);
+  const sampleVideos = useMemo(() => getCuratedVideos(ONBOARDING_SAMPLE_VIDEOS), []);
 
   function goToVideoByInput(): void {
     setError(null);
@@ -94,14 +95,14 @@ export function OnboardingPage(): JSX.Element {
         </div>
       </div>
 
-      {videos.length > 0 && (
+      {sampleVideos.length > 0 && (
         <div className="section">
           <div className="section-header">
             <h2>Sample Videos</h2>
             <p>Explore pre-analyzed content to see what Constructive can do</p>
           </div>
           <div className="cards">
-            {videos.map((video) => (
+            {sampleVideos.map((video) => (
               <VideoCard
                 key={video.videoId}
                 video={video}
@@ -119,6 +120,20 @@ export function OnboardingPage(): JSX.Element {
           </div>
         </div>
       )}
+
+      <div className="section">
+        <div className="panel">
+          <h2>Palette Media</h2>
+          <p className="muted" style={{ marginTop: 6 }}>
+            Browse a dedicated set of pre-analyzed Palette Media sample videos.
+          </p>
+          <div style={{ marginTop: 16, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <Button variant="ghost" onClick={() => navigate('/palette-media')}>
+              Open Palette Media
+            </Button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

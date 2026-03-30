@@ -1,0 +1,89 @@
+export const report = {
+  "schema": "constructive.comment-report@v2",
+  "generatedAt": "2026-03-30T18:00:53.709Z",
+  "video": {
+    "platform": "youtube",
+    "videoId": "JBeTnhChWd0",
+    "title": "Why are You Gay? (Ranked)",
+    "channelTitle": "mattheperson",
+    "videoUrl": "https://www.youtube.com/watch?v=JBeTnhChWd0"
+  },
+  "snapshot": {
+    "commentCount": 161,
+    "sentimentBreakdown": {
+      "positive": 23,
+      "neutral": 137,
+      "negative": 1
+    },
+    "toxicCount": 2,
+    "questionCount": 13,
+    "suggestionCount": 7
+  },
+  "core": {
+    "takeaways": [
+      {
+        "title": "Mostly playful thread",
+        "detail": "Sentiment is overwhelmingly neutral/positive (only 1 negative comment out of 161, and 2 flagged as toxic)."
+      },
+      {
+        "title": "The \"science\" framing is the main riff",
+        "detail": "Most comments pile onto biology/genetics \"theories\" and category jokes (36 combined mentions across those terms)."
+      },
+      {
+        "title": "Requests are about category coverage",
+        "detail": "Suggestions are low volume (7 total), but they cluster around missing categories/items (e.g. \"you forgot yaoi\")."
+      }
+    ],
+    "topics": [
+      {
+        "label": "Pseudo-science / biology theories",
+        "count": 36
+      },
+      {
+        "label": "Teacher / school humor",
+        "count": 12
+      },
+      {
+        "label": "Straight vs gay spectrum jokes",
+        "count": 7
+      },
+      {
+        "label": "Links / sources",
+        "count": 7
+      },
+      {
+        "label": "Absurd examples (e.g. deer)",
+        "count": 7
+      }
+    ],
+    "questions": [
+      "I went to Panera once and I left feeling a little funny. does this mean gay?",
+      "was the grindr-ass looking sponsor logo on purpose?",
+      "matt how could you forget yaoi? 😔"
+    ],
+    "suggestions": [
+      "matt how could you forget yaoi? 😔",
+      "Matt, im a bit disappointed in this video. The fact that you gave 0 scientific thinking into the most important thing makes me FUME!! like…",
+      "Clicked out of pure curiosity bc what could this possibly mean"
+    ]
+  },
+  "optional": {
+    "people": [
+      {
+        "label": "Matt (mattheperson)",
+        "count": 10
+      }
+    ],
+    "quotes": [
+      "love that genome and DNA were separate categories with separate ratings 😭😭",
+      "agree there’s definitely science involved somewhere in this",
+      "\"mama is mother and she's creating gays\" love this theory"
+    ]
+  }
+}
+
+{typeof Report !== "undefined" ? <Report report={report} /> : (
+  <div className="callout">
+    <strong>Missing widget:</strong> Report
+  </div>
+)}
