@@ -1,13 +1,12 @@
 {
-  "status": "warning-continuation-not-found",
-  "ingestedAt": "2026-03-30T18:00:21.877Z",
+  "status": "ok",
+  "ingestedAt": "2026-03-30T18:15:20.769Z",
   "maxComments": null,
   "commentCount": 161,
-  "commentsComplete": false,
-  "commentsCompleteConfirmed": false,
+  "commentsComplete": true,
+  "commentsCompleteConfirmed": true,
   "pagesFetched": 9,
-  "newCommentCount": 161,
-  "existingCommentCount": 0,
-  "continuationNotFoundErrorMessage": "Continuation not found",
-  "reachCapturedAt": "2026-03-30T18:00:21.877Z"
+  "newCommentCount": 0,
+  "existingCommentCount": 161,
+  "reachCapturedAt": "2026-03-30T18:15:20.769Z"
 }

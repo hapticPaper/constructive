@@ -111,65 +111,6 @@ function normalizeCommentText(text: string): string {
   return text.replace(/\s+/g, ' ').trim();
 }
 
-// Keep error-derived strings bounded so warning logs stay readable.
-const MAX_ERROR_MESSAGE_LENGTH = 20_000;
-
-function capMessage(message: string, maxLength = MAX_ERROR_MESSAGE_LENGTH): string {
-  if (message.length <= maxLength) return message;
-
-  const suffix = `...[truncated; originalLength=${message.length}]`;
-  const headLength = Math.max(0, maxLength - suffix.length);
-  return `${message.slice(0, headLength)}${suffix}`;
-}
-
-const SAFE_ERROR_KEYS = ['name', 'message', 'code', 'status', 'statusCode'] as const;
-
-const REDACT_KEYS = new Set([
-  'authorization',
-  'cookie',
-  'set-cookie',
-  'token',
-  'access_token',
-  'refresh_token',
-  'apikey',
-  'api_key',
-]);
-
-function redactObject(record: Record<string, unknown>): Record<string, unknown> {
-  const redacted: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(record)) {
-    redacted[key] = REDACT_KEYS.has(key.toLowerCase()) ? '[redacted]' : value;
-  }
-  return redacted;
-}
-
-function safeErrorRecord(errorRecord: Record<string, unknown>): Record<string, unknown> {
-  const projected: Record<string, unknown> = {};
-  for (const key of SAFE_ERROR_KEYS) {
-    if (key in errorRecord) projected[key] = errorRecord[key];
-  }
-
-  return redactObject(projected);
-}
-
-function rawErrorMessage(error: unknown): string {
-  if (error instanceof Error) return capMessage(error.message);
-  const errorRecord = asRecord(error);
-  if (typeof errorRecord?.message === 'string') return capMessage(errorRecord.message);
-  if (error == null) return '';
-  if (typeof error === 'string') return capMessage(error);
-
-  if (errorRecord) {
-    try {
-      return capMessage(JSON.stringify(safeErrorRecord(errorRecord)));
-    } catch {
-      // fall through
-    }
-  }
-
-  return capMessage(String(error));
-}
-
 function rawErrorMessageForMatching(error: unknown): string {
   if (error instanceof Error) return error.message;
 
@@ -623,9 +564,8 @@ async function main(): Promise<void> {
       cursor = (await cursor.getContinuation()) as unknown as CommentsCursor;
     } catch (error) {
       if (isContinuationNotFoundError(error)) {
-        stoppedBecauseContinuationNotFound = true;
-        // Store a redacted, length-capped message for diagnostics only.
-        continuationNotFoundErrorMessage = rawErrorMessage(error) || undefined;
+        // youtubei.js throws this when the current cursor has no continuation.
+        reachedEnd = true;
         break;
       }
       throw error;
