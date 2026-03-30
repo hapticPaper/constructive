@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 
 import { getVideoContent } from '../content/content';
+import { platformLabel } from '../content/platform';
 import type { Platform } from '../content/types';
 import {
   hydrateLocalLibraryVideoMetadata,
@@ -9,7 +10,7 @@ import {
   removeLocalLibraryVideo,
   upsertLocalLibraryVideo,
 } from '../lib/localLibrary';
-import { extractYouTubeVideoId } from '../lib/youtube';
+import { parseVideoInput } from '../lib/videoInput';
 import { Button } from '../components/ui/Button';
 
 type JobStage =
@@ -63,6 +64,7 @@ export function JobsPage(): JSX.Element {
   const oembedInFlight = useRef(new Set<string>());
 
   const [input, setInput] = useState('');
+  const [platform, setPlatform] = useState<Platform>('youtube');
   const [error, setError] = useState<string | null>(null);
 
   const [videos, setVideos] = useState(() => listLocalLibraryVideos());
@@ -73,7 +75,9 @@ export function JobsPage(): JSX.Element {
     // One controller per effect run. Cleanup aborts the whole batch on unmount/list changes.
     const controller = new AbortController();
     const missing = videos.filter(
-      (v) => v.platform === 'youtube' && (!v.title || !v.channelTitle),
+      (v) =>
+        (v.platform === 'youtube' || v.platform === 'tiktok') &&
+        (!v.title || !v.channelTitle),
     );
     const batch = missing
       .filter((v) => !oembedInFlight.current.has(`${v.platform}:${v.videoId}`))
@@ -107,21 +111,23 @@ export function JobsPage(): JSX.Element {
 
   function addByInput(): void {
     setError(null);
-    const videoId = extractYouTubeVideoId(input);
-    if (!videoId) {
-      setError('Paste a YouTube link or an 11-character video id.');
+    const parsed = parseVideoInput(platform, input);
+    if (!parsed.ok) {
+      setError(parsed.error);
       return;
     }
 
-    const platform: Platform = 'youtube';
-    const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
-    upsertLocalLibraryVideo({ platform, videoId, videoUrl });
+    upsertLocalLibraryVideo({
+      platform,
+      videoId: parsed.videoId,
+      videoUrl: parsed.videoUrl,
+    });
     setVideos(listLocalLibraryVideos());
 
-    const key = `${platform}:${videoId}`;
+    const key = `${platform}:${parsed.videoId}`;
     if (!oembedInFlight.current.has(key)) {
       oembedInFlight.current.add(key);
-      void hydrateLocalLibraryVideoMetadata(platform, videoId)
+      void hydrateLocalLibraryVideoMetadata(platform, parsed.videoId)
         .then((updated) => {
           if (updated) setVideos(listLocalLibraryVideos());
         })
@@ -131,7 +137,7 @@ export function JobsPage(): JSX.Element {
     }
 
     setInput('');
-    setSearchParams({ video: `${platform}:${videoId}` });
+    setSearchParams({ video: `${platform}:${parsed.videoId}` });
   }
 
   return (
@@ -145,12 +151,27 @@ export function JobsPage(): JSX.Element {
       </div>
 
       <div className="panel">
-        <h2>Add a YouTube video</h2>
+        <h2>Add a video</h2>
         <div style={{ marginTop: 12, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <select
+            value={platform}
+            onChange={(e) => setPlatform(e.target.value as Platform)}
+            className="input"
+          >
+            <option value="youtube">YouTube</option>
+            <option value="tiktok">TikTok</option>
+            <option value="instagram">Instagram</option>
+          </select>
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="https://www.youtube.com/watch?v=..."
+            placeholder={
+              platform === 'youtube'
+                ? 'https://www.youtube.com/watch?v=...'
+                : platform === 'tiktok'
+                  ? 'https://www.tiktok.com/@user/video/...'
+                  : 'https://www.instagram.com/reel/...'
+            }
             className="input input-fluid"
           />
           <Button variant="primary" onClick={addByInput}>
@@ -169,7 +190,7 @@ export function JobsPage(): JSX.Element {
           <div className="panel">
             <h2>No jobs yet</h2>
             <p className="muted" style={{ marginTop: 6 }}>
-              Add a YouTube URL above and it’ll show up here.
+              Add a video above and it’ll show up here.
             </p>
           </div>
         ) : (
@@ -177,7 +198,7 @@ export function JobsPage(): JSX.Element {
             const stage = getJobStage(video.platform, video.videoId);
             const isFocused = focused === `${video.platform}:${video.videoId}`;
             const title = video.title ?? video.videoUrl;
-            const channel = video.channelTitle ?? 'YouTube';
+            const channel = video.channelTitle ?? platformLabel(video.platform);
 
             return (
               <div
@@ -229,7 +250,7 @@ export function JobsPage(): JSX.Element {
                       target="_blank"
                       rel="noreferrer"
                     >
-                      Open on YouTube
+                      Open on {platformLabel(video.platform)}
                     </a>
                     {stage.kind === 'ready' ? (
                       <Link

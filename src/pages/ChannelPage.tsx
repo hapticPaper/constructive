@@ -4,7 +4,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
 import { getVideoContent, listVideos } from '../content/content';
-import type { Platform, VideoMetadata } from '../content/types';
+import { parsePlatform, platformLabel } from '../content/platform';
+import type { VideoMetadata } from '../content/types';
 import { Hero, type BreadcrumbItem } from '../components/Hero';
 import { HeroActionLink } from '../components/HeroActionLink';
 import { Button } from '../components/ui/Button';
@@ -17,7 +18,7 @@ type ChannelAggregateModule = {
 
 export function ChannelPage(): JSX.Element {
   const params = useParams();
-  const platform = (params.platform as Platform | undefined) ?? 'youtube';
+  const platform = parsePlatform(params.platform ?? '') ?? 'youtube';
   const channelId = params.channelId ?? '';
 
   const [aggregateModule, setAggregateModule] = useState<ChannelAggregateModule | null>(
@@ -108,7 +109,9 @@ export function ChannelPage(): JSX.Element {
         actions={
           <>
             {channel.channelUrl ? (
-              <HeroActionLink href={channel.channelUrl}>Open on YouTube</HeroActionLink>
+              <HeroActionLink href={channel.channelUrl}>
+                Open on {platformLabel(platform)}
+              </HeroActionLink>
             ) : null}
             <HeroActionLink to="/library">Back to Library</HeroActionLink>
           </>
@@ -292,7 +295,7 @@ export function ChannelPage(): JSX.Element {
                     className="btn btn-ghost"
                     style={{ textDecoration: 'none' }}
                   >
-                    Open on YouTube
+                    Open on {platformLabel(video.platform)}
                   </a>
                 </div>
               ))}

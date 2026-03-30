@@ -1,5 +1,7 @@
 import type { Platform } from '../content/types';
+import { parsePlatform } from '../content/platform';
 import { fetchYouTubeOEmbed } from './youtube';
+import { fetchTikTokOEmbed } from './tiktok';
 
 const STORAGE_KEY = 'constructive_local_library_v1';
 
@@ -33,7 +35,8 @@ function parseLocalLibrary(raw: string | null): LocalLibraryVideo[] {
       .map((entry) => {
         const rec = asRecord(entry);
         if (!rec) return null;
-        const platform = rec.platform === 'youtube' ? 'youtube' : null;
+        const platform =
+          typeof rec.platform === 'string' ? parsePlatform(rec.platform) : null;
         const videoId = typeof rec.videoId === 'string' ? rec.videoId : null;
         const videoUrl = typeof rec.videoUrl === 'string' ? rec.videoUrl : null;
         const addedAtMs = typeof rec.addedAtMs === 'number' ? rec.addedAtMs : null;
@@ -147,15 +150,18 @@ export async function hydrateLocalLibraryVideoMetadata(
   videoId: string,
   signal?: AbortSignal,
 ): Promise<boolean> {
-  if (platform !== 'youtube') return false;
-
   const entries = loadLibrary();
   const idx = entries.findIndex((e) => e.platform === platform && e.videoId === videoId);
   const existing = idx >= 0 ? entries[idx] : null;
   if (!existing) return false;
   if (existing.title && existing.channelTitle && existing.thumbnailUrl) return false;
 
-  const oembed = await fetchYouTubeOEmbed(videoId, signal);
+  const oembed =
+    platform === 'youtube'
+      ? await fetchYouTubeOEmbed(videoId, signal)
+      : platform === 'tiktok'
+        ? await fetchTikTokOEmbed(existing.videoUrl, signal)
+        : null;
   if (!oembed) return false;
 
   const fresh = loadLibrary();

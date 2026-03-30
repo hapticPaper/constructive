@@ -1,6 +1,7 @@
 import type { MouseEvent } from 'react';
 import { Link } from 'react-router-dom';
 
+import { platformLabel } from '../content/platform';
 import type { VideoMetadata } from '../content/types';
 
 export function VideoCard({
@@ -18,7 +19,12 @@ export function VideoCard({
   return (
     <div className="panel card">
       {video.thumbnailUrl ? (
-        <img className="thumb" src={video.thumbnailUrl} alt={video.title} loading="lazy" />
+        <img
+          className="thumb"
+          src={video.thumbnailUrl}
+          alt={video.title}
+          loading="lazy"
+        />
       ) : null}
       <div className="card-body">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -37,7 +43,7 @@ export function VideoCard({
             {ctaLabel}
           </Link>
           <a className="muted" href={video.videoUrl} target="_blank" rel="noreferrer">
-            Open on YouTube
+            Open on {platformLabel(video.platform)}
           </a>
         </div>
       </div>

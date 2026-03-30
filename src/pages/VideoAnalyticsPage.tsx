@@ -5,7 +5,7 @@ import { Link, useParams } from 'react-router-dom';
 
 import { getVideoContent, getVideoReportComponent } from '../content/content';
 import { getValidRadarFromAnalytics } from '../content/radar';
-import type { Platform } from '../content/types';
+import { parsePlatform, platformLabel } from '../content/platform';
 import { Hero, type BreadcrumbItem } from '../components/Hero';
 import { HeroActionLink } from '../components/HeroActionLink';
 import { canRunAnalysis, isVideoUnlocked, unlockVideo } from '../lib/freemium';
@@ -15,7 +15,7 @@ import * as Widgets from '../widgets';
 
 export function VideoAnalyticsPage(): JSX.Element {
   const params = useParams();
-  const platform = (params.platform as Platform | undefined) ?? 'youtube';
+  const platform = parsePlatform(params.platform ?? '') ?? 'youtube';
   const videoId = params.videoId ?? '';
   const key = `${platform}:${videoId}`;
 
@@ -61,8 +61,10 @@ export function VideoAnalyticsPage(): JSX.Element {
 
   const headerActions = (
     <>
-      <HeroActionLink href={content.video.videoUrl}>Open on YouTube</HeroActionLink>
-      <HeroActionLink to={channelHref}>View channel</HeroActionLink>
+      <HeroActionLink href={content.video.videoUrl}>
+        Open on {platformLabel(content.video.platform)}
+      </HeroActionLink>
+      <HeroActionLink to={channelHref}>View creator</HeroActionLink>
       <HeroActionLink to="/library">Back to Library</HeroActionLink>
     </>
   );

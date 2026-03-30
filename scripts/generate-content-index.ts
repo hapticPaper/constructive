@@ -1,9 +1,10 @@
 import { readFile, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 
-import { writeTextFile } from './fs';
+import { PLATFORMS } from '../src/content/platform';
+import type { Platform } from '../src/content/types';
 
-type Platform = 'youtube';
+import { writeTextFile } from './fs';
 
 const CONTENT_ROOT = path.resolve(process.cwd(), 'content', 'platforms');
 const OUT_DIR = path.resolve(process.cwd(), 'src', 'content', 'generated');
@@ -153,7 +154,7 @@ function relFromGenerated(absolutePath: string): string {
 
 async function main(): Promise<void> {
   const strict = process.argv.includes('--strict');
-  const platforms: Platform[] = ['youtube'];
+  const platforms = [...PLATFORMS];
   const videoEntries: Array<{ platform: Platform; videoId: string }> = [];
   for (const platform of platforms) {
     for (const videoId of await listVideoIds(platform)) {
