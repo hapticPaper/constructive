@@ -85,22 +85,29 @@ async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
 
   const normalizedInputUrl = normalizeUrl(args.input);
-  const videoUrl = normalizedInputUrl?.includes('tiktok.com')
-    ? normalizedInputUrl
-    : args.videoUrl
-      ? normalizeUrl(args.videoUrl)
-      : null;
+  const normalizedFlagUrl = args.videoUrl ? normalizeUrl(args.videoUrl) : null;
+  const videoUrl = [normalizedInputUrl, normalizedFlagUrl].find(
+    (url) => url && url.includes('tiktok.com'),
+  );
 
   if (!videoUrl) {
     throw new Error(
-      'Invalid input: pass a TikTok video URL (preferred) or provide --video-url when ingesting by id.',
+      'Invalid input: pass a TikTok video URL (preferred), or ingest by id with --video-url pointing at tiktok.com.',
     );
   }
 
-  const videoId = extractTikTokVideoId(videoUrl) ?? extractTikTokVideoId(args.input);
+  const videoId =
+    extractTikTokVideoId(videoUrl) ??
+    (normalizedInputUrl ? extractTikTokVideoId(normalizedInputUrl) : null) ??
+    extractTikTokVideoId(args.input);
   if (!videoId) {
     throw new Error('Invalid TikTok URL: expected a path containing /video/<id>.');
   }
+
+  const normalizedHandle = args.channelId.startsWith('@')
+    ? args.channelId.slice(1)
+    : args.channelId;
+  const channelUrl = args.channelUrl ?? `https://www.tiktok.com/@${normalizedHandle}`;
 
   const video: VideoMetadata = {
     platform: 'tiktok',
@@ -112,7 +119,7 @@ async function main(): Promise<void> {
       platform: 'tiktok',
       channelId: args.channelId,
       channelTitle: args.channelTitle,
-      channelUrl: args.channelUrl,
+      channelUrl,
     },
     publishedAt: args.publishedAt,
     thumbnailUrl: args.thumbnailUrl,

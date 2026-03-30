@@ -94,6 +94,11 @@ async function main(): Promise<void> {
     ? normalizedUrl
     : buildInstagramUrl(shortcode);
 
+  const normalizedHandle = args.channelId.startsWith('@')
+    ? args.channelId.slice(1)
+    : args.channelId;
+  const channelUrl = args.channelUrl ?? `https://www.instagram.com/${normalizedHandle}/`;
+
   const video: VideoMetadata = {
     platform: 'instagram',
     videoId: shortcode,
@@ -104,7 +109,7 @@ async function main(): Promise<void> {
       platform: 'instagram',
       channelId: args.channelId,
       channelTitle: args.channelTitle,
-      channelUrl: args.channelUrl,
+      channelUrl,
     },
     publishedAt: args.publishedAt,
     thumbnailUrl: args.thumbnailUrl,
