@@ -23,7 +23,17 @@ export function getCuratedVideos(refs: readonly VideoRef[]): VideoMetadata[] {
   const videos: VideoMetadata[] = [];
   for (const ref of refs) {
     const content = getVideoContent(ref.platform, ref.videoId);
-    if (content) videos.push(content.video);
+    if (!content) {
+      // Curated lists are intentionally "by hand"; this guard keeps them from silently
+      // drifting due to a typo or missing generation step.
+      if (import.meta.env.DEV) {
+        throw new Error(`Missing curated video content for ${ref.platform}:${ref.videoId}`);
+      }
+      console.warn('Missing curated video content', ref);
+      continue;
+    }
+
+    videos.push(content.video);
   }
   return videos;
 }

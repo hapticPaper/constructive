@@ -4,11 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import { getVideoContent } from '../content/content';
 import { getCuratedVideos, ONBOARDING_SAMPLE_VIDEOS } from '../content/collections';
 import type { Platform } from '../content/types';
-import { unlockVideo } from '../lib/freemium';
 import {
   hydrateLocalLibraryVideoMetadata,
   upsertLocalLibraryVideo,
 } from '../lib/localLibrary';
+import { gateVideoCardCtaClick } from '../lib/videoUnlock';
 import { extractYouTubeVideoId } from '../lib/youtube';
 import { VideoCard } from '../components/VideoCard';
 import { Button } from '../components/ui/Button';
@@ -108,12 +108,11 @@ export function OnboardingPage(): JSX.Element {
                 video={video}
                 ctaLabel="View analytics"
                 onCtaClick={(event) => {
-                  setError(null);
-                  const unlocked = unlockVideo(`${video.platform}:${video.videoId}`);
-                  if (!unlocked.ok) {
-                    event.preventDefault();
-                    setError(unlocked.reason);
-                  }
+                  gateVideoCardCtaClick({
+                    videoKey: `${video.platform}:${video.videoId}`,
+                    event,
+                    setError,
+                  });
                 }}
               />
             ))}

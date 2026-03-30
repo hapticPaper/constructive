@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { VideoCard } from '../components/VideoCard';
 import { Button } from '../components/ui/Button';
 import { getCuratedVideos, PALETTE_MEDIA_VIDEOS } from '../content/collections';
-import { unlockVideo } from '../lib/freemium';
+import { gateVideoCardCtaClick } from '../lib/videoUnlock';
 
 export function PaletteMediaPage(): JSX.Element {
   const navigate = useNavigate();
@@ -40,12 +40,11 @@ export function PaletteMediaPage(): JSX.Element {
             video={video}
             ctaLabel="View analytics"
             onCtaClick={(event) => {
-              setError(null);
-              const unlocked = unlockVideo(`${video.platform}:${video.videoId}`);
-              if (!unlocked.ok) {
-                event.preventDefault();
-                setError(unlocked.reason);
-              }
+              gateVideoCardCtaClick({
+                videoKey: `${video.platform}:${video.videoId}`,
+                event,
+                setError,
+              });
             }}
           />
         ))}
