@@ -1,20 +1,7 @@
-import type { MouseEvent } from 'react';
-
 import { unlockVideo } from './freemium';
 
-export function gateVideoCardCtaClick({
-  videoKey,
-  event,
-  setError,
-}: {
-  videoKey: string;
-  event: MouseEvent<HTMLAnchorElement>;
-  setError: (error: string | null) => void;
-}): void {
-  setError(null);
-  const unlocked = unlockVideo(videoKey);
-  if (unlocked.ok) return;
-
-  event.preventDefault();
-  setError(unlocked.reason);
+export function unlockVideoIfPossible(videoKey: string): void {
+  // This is best-effort: if the unlock fails (e.g. quota reached), the analytics page
+  // will still render a gated state.
+  unlockVideo(videoKey);
 }

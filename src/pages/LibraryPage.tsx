@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { getVideoContent, listVideos } from '../content/content';
 import type { VideoMetadata } from '../content/types';
 import { VideoCard } from '../components/VideoCard';
-import { unlockVideo } from '../lib/freemium';
+import { unlockVideoIfPossible } from '../lib/videoUnlock';
 
 function groupByChannel(videos: VideoMetadata[]): Map<string, VideoMetadata[]> {
   const map = new Map<string, VideoMetadata[]>();
@@ -17,7 +17,6 @@ function groupByChannel(videos: VideoMetadata[]): Map<string, VideoMetadata[]> {
 
 export function LibraryPage(): JSX.Element {
   const [query, setQuery] = useState('');
-  const [error, setError] = useState<string | null>(null);
 
   const videos = useMemo(() => {
     const all = listVideos();
@@ -51,12 +50,6 @@ export function LibraryPage(): JSX.Element {
           className="input input-fluid"
         />
       </div>
-      {error ? (
-        <div style={{ marginBottom: 16 }} className="callout">
-          <strong>Heads up:</strong> <span className="muted">{error}</span>
-        </div>
-      ) : null}
-
       <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
         {Array.from(grouped.values()).map((channelVideos) => {
           const channel = channelVideos[0]?.channel;
@@ -99,16 +92,7 @@ export function LibraryPage(): JSX.Element {
                     >
                       <VideoCard
                         video={video}
-                        onCtaClick={(event) => {
-                          setError(null);
-                          const unlocked = unlockVideo(
-                            `${video.platform}:${video.videoId}`,
-                          );
-                          if (!unlocked.ok) {
-                            event.preventDefault();
-                            setError(unlocked.reason);
-                          }
-                        }}
+                        onCtaClick={() => unlockVideoIfPossible(`${video.platform}:${video.videoId}`)}
                       />
                       <div
                         className="muted"

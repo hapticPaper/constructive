@@ -1,14 +1,13 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { VideoCard } from '../components/VideoCard';
 import { Button } from '../components/ui/Button';
 import { getCuratedVideos, PALETTE_MEDIA_VIDEOS } from '../content/collections';
-import { gateVideoCardCtaClick } from '../lib/videoUnlock';
+import { unlockVideoIfPossible } from '../lib/videoUnlock';
 
 export function PaletteMediaPage(): JSX.Element {
   const navigate = useNavigate();
-  const [error, setError] = useState<string | null>(null);
 
   const videos = useMemo(() => getCuratedVideos(PALETTE_MEDIA_VIDEOS), []);
 
@@ -27,25 +26,13 @@ export function PaletteMediaPage(): JSX.Element {
         </div>
       </div>
 
-      {error ? (
-        <div style={{ marginBottom: 16 }} className="callout">
-          <strong>Heads up:</strong> <span className="muted">{error}</span>
-        </div>
-      ) : null}
-
       <div className="cards">
         {videos.map((video) => (
           <VideoCard
             key={video.videoId}
             video={video}
             ctaLabel="View analytics"
-            onCtaClick={(event) => {
-              gateVideoCardCtaClick({
-                videoKey: `${video.platform}:${video.videoId}`,
-                event,
-                setError,
-              });
-            }}
+            onCtaClick={() => unlockVideoIfPossible(`${video.platform}:${video.videoId}`)}
           />
         ))}
       </div>
