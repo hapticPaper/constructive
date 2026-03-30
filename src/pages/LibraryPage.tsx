@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 import { getVideoContent, listVideos } from '../content/content';
 import type { VideoMetadata } from '../content/types';
 import { VideoCard } from '../components/VideoCard';
-import { unlockVideoIfPossible } from '../lib/videoUnlock';
 
 function groupByChannel(videos: VideoMetadata[]): Map<string, VideoMetadata[]> {
   const map = new Map<string, VideoMetadata[]>();
@@ -92,7 +91,6 @@ export function LibraryPage(): JSX.Element {
                     >
                       <VideoCard
                         video={video}
-                        onCtaClick={() => unlockVideoIfPossible(`${video.platform}:${video.videoId}`)}
                       />
                       <div
                         className="muted"

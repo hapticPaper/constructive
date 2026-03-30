@@ -8,7 +8,6 @@ import {
   hydrateLocalLibraryVideoMetadata,
   upsertLocalLibraryVideo,
 } from '../lib/localLibrary';
-import { unlockVideoIfPossible } from '../lib/videoUnlock';
 import { extractYouTubeVideoId } from '../lib/youtube';
 import { VideoCard } from '../components/VideoCard';
 import { Button } from '../components/ui/Button';
@@ -107,7 +106,6 @@ export function OnboardingPage(): JSX.Element {
                 key={video.videoId}
                 video={video}
                 ctaLabel="View analytics"
-                onCtaClick={() => unlockVideoIfPossible(`${video.platform}:${video.videoId}`)}
               />
             ))}
           </div>

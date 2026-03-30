@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { VideoCard } from '../components/VideoCard';
 import { Button } from '../components/ui/Button';
 import { getCuratedVideos, PALETTE_MEDIA_VIDEOS } from '../content/collections';
-import { unlockVideoIfPossible } from '../lib/videoUnlock';
 
 export function PaletteMediaPage(): JSX.Element {
   const navigate = useNavigate();
@@ -32,7 +31,6 @@ export function PaletteMediaPage(): JSX.Element {
             key={video.videoId}
             video={video}
             ctaLabel="View analytics"
-            onCtaClick={() => unlockVideoIfPossible(`${video.platform}:${video.videoId}`)}
           />
         ))}
       </div>
