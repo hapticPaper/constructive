@@ -11,7 +11,7 @@ export function VideoCard({
   video: VideoMetadata;
   ctaLabel?: string;
   /**
-   * Optional CTA click handler. Callers may `event.preventDefault()` to gate navigation.
+   * Optional CTA click handler.
    */
   onCtaClick?: (event: MouseEvent<HTMLAnchorElement>) => void;
 }): JSX.Element {
