@@ -1,88 +1,92 @@
 export const report = {
-  "schema": "constructive.comment-report@v2",
-  "generatedAt": "2026-03-30T18:00:50.216Z",
-  "video": {
-    "platform": "youtube",
-    "videoId": "tvq4nsaWRCY",
-    "title": "12 Months Deep Into 2024… FULL RECAP",
-    "channelTitle": "Mr. Grande",
-    "videoUrl": "https://www.youtube.com/watch?v=tvq4nsaWRCY"
+  schema: 'constructive.comment-report@v2',
+  generatedAt: '2026-03-30T18:00:50.216Z',
+  video: {
+    platform: 'youtube',
+    videoId: 'tvq4nsaWRCY',
+    title: '12 Months Deep Into 2024… FULL RECAP',
+    channelTitle: 'Mr. Grande',
+    videoUrl: 'https://www.youtube.com/watch?v=tvq4nsaWRCY',
   },
-  "snapshot": {
-    "commentCount": 684,
-    "sentimentBreakdown": {
-      "positive": 53,
-      "neutral": 615,
-      "negative": 16
+  snapshot: {
+    commentCount: 684,
+    sentimentBreakdown: {
+      positive: 53,
+      neutral: 615,
+      negative: 16,
     },
-    "toxicCount": 19,
-    "questionCount": 105,
-    "suggestionCount": 16
+    toxicCount: 19,
+    questionCount: 105,
+    suggestionCount: 16,
   },
-  "core": {
-    "takeaways": [
+  core: {
+    takeaways: [
       {
-        "title": "People use the recap as a checklist",
-        "detail": "Questions show up in 15% of comments (105), and many are about missing moments (\"how did we forget X?\")."
+        title: 'People use the recap as a checklist',
+        detail:
+          'Questions show up in 15% of comments (105), and many are about missing moments ("how did we forget X?").',
       },
       {
-        "title": "Strong creator affinity",
-        "detail": "The thread is mostly neutral/positive, with lots of direct praise for Mr. Grande’s yearly recap format."
+        title: 'Strong creator affinity',
+        detail:
+          'The thread is mostly neutral/positive, with lots of direct praise for Mr. Grande’s yearly recap format.',
       },
       {
-        "title": "Requests are about what to include next",
-        "detail": "Suggestions are relatively rare (16 total), but they cluster around additions/omissions and requests for a 2025 recap."
-      }
+        title: 'Requests are about what to include next',
+        detail:
+          'Suggestions are relatively rare (16 total), but they cluster around additions/omissions and requests for a 2025 recap.',
+      },
     ],
-    "topics": [
+    topics: [
       {
-        "label": "2024 recap / year in review",
-        "count": 140
+        label: '2024 recap / year in review',
+        count: 140,
       },
       {
-        "label": "Missed moments / \"how did we forget\"",
-        "count": 41
+        label: 'Missed moments / "how did we forget"',
+        count: 41,
       },
       {
-        "label": "Year-end positivity",
-        "count": 35
+        label: 'Year-end positivity',
+        count: 35,
       },
       {
-        "label": "Chaotic year / wild events",
-        "count": 30
+        label: 'Chaotic year / wild events',
+        count: 30,
       },
       {
-        "label": "Time flew by",
-        "count": 18
-      }
+        label: 'Time flew by',
+        count: 18,
+      },
     ],
-    "questions": [
-      "How did we forget APT for October 😭😭",
-      "Why did this year go by so fast??!! 😭😭It’s like time is going by like a rocket! All the trends and memes, plus the hilarious things that…",
-      "How dare my phone hide this master piece for 30 seconds"
+    questions: [
+      'How did we forget APT for October 😭😭',
+      'Why did this year go by so fast??!! 😭😭It’s like time is going by like a rocket! All the trends and memes, plus the hilarious things that…',
+      'How dare my phone hide this master piece for 30 seconds',
     ],
-    "suggestions": [
-      "MR. GRANDE IS THE ONLY PERSON I SHOULD SEE MAKING YEAR RECAPS",
+    suggestions: [
+      'MR. GRANDE IS THE ONLY PERSON I SHOULD SEE MAKING YEAR RECAPS',
       "U should've added Liam paynes passing!!❤",
-      "Please I beg make one for 2025"
-    ]
-  },
-  "optional": {
-    "people": [
-      {
-        "label": "Mr. Grande",
-        "count": 5
-      }
+      'Please I beg make one for 2025',
     ],
-    "quotes": [
-      "Thank u for the final one 4 da year This was rhymed well",
-      "I have 2 theories 1. This man is single handedly speeding up time so we’re excited to watch these 2. This entire decade is uncanon to the entire universe…",
-      "Honestly I forgot the Glasgow Willy Wonka event was this year. It's been a long year, dudes."
-    ]
-  }
-}
+  },
+  optional: {
+    people: [
+      {
+        label: 'Mr. Grande',
+        count: 5,
+      },
+    ],
+    quotes: [
+      'Thank u for the final one 4 da year This was rhymed well',
+      'I have 2 theories 1. This man is single handedly speeding up time so we’re excited to watch these 2. This entire decade is uncanon to the entire universe…',
+      "Honestly I forgot the Glasgow Willy Wonka event was this year. It's been a long year, dudes.",
+    ],
+  },
+};
 
 {typeof Report !== "undefined" ? <Report report={report} /> : (
+
   <div className="callout">
     <strong>Missing widget:</strong> Report
   </div>

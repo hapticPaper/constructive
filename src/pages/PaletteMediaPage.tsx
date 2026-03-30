@@ -16,9 +16,7 @@ export function PaletteMediaPage(): JSX.Element {
     <div>
       <div className="page-header">
         <h1>Palette Media</h1>
-        <p>
-          A curated set of pre-analyzed videos to explore the reporting experience.
-        </p>
+        <p>A curated set of pre-analyzed videos to explore the reporting experience.</p>
         <div style={{ marginTop: 16, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
           <Button variant="ghost" onClick={() => navigate('/')}>
             Back to overview
