@@ -7,6 +7,7 @@ import { ChannelPage } from './pages/ChannelPage';
 import { JobsPage } from './pages/JobsPage';
 import { LibraryPage } from './pages/LibraryPage';
 import { OnboardingPage } from './pages/OnboardingPage';
+import { PaletteMediaPage } from './pages/PaletteMediaPage';
 import { VideoAnalyticsPage } from './pages/VideoAnalyticsPage';
 
 export function App(): JSX.Element {
@@ -15,6 +16,7 @@ export function App(): JSX.Element {
       <Route element={<Layout />}>
         <Route element={<PageLayout />}>
           <Route path="/" element={<OnboardingPage />} />
+          <Route path="/palette-media" element={<PaletteMediaPage />} />
         </Route>
         <Route element={<SidebarLayout />}>
           <Route path="/jobs" element={<JobsPage />} />

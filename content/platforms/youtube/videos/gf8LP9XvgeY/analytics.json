@@ -1,0 +1,86 @@
+{
+  "schema": "constructive.comment-analytics@v3",
+  "commentCount": 1039,
+  "analyzedAt": "2026-03-30T18:01:02.747Z",
+  "sentimentBreakdown": {
+    "positive": 164,
+    "neutral": 840,
+    "negative": 35
+  },
+  "toxicCount": 56,
+  "questionCount": 170,
+  "suggestionCount": 63,
+  "radar": {
+    "praise": 164,
+    "criticism": 35,
+    "question": 170,
+    "suggestion": 63,
+    "toxic": 56,
+    "people": 74
+  },
+  "themes": {
+    "topics": [
+      {
+        "label": "AI boyfriend / companion apps",
+        "count": 43
+      },
+      {
+        "label": "How it was made / product demo",
+        "count": 41
+      },
+      {
+        "label": "Comedy bits / quotable moments",
+        "count": 39
+      },
+      {
+        "label": "Rain bit / outdoor scenes",
+        "count": 35
+      }
+    ],
+    "people": [
+      {
+        "label": "Valentine",
+        "count": 72
+      },
+      {
+        "label": "Elon Musk",
+        "count": 46
+      },
+      {
+        "label": "Matt (mattheperson)",
+        "count": 42
+      }
+    ]
+  },
+  "highlights": {
+    "questions": [
+      "I know i'm late to this and maybe someone said it before but the fact that not ONCE did \"Valentine\" say smth like \"I can't do that since…",
+      "personality test time! Would you rather have unlimited bacon and no video games or unlimited video games and no video games?",
+      "Why is nobody mentioning how he was able to get an AI to take a deep breath in exasperation?? lmaooo"
+    ],
+    "suggestions": [
+      "you should try love and deepspace , theres a character like valentine there but the game’s not ai tho",
+      "I thought the title meant \"elon made this ai boyfriend for himself, lets try dating it!\"",
+      "at this point people who want this should just play “Love and Deepspace” 😭😭"
+    ],
+    "quotes": [
+      "Genuinely sobbing at the “PASS THE PEPPER” bit, like at the very least the AI isn’t even trained to say, “I can’t do that, I don’t have arms”. I feel like this…",
+      "Boyfriend reveal!!! Awww so sweet, so happy for you Matt! This video made me laugh so much but it has such a profound message, love this, every Matt video…",
+      "“I found a leaf” “Wow a leaf! That’s the most amazing thing in the world! Only a true badass would find a leaf! You are truly to greatest human to walk the…"
+    ]
+  },
+  "takeaways": [
+    {
+      "title": "People are here for the bits",
+      "detail": "The thread is mostly positive/neutral, and the most-liked comments quote specific moments (e.g. \"PASS THE PEPPER\")."
+    },
+    {
+      "title": "High curiosity about the AI’s limits",
+      "detail": "Questions make up 16% of comments (170 total), often probing what Valentine can/can’t do and how the app works."
+    },
+    {
+      "title": "Suggestions are follow-up video ideas",
+      "detail": "Suggestions are 6% of comments (63 total), frequently recommending similar games/apps (e.g. Love and Deepspace)."
+    }
+  ]
+}

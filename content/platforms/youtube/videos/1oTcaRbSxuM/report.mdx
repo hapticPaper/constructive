@@ -1,0 +1,89 @@
+export const report = {
+  schema: 'constructive.comment-report@v2',
+  generatedAt: '2026-03-30T18:00:57.909Z',
+  video: {
+    platform: 'youtube',
+    videoId: '1oTcaRbSxuM',
+    title: 'Charli xcx Made a Movie.. (*flash warning)',
+    channelTitle: 'mattheperson',
+    videoUrl: 'https://www.youtube.com/watch?v=1oTcaRbSxuM',
+  },
+  snapshot: {
+    commentCount: 109,
+    sentimentBreakdown: {
+      positive: 34,
+      neutral: 71,
+      negative: 4,
+    },
+    toxicCount: 6,
+    questionCount: 14,
+    suggestionCount: 10,
+  },
+  core: {
+    takeaways: [
+      {
+        title: 'Lots of specific critique (not general negativity)',
+        detail:
+          'Suggestions show up in 9% of comments (10 total), often focused on stakes, pacing, and what the movie is trying to be.',
+      },
+      {
+        title: 'Viewers want the framing',
+        detail:
+          'Questions make up 13% of comments (14 total), largely about the mockumentary format and missing cameos.',
+      },
+      {
+        title: 'Charli is the center of the discussion',
+        detail:
+          'Many comments directly reference Charli xcx; when summarizing feedback, separate movie-structure notes from artist/fandom notes.',
+      },
+    ],
+    topics: [
+      {
+        label: 'Mixed reaction / expectations vs execution',
+        count: 43,
+      },
+      {
+        label: 'Mockumentary format / movie structure',
+        count: 15,
+      },
+      {
+        label: 'BRAT era references',
+        count: 9,
+      },
+    ],
+    questions: [
+      "So there's no troye Sivan?",
+      'Why did Charli xcx make a mockumentary?',
+      'Sounds like it kind of toes the line between autobiographical like the other artist films shown here, and totally fictional like Spinal…',
+    ],
+    suggestions: [
+      'I really liked it! I think the bank collapsing was more of a social pressure rather than a monetary one, with charli being stressed because…',
+      'I had fun personally but I agree with many things you said, the stakes could’ve been higher and especially the Howard Sterling stuff just…',
+      'I also saw this last weekend and could not put my finger on why it was disappointing! you explained it perfectly and I feel exactly the…',
+    ],
+  },
+  optional: {
+    people: [
+      {
+        label: 'Charli xcx',
+        count: 15,
+      },
+      {
+        label: 'Matt (mattheperson)',
+        count: 8,
+      },
+    ],
+    quotes: [
+      'I really liked it! I think the bank collapsing was more of a social pressure rather than a monetary one, with charli being stressed because people are starting…',
+      'I had fun personally but I agree with many things you said, the stakes could’ve been higher and especially the Howard Sterling stuff just didn’t feel as…',
+      'I love that the movies ties to make you think she kills herself after she hears the swiftologist call her a flop.',
+    ],
+  },
+};
+
+{typeof Report !== "undefined" ? <Report report={report} /> : (
+
+  <div className="callout">
+    <strong>Missing widget:</strong> Report
+  </div>
+)}
