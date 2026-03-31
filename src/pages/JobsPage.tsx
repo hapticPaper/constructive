@@ -11,6 +11,7 @@ import {
   upsertLocalLibraryVideo,
 } from '../lib/localLibrary';
 import { parseVideoInput } from '../lib/videoInput';
+import { resolveAssetUrl } from '../lib/resolveAssetUrl';
 import { Button } from '../components/ui/Button';
 
 type JobStage =
@@ -219,7 +220,7 @@ export function JobsPage(): JSX.Element {
                 >
                   {video.thumbnailUrl ? (
                     <img
-                      src={video.thumbnailUrl}
+                      src={resolveAssetUrl(video.thumbnailUrl)}
                       alt=""
                       loading="lazy"
                       style={{

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 
 import { platformLabel } from '../content/platform';
 import type { VideoMetadata } from '../content/types';
+import { resolveAssetUrl } from '../lib/resolveAssetUrl';
 
 export function VideoCard({
   video,
@@ -21,7 +22,7 @@ export function VideoCard({
       {video.thumbnailUrl ? (
         <img
           className="thumb"
-          src={video.thumbnailUrl}
+          src={resolveAssetUrl(video.thumbnailUrl)}
           alt={video.title}
           loading="lazy"
         />
