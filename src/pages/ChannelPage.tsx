@@ -18,28 +18,9 @@ type ChannelAggregateModule = {
 
 export function ChannelPage(): JSX.Element {
   const params = useParams();
-  const platform = parsePlatform(params.platform ?? '');
+  const parsedPlatform = parsePlatform(params.platform ?? '');
+  const platform = parsedPlatform ?? 'youtube';
   const channelId = params.channelId ?? '';
-
-  if (!platform) {
-    return (
-      <div className="panel">
-        <h2>Invalid channel URL</h2>
-        <p className="muted" style={{ marginTop: 6 }}>
-          This link doesn’t include a valid platform.
-        </p>
-        <div style={{ marginTop: 12 }}>
-          <Link
-            to="/library"
-            className="btn btn-primary"
-            style={{ textDecoration: 'none' }}
-          >
-            Back to Library
-          </Link>
-        </div>
-      </div>
-    );
-  }
 
   const [aggregateModule, setAggregateModule] = useState<ChannelAggregateModule | null>(
     null,
@@ -48,6 +29,12 @@ export function ChannelPage(): JSX.Element {
 
   // Load channel aggregate dynamically
   useEffect(() => {
+    if (!parsedPlatform) {
+      setAggregateModule(null);
+      setAggregateLoading(false);
+      return;
+    }
+
     setAggregateLoading(true);
 
     // Dynamically import the channel aggregate MDX
@@ -62,15 +49,16 @@ export function ChannelPage(): JSX.Element {
         setAggregateModule(null);
         setAggregateLoading(false);
       });
-  }, [platform, channelId]);
+  }, [parsedPlatform, platform, channelId]);
 
   // Get all videos for this channel
   const channelVideos = useMemo(() => {
+    if (!parsedPlatform) return [];
     const allVideos = listVideos();
     return allVideos.filter(
       (video) => video.channel.channelId === channelId && video.platform === platform,
     );
-  }, [platform, channelId]);
+  }, [parsedPlatform, platform, channelId]);
 
   // Group videos by analysis status
   const groupedVideos = useMemo(() => {
@@ -91,6 +79,26 @@ export function ChannelPage(): JSX.Element {
 
     return { analyzed, pending, notStarted };
   }, [channelVideos]);
+
+  if (!parsedPlatform) {
+    return (
+      <div className="panel">
+        <h2>Invalid channel URL</h2>
+        <p className="muted" style={{ marginTop: 6 }}>
+          This link doesn’t include a valid platform.
+        </p>
+        <div style={{ marginTop: 12 }}>
+          <Link
+            to="/library"
+            className="btn btn-primary"
+            style={{ textDecoration: 'none' }}
+          >
+            Back to Library
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   if (channelVideos.length === 0) {
     return (

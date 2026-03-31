@@ -13,10 +13,22 @@ import * as Widgets from '../widgets';
 
 export function VideoAnalyticsPage(): JSX.Element {
   const params = useParams();
-  const platform = parsePlatform(params.platform ?? '');
+  const parsedPlatform = parsePlatform(params.platform ?? '');
+  const platform = parsedPlatform ?? 'youtube';
   const videoId = params.videoId ?? '';
 
-  if (!platform) {
+  const key = `${platform}:${videoId}`;
+
+  const content = useMemo(
+    () => (parsedPlatform ? getVideoContent(platform, videoId) : null),
+    [parsedPlatform, platform, videoId],
+  );
+  const Report = useMemo(
+    () => (parsedPlatform ? getVideoReportComponent(platform, videoId) : undefined),
+    [parsedPlatform, platform, videoId],
+  );
+
+  if (!parsedPlatform) {
     return (
       <div className="panel">
         <h2>Invalid video URL</h2>
@@ -35,14 +47,6 @@ export function VideoAnalyticsPage(): JSX.Element {
       </div>
     );
   }
-
-  const key = `${platform}:${videoId}`;
-
-  const content = useMemo(() => getVideoContent(platform, videoId), [platform, videoId]);
-  const Report = useMemo(
-    () => getVideoReportComponent(platform, videoId),
-    [platform, videoId],
-  );
 
   if (!content) {
     return (
