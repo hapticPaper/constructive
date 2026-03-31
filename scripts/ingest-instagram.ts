@@ -1,24 +1,29 @@
+import { rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
-import type { VideoMetadata } from '../src/content/types';
+import type { CommentRecord, VideoMetadata } from '../src/content/types';
 
 import { buildInstagramUrl, extractInstagramShortcode } from '../src/lib/instagram';
 
-import { writeJsonFile } from './fs';
-import { commentsJsonPath, videoJsonPath } from './paths';
-import { readCommentExportFile } from './ingest-import';
+import { ensureDir, writeJsonFile } from './fs';
+import {
+  commentsJsonPath,
+  thumbnailPublicPath,
+  thumbnailUrl,
+  videoJsonPath,
+} from './paths';
+import { withPage } from './lib/playwright';
 import { isHostOrSubdomain, normalizeOriginPath, tryParseUrl } from './url-utils';
 
 type Args = {
   input: string;
-  title: string;
-  channelId: string;
-  channelTitle: string;
+  title?: string;
+  channelId?: string;
+  channelTitle?: string;
   channelUrl?: string;
   description?: string;
   publishedAt?: string;
   thumbnailUrl?: string;
-  commentsPath?: string;
 };
 
 function parseArgs(argv: string[]): Args {
@@ -46,31 +51,134 @@ function parseArgs(argv: string[]): Args {
 
   if (positionals.length !== 1) {
     throw new Error(
-      'Usage: bun run ingest:instagram -- <postUrlOrShortcode> --title <title> --channel-id <id> --channel-title <title> [--comments <jsonPath>]',
+      'Usage: bun run ingest:instagram -- <postUrlOrShortcode> (optional overrides: --title, --channel-id, --channel-title, --published-at)',
     );
   }
 
-  const title = flags.get('--title')?.trim() ?? '';
-  const channelId = flags.get('--channel-id')?.trim() ?? '';
-  const channelTitle = flags.get('--channel-title')?.trim() ?? '';
-
-  if (!title) throw new Error('Missing required flag: --title');
-  if (!channelId) throw new Error('Missing required flag: --channel-id');
-  if (!channelTitle) throw new Error('Missing required flag: --channel-title');
-
-  const commentsPath = flags.get('--comments');
-
   return {
     input: positionals[0],
-    title,
-    channelId,
-    channelTitle,
+    title: flags.get('--title'),
+    channelId: flags.get('--channel-id'),
+    channelTitle: flags.get('--channel-title'),
     channelUrl: flags.get('--channel-url'),
     description: flags.get('--description'),
     publishedAt: flags.get('--published-at'),
     thumbnailUrl: flags.get('--thumbnail-url'),
-    commentsPath,
   };
+}
+
+function extractQuotedCaption(raw: string): string {
+  const first = raw.indexOf('"');
+  const last = raw.lastIndexOf('"');
+  if (first >= 0 && last > first) {
+    return raw.slice(first + 1, last).trim();
+  }
+
+  return raw.trim();
+}
+
+async function tryFetchPublishedAt({
+  shortcode,
+}: {
+  shortcode: string;
+}): Promise<string | undefined> {
+  const embedUrl = `https://www.instagram.com/p/${shortcode}/embed/`;
+  let html = '';
+  try {
+    const res = await fetch(embedUrl, {
+      headers: {
+        accept: 'text/html',
+      },
+    });
+    html = await res.text();
+  } catch {
+    return undefined;
+  }
+
+  const match = html.match(/\\\"taken_at_timestamp\\\":(\d+)/);
+  if (!match) return undefined;
+
+  const seconds = Number.parseInt(match[1], 10);
+  if (!Number.isFinite(seconds) || seconds <= 0) return undefined;
+  return new Date(seconds * 1000).toISOString();
+}
+
+async function scrapeInstagramPost({
+  videoUrl,
+  shortcode,
+}: {
+  videoUrl: string;
+  shortcode: string;
+}): Promise<{
+  video: VideoMetadata;
+  comments: CommentRecord[];
+  thumbnailFilePath: string;
+}> {
+  return withPage(async (page) => {
+    await page.goto(videoUrl, { waitUntil: 'domcontentloaded', timeout: 60_000 });
+    await page.waitForTimeout(4_000);
+
+    const ogTitle = await page
+      .locator('meta[property="og:title"]')
+      .getAttribute('content')
+      .catch(() => null);
+    const ogDescription = await page
+      .locator('meta[property="og:description"]')
+      .getAttribute('content')
+      .catch(() => null);
+    if (!ogTitle) {
+      throw new Error('Failed to scrape Instagram og:title.');
+    }
+
+    const displayNameMatch = ogTitle.match(/^(.*?)\s+on\s+Instagram/i);
+    const displayName = displayNameMatch?.[1]?.trim() ?? '';
+    const handleMatch = ogDescription?.match(/-\s+([^\s]+)\s+on\s+/i);
+    const handle = handleMatch?.[1]?.trim() ?? '';
+    const caption = extractQuotedCaption(ogTitle);
+
+    if (!handle) {
+      throw new Error('Failed to scrape Instagram author handle from og:title.');
+    }
+    if (!caption) {
+      throw new Error('Failed to scrape Instagram caption from og:title.');
+    }
+
+    const publishedAt = await tryFetchPublishedAt({ shortcode });
+
+    const thumbPath = thumbnailPublicPath('instagram', shortcode);
+    await ensureDir(path.dirname(thumbPath));
+
+    const embedCaptionedUrl = `https://www.instagram.com/p/${shortcode}/embed/captioned/`;
+    await page.goto(embedCaptionedUrl, {
+      waitUntil: 'domcontentloaded',
+      timeout: 60_000,
+    });
+    await page.waitForTimeout(4_000);
+
+    const screenshot = await page.screenshot({ type: 'jpeg', quality: 80 });
+    await writeFile(thumbPath, screenshot);
+
+    const video: VideoMetadata = {
+      platform: 'instagram',
+      videoId: shortcode,
+      videoUrl,
+      title: caption,
+      description: caption,
+      channel: {
+        platform: 'instagram',
+        channelId: handle,
+        channelTitle: displayName || handle,
+        channelUrl: `https://www.instagram.com/${handle}/`,
+      },
+      publishedAt,
+      thumbnailUrl: thumbnailUrl('instagram', shortcode),
+    };
+
+    // Instagram comment scraping typically requires an authenticated session.
+    const comments: CommentRecord[] = [];
+
+    return { video, comments, thumbnailFilePath: thumbPath };
+  });
 }
 
 async function main(): Promise<void> {
@@ -87,41 +195,42 @@ async function main(): Promise<void> {
       ? normalizeOriginPath(inputUrl)
       : buildInstagramUrl(shortcode);
 
-  const normalizedHandle = args.channelId.startsWith('@')
-    ? args.channelId.slice(1)
-    : args.channelId;
-  const channelUrl = args.channelUrl ?? `https://www.instagram.com/${normalizedHandle}/`;
+  const scraped = await scrapeInstagramPost({ videoUrl, shortcode });
+
+  const normalizedHandle = (args.channelId ?? scraped.video.channel.channelId).startsWith(
+    '@',
+  )
+    ? (args.channelId ?? scraped.video.channel.channelId).slice(1)
+    : (args.channelId ?? scraped.video.channel.channelId);
+  const channelUrl =
+    args.channelUrl ??
+    scraped.video.channel.channelUrl ??
+    `https://www.instagram.com/${normalizedHandle}/`;
 
   const video: VideoMetadata = {
-    platform: 'instagram',
-    videoId: shortcode,
-    videoUrl,
-    title: args.title,
-    description: args.description,
+    ...scraped.video,
+    title: args.title?.trim() || scraped.video.title,
+    description: args.description?.trim() || scraped.video.description,
+    publishedAt: args.publishedAt?.trim() || scraped.video.publishedAt,
+    thumbnailUrl: args.thumbnailUrl?.trim() || scraped.video.thumbnailUrl,
     channel: {
-      platform: 'instagram',
-      channelId: args.channelId,
-      channelTitle: args.channelTitle,
+      ...scraped.video.channel,
+      channelId: normalizedHandle,
+      channelTitle: args.channelTitle?.trim() || scraped.video.channel.channelTitle,
       channelUrl,
     },
-    publishedAt: args.publishedAt,
-    thumbnailUrl: args.thumbnailUrl,
   };
 
   await writeJsonFile(videoJsonPath('instagram', shortcode), video);
-
-  if (args.commentsPath) {
-    const absoluteComments = path.resolve(process.cwd(), args.commentsPath);
-    const comments = await readCommentExportFile(absoluteComments);
-    await writeJsonFile(commentsJsonPath('instagram', shortcode), comments);
-    process.stdout.write(
-      `Ingested instagram:${shortcode} (video.json + comments.json; ${comments.length} comments).\n`,
-    );
+  if (scraped.comments.length > 0) {
+    await writeJsonFile(commentsJsonPath('instagram', shortcode), scraped.comments);
   } else {
-    process.stdout.write(
-      `Ingested instagram:${shortcode} (video.json only; pass --comments <jsonPath> to import comments).\n`,
-    );
+    await rm(commentsJsonPath('instagram', shortcode), { force: true });
   }
+
+  process.stdout.write(
+    `Ingested instagram:${shortcode} (video.json; ${scraped.comments.length} comments; thumbnail: ${path.relative(process.cwd(), scraped.thumbnailFilePath)}).\n`,
+  );
 }
 
 main().catch((err) => {

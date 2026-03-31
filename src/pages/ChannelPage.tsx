@@ -9,6 +9,7 @@ import type { VideoMetadata } from '../content/types';
 import { Hero, type BreadcrumbItem } from '../components/Hero';
 import { HeroActionLink } from '../components/HeroActionLink';
 import { Button } from '../components/ui/Button';
+import { resolveAssetUrl } from '../lib/resolveAssetUrl';
 import * as Widgets from '../widgets';
 
 type ChannelAggregateModule = {
@@ -202,7 +203,7 @@ export function ChannelPage(): JSX.Element {
                   >
                     {video.thumbnailUrl && (
                       <img
-                        src={video.thumbnailUrl}
+                        src={resolveAssetUrl(video.thumbnailUrl)}
                         alt={video.title}
                         style={{
                           width: '100%',
@@ -255,7 +256,7 @@ export function ChannelPage(): JSX.Element {
                   >
                     {video.thumbnailUrl && (
                       <img
-                        src={video.thumbnailUrl}
+                        src={resolveAssetUrl(video.thumbnailUrl)}
                         alt={video.title}
                         style={{
                           width: '100%',
@@ -300,7 +301,7 @@ export function ChannelPage(): JSX.Element {
                 >
                   {video.thumbnailUrl && (
                     <img
-                      src={video.thumbnailUrl}
+                      src={resolveAssetUrl(video.thumbnailUrl)}
                       alt={video.title}
                       style={{
                         width: '100%',

@@ -39,3 +39,11 @@ export function channelRoot(platform: Platform, channelId: string): string {
 export function channelAggregateMdxPath(platform: Platform, channelId: string): string {
   return path.join(channelRoot(platform, channelId), 'channel-aggregate.mdx');
 }
+
+export function thumbnailPublicPath(platform: Platform, videoId: string): string {
+  return path.resolve(process.cwd(), 'public', 'thumbnails', platform, `${videoId}.jpg`);
+}
+
+export function thumbnailUrl(platform: Platform, videoId: string): string {
+  return `thumbnails/${platform}/${videoId}.jpg`;
+}
