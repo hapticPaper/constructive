@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 
 import { getVideoContent } from '../content/content';
-import { platformLabel } from '../content/platform';
+import { parsePlatform, platformLabel } from '../content/platform';
 import type { Platform } from '../content/types';
 import {
   hydrateLocalLibraryVideoMetadata,
@@ -77,7 +77,7 @@ export function JobsPage(): JSX.Element {
     const missing = videos.filter(
       (v) =>
         (v.platform === 'youtube' || v.platform === 'tiktok') &&
-        (!v.title || !v.channelTitle),
+        (!v.title || !v.channelTitle || !v.thumbnailUrl),
     );
     const batch = missing
       .filter((v) => !oembedInFlight.current.has(`${v.platform}:${v.videoId}`))
@@ -155,7 +155,10 @@ export function JobsPage(): JSX.Element {
         <div style={{ marginTop: 12, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
           <select
             value={platform}
-            onChange={(e) => setPlatform(e.target.value as Platform)}
+            onChange={(e) => {
+              const next = parsePlatform(e.target.value);
+              if (next) setPlatform(next);
+            }}
             className="input"
           >
             <option value="youtube">YouTube</option>

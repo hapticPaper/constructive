@@ -18,8 +18,28 @@ type ChannelAggregateModule = {
 
 export function ChannelPage(): JSX.Element {
   const params = useParams();
-  const platform = parsePlatform(params.platform ?? '') ?? 'youtube';
+  const platform = parsePlatform(params.platform ?? '');
   const channelId = params.channelId ?? '';
+
+  if (!platform) {
+    return (
+      <div className="panel">
+        <h2>Invalid channel URL</h2>
+        <p className="muted" style={{ marginTop: 6 }}>
+          This link doesn’t include a valid platform.
+        </p>
+        <div style={{ marginTop: 12 }}>
+          <Link
+            to="/library"
+            className="btn btn-primary"
+            style={{ textDecoration: 'none' }}
+          >
+            Back to Library
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const [aggregateModule, setAggregateModule] = useState<ChannelAggregateModule | null>(
     null,

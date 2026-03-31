@@ -13,8 +13,29 @@ import * as Widgets from '../widgets';
 
 export function VideoAnalyticsPage(): JSX.Element {
   const params = useParams();
-  const platform = parsePlatform(params.platform ?? '') ?? 'youtube';
+  const platform = parsePlatform(params.platform ?? '');
   const videoId = params.videoId ?? '';
+
+  if (!platform) {
+    return (
+      <div className="panel">
+        <h2>Invalid video URL</h2>
+        <p className="muted" style={{ marginTop: 6 }}>
+          This link doesn’t include a valid platform.
+        </p>
+        <div style={{ marginTop: 12 }}>
+          <Link
+            to="/library"
+            className="btn btn-primary"
+            style={{ textDecoration: 'none' }}
+          >
+            Back to Library
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   const key = `${platform}:${videoId}`;
 
   const content = useMemo(() => getVideoContent(platform, videoId), [platform, videoId]);
