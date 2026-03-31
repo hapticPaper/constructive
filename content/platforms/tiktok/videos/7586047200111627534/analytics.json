@@ -56,12 +56,8 @@
     "people": []
   },
   "highlights": {
-    "questions": [
-      "What camera are you using?"
-    ],
-    "suggestions": [
-      "More of this please."
-    ],
+    "questions": ["What camera are you using?"],
+    "suggestions": ["More of this please."],
     "quotes": [
       "This made me laugh out loud.",
       "More of this please.",

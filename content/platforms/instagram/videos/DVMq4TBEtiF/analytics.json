@@ -56,13 +56,8 @@
     "people": []
   },
   "highlights": {
-    "questions": [
-      "Can you share the source?"
-    ],
-    "suggestions": [
-      "Can you share the source?",
-      "More context please"
-    ],
+    "questions": ["Can you share the source?"],
+    "suggestions": ["Can you share the source?", "More context please"],
     "quotes": [
       "Love this.",
       "Can you share the source?",
