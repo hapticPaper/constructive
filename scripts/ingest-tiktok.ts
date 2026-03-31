@@ -8,13 +8,17 @@ import { writeJsonFile } from './fs';
 import { commentsJsonPath, videoJsonPath } from './paths';
 import { readCommentExportFile } from './ingest-import';
 
-function normalizeUrl(raw: string): string | null {
+function tryParseUrl(raw: string): URL | null {
   try {
-    const url = new URL(raw.trim());
-    return `${url.origin}${url.pathname}`;
+    return new URL(raw.trim());
   } catch {
     return null;
   }
+}
+
+function isTikTokHost(url: URL): boolean {
+  const hostname = url.hostname.toLowerCase();
+  return hostname === 'tiktok.com' || hostname.endsWith('.tiktok.com');
 }
 
 type Args = {
@@ -84,22 +88,20 @@ function parseArgs(argv: string[]): Args {
 async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
 
-  const normalizedInputUrl = normalizeUrl(args.input);
-  const normalizedFlagUrl = args.videoUrl ? normalizeUrl(args.videoUrl) : null;
-  const videoUrl = [normalizedInputUrl, normalizedFlagUrl].find(
-    (url) => url && url.includes('tiktok.com'),
+  const inputUrl = tryParseUrl(args.input);
+  const flagUrl = args.videoUrl ? tryParseUrl(args.videoUrl) : null;
+  const chosen = [inputUrl, flagUrl].find((url): url is URL =>
+    Boolean(url && isTikTokHost(url)),
   );
-
-  if (!videoUrl) {
+  if (!chosen) {
     throw new Error(
       'Invalid input: pass a TikTok video URL (preferred), or ingest by id with --video-url pointing at tiktok.com.',
     );
   }
 
-  const videoId =
-    extractTikTokVideoId(videoUrl) ??
-    (normalizedInputUrl ? extractTikTokVideoId(normalizedInputUrl) : null) ??
-    extractTikTokVideoId(args.input);
+  const videoUrl = `${chosen.origin}${chosen.pathname}`;
+
+  const videoId = extractTikTokVideoId(videoUrl);
   if (!videoId) {
     throw new Error('Invalid TikTok URL: expected a path containing /video/<id>.');
   }

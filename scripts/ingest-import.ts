@@ -36,9 +36,23 @@ function toIsoDateString(value: unknown): string | undefined {
   return date.toISOString();
 }
 
-function syntheticId(text: string, idx: number): string {
-  const hash = createHash('sha256').update(text).digest('hex').slice(0, 12);
-  return `synthetic_${idx}_${hash}`;
+function syntheticIdStable(fields: {
+  text: string;
+  authorName?: string;
+  publishedAt?: string;
+}): string {
+  const payload = `${fields.text}|${fields.authorName ?? ''}|${fields.publishedAt ?? ''}`;
+  const hash = createHash('sha256').update(payload).digest('hex').slice(0, 12);
+  return `synthetic_${hash}`;
+}
+
+function ensureUniqueSyntheticId(
+  baseId: string,
+  existing: Set<string>,
+  idx: number,
+): string {
+  if (!existing.has(baseId)) return baseId;
+  return `${baseId}_${idx}`;
 }
 
 function pickText(rec: Record<string, unknown>): string | null {
@@ -135,13 +149,17 @@ export async function readCommentExportFile(
     );
   }
 
+  const syntheticIds = new Set<string>();
   const out: CommentRecord[] = [];
   for (let i = 0; i < entries.length; i++) {
     const entry = entries[i];
     if (typeof entry === 'string' && entry.trim()) {
       const text = normalizeCommentText(entry);
       if (!text) continue;
-      out.push({ id: syntheticId(text, i), syntheticId: true, text });
+      const baseId = syntheticIdStable({ text });
+      const id = ensureUniqueSyntheticId(baseId, syntheticIds, i);
+      syntheticIds.add(id);
+      out.push({ id, syntheticId: true, text });
       continue;
     }
 
@@ -151,18 +169,27 @@ export async function readCommentExportFile(
     const text = normalizeCommentText(rawText);
     if (!text) continue;
 
-    const id =
+    const authorName = pickAuthor(entry);
+    const publishedAt = pickPublishedAt(entry);
+
+    const rawId =
       stringifyId(entry.id) ??
       stringifyId(entry.commentId) ??
       stringifyId(entry.comment_id) ??
-      stringifyId(entry.pk) ??
-      syntheticId(text, i);
+      stringifyId(entry.pk);
+
+    const isSynthetic = rawId == null;
+    const baseId = isSynthetic
+      ? syntheticIdStable({ text, authorName, publishedAt })
+      : rawId;
+    const id = isSynthetic ? ensureUniqueSyntheticId(baseId, syntheticIds, i) : baseId;
+    if (isSynthetic) syntheticIds.add(id);
 
     out.push({
       id,
-      syntheticId: id.startsWith('synthetic_') ? true : undefined,
-      authorName: pickAuthor(entry),
-      publishedAt: pickPublishedAt(entry),
+      syntheticId: isSynthetic ? true : undefined,
+      authorName,
+      publishedAt,
       likeCount: pickLikeCount(entry),
       text,
     });

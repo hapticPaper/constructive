@@ -8,13 +8,17 @@ import { writeJsonFile } from './fs';
 import { commentsJsonPath, videoJsonPath } from './paths';
 import { readCommentExportFile } from './ingest-import';
 
-function normalizeUrl(raw: string): string | null {
+function tryParseUrl(raw: string): URL | null {
   try {
-    const url = new URL(raw.trim());
-    return `${url.origin}${url.pathname}`;
+    return new URL(raw.trim());
   } catch {
     return null;
   }
+}
+
+function isInstagramHost(url: URL): boolean {
+  const hostname = url.hostname.toLowerCase();
+  return hostname === 'instagram.com' || hostname.endsWith('.instagram.com');
 }
 
 type Args = {
@@ -89,10 +93,11 @@ async function main(): Promise<void> {
     throw new Error('Invalid input: expected an Instagram post/reel URL or shortcode.');
   }
 
-  const normalizedUrl = normalizeUrl(args.input);
-  const videoUrl = normalizedUrl?.includes('instagram.com')
-    ? normalizedUrl
-    : buildInstagramUrl(shortcode);
+  const inputUrl = tryParseUrl(args.input);
+  const videoUrl =
+    inputUrl && isInstagramHost(inputUrl)
+      ? `${inputUrl.origin}${inputUrl.pathname}`
+      : buildInstagramUrl(shortcode);
 
   const normalizedHandle = args.channelId.startsWith('@')
     ? args.channelId.slice(1)
