@@ -1,73 +1,73 @@
 {
   "schema": "constructive.comment-analytics@v3",
-  "commentCount": 5,
-  "analyzedAt": "2026-03-31T00:12:03.503Z",
+  "commentCount": 19,
+  "analyzedAt": "2026-03-31T14:48:05.803Z",
   "sentimentBreakdown": {
     "positive": 1,
-    "neutral": 4,
+    "neutral": 18,
     "negative": 0
   },
   "toxicCount": 0,
-  "questionCount": 1,
-  "suggestionCount": 1,
+  "questionCount": 0,
+  "suggestionCount": 0,
   "radar": {
     "praise": 1,
     "criticism": 0,
-    "question": 1,
-    "suggestion": 1,
+    "question": 0,
+    "suggestion": 0,
     "toxic": 0,
     "people": 0
   },
   "themes": {
     "topics": [
       {
-        "label": "appreciate",
+        "label": "sticker",
+        "count": 11
+      },
+      {
+        "label": "dagestan",
+        "count": 4
+      },
+      {
+        "label": "years",
+        "count": 3
+      },
+      {
+        "label": "forget",
+        "count": 2
+      },
+      {
+        "label": "left",
         "count": 1
       },
       {
-        "label": "camera",
+        "label": "recap",
         "count": 1
       },
       {
-        "label": "disagree",
+        "label": "stop",
         "count": 1
       },
       {
-        "label": "energy",
-        "count": 1
-      },
-      {
-        "label": "explanation",
-        "count": 1
-      },
-      {
-        "label": "laugh",
-        "count": 1
-      },
-      {
-        "label": "loud",
-        "count": 1
-      },
-      {
-        "label": "made",
+        "label": "wait",
         "count": 1
       }
     ],
     "people": []
   },
   "highlights": {
-    "questions": ["What camera are you using?"],
-    "suggestions": ["More of this please."],
+    "questions": [],
+    "suggestions": [],
     "quotes": [
-      "This made me laugh out loud.",
-      "More of this please.",
-      "What camera are you using?"
+      "Best ad can’t wait for 2025 recap",
+      "2 3 years Dagestan and forget",
+      "2-3 years dagestan forget"
     ]
   },
   "takeaways": [
     {
       "title": "What people latched onto",
-      "detail": "Most discussion clusters around: appreciate, camera, disagree."
+      "detail": "Most discussion clusters around: sticker, dagestan, years."
     }
   ]
 }

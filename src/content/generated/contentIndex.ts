@@ -34,6 +34,8 @@ import youtube_tvq4nsaWRCY_analytics from '../../../content/platforms/youtube/vi
 import youtube_tvq4nsaWRCY_reach from '../../../content/platforms/youtube/videos/tvq4nsaWRCY/reach.json';
 
 import instagram_C_taNClRAzl_video from '../../../content/platforms/instagram/videos/C_taNClRAzl/video.json';
+import instagram_C_taNClRAzl_comments from '../../../content/platforms/instagram/videos/C_taNClRAzl/comments.json';
+import instagram_C_taNClRAzl_analytics from '../../../content/platforms/instagram/videos/C_taNClRAzl/analytics.json';
 
 import tiktok_7586047200111627534_video from '../../../content/platforms/tiktok/videos/7586047200111627534/video.json';
 import tiktok_7586047200111627534_comments from '../../../content/platforms/tiktok/videos/7586047200111627534/comments.json';
@@ -78,8 +80,8 @@ export const VIDEO_CONTENT: Record<string, VideoContent> = {
   },
   'instagram:C_taNClRAzl': {
     video: instagram_C_taNClRAzl_video as VideoContent['video'],
-    comments: undefined,
-    analytics: undefined,
+    comments: instagram_C_taNClRAzl_comments as VideoContent['comments'],
+    analytics: instagram_C_taNClRAzl_analytics as VideoContent['analytics'],
     reach: undefined,
   },
   'tiktok:7586047200111627534': {
