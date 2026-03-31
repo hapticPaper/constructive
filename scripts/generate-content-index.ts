@@ -267,7 +267,9 @@ async function main(): Promise<void> {
     contentMapLines.push(
       `  '${platform}:${videoId}': {`,
       `    video: ${ident}_video as VideoContent['video'],`,
-      `    comments: ${hasComments ? `${ident}_comments` : 'undefined'},`,
+      `    comments: ${
+        hasComments ? `${ident}_comments as VideoContent['comments']` : 'undefined'
+      },`,
       `    analytics: ${hasAnalytics ? `${ident}_analytics as VideoContent['analytics']` : 'undefined'},`,
       `    reach: ${hasReach ? `${ident}_reach as VideoContent['reach']` : 'undefined'},`,
       '  },',
