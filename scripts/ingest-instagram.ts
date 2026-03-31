@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
@@ -17,6 +18,7 @@ import { isHostOrSubdomain, normalizeOriginPath, tryParseUrl } from './url-utils
 
 type Args = {
   input: string;
+  maxComments: number;
   title?: string;
   channelId?: string;
   channelTitle?: string;
@@ -51,12 +53,19 @@ function parseArgs(argv: string[]): Args {
 
   if (positionals.length !== 1) {
     throw new Error(
-      'Usage: bun run ingest:instagram -- <postUrlOrShortcode> (optional overrides: --title, --channel-id, --channel-title, --published-at)',
+      'Usage: bun run ingest:instagram -- <postUrlOrShortcode> [--max-comments <n>] (optional overrides: --title, --channel-id, --channel-title, --published-at)',
     );
+  }
+
+  const maxCommentsRaw = flags.get('--max-comments')?.trim();
+  const maxComments = maxCommentsRaw ? Number.parseInt(maxCommentsRaw, 10) : 50;
+  if (!Number.isFinite(maxComments) || maxComments < 0) {
+    throw new Error('Invalid --max-comments: expected a non-negative integer.');
   }
 
   return {
     input: positionals[0],
+    maxComments,
     title: flags.get('--title'),
     channelId: flags.get('--channel-id'),
     channelTitle: flags.get('--channel-title'),
@@ -103,12 +112,118 @@ async function tryFetchPublishedAt({
   return new Date(seconds * 1000).toISOString();
 }
 
+function isCommentBlockStart(ageRaw: string | undefined): boolean {
+  if (!ageRaw) return false;
+  return /^\d+\s*[smhdwy]$/u.test(ageRaw.trim());
+}
+
+function stableSyntheticId(parts: string[]): string {
+  const hash = createHash('sha256').update(parts.join('\u0000')).digest('hex');
+  return hash.slice(0, 24);
+}
+
+function normalizeCommentText(text: string): string {
+  return text.replace(/\s+/g, ' ').trim();
+}
+
+function isLikelyHandleLine(value: string | undefined): boolean {
+  if (!value) return false;
+  const trimmed = value.trim();
+  if (!trimmed) return false;
+  if (trimmed === 'Like' || trimmed === 'Reply') return false;
+  return /^[a-zA-Z0-9_.]{2,50}$/u.test(trimmed);
+}
+
+function parseCommentsFromBodyText(
+  bodyText: string,
+  maxComments: number,
+): Array<{ authorName: string; text: string }> {
+  const lines = bodyText
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  const out: Array<{ authorName: string; text: string }> = [];
+  for (let i = 0; i < lines.length; i++) {
+    const authorName = lines[i];
+    const age = lines[i + 1];
+    if (!isLikelyHandleLine(authorName) || !isCommentBlockStart(age)) continue;
+
+    const textLines: string[] = [];
+    let cursor = i + 2;
+    while (cursor < lines.length && lines[cursor] !== 'Like') {
+      if (
+        isLikelyHandleLine(lines[cursor]) &&
+        isCommentBlockStart(lines[cursor + 1])
+      ) {
+        break;
+      }
+      if (lines[cursor] === 'Reply') break;
+      if (lines[cursor] === 'See translation') break;
+      if (lines[cursor] === 'Log in to like or comment.') break;
+      textLines.push(lines[cursor]);
+      cursor += 1;
+    }
+
+    if (lines[cursor] !== 'Like') continue;
+    if (lines[cursor + 1] !== 'Reply') continue;
+
+    const text = normalizeCommentText(textLines.join(' '));
+    if (!text) continue;
+
+    out.push({ authorName, text });
+    if (out.length >= maxComments) break;
+
+    i = cursor + 1;
+  }
+
+  return out;
+}
+
+type InstagramWebInfoItem = {
+  caption?: { text?: string };
+  taken_at?: number;
+  user?: {
+    username?: string;
+    full_name?: string;
+  };
+  preview_comments?: Array<{ pk?: string; text?: string; user?: { username?: string } }>;
+};
+
+function findInstagramWebInfoItem(value: unknown): InstagramWebInfoItem | null {
+  if (!value || typeof value !== 'object') return null;
+  if (Array.isArray(value)) {
+    for (const entry of value) {
+      const found = findInstagramWebInfoItem(entry);
+      if (found) return found;
+    }
+    return null;
+  }
+
+  const record = value as Record<string, unknown>;
+  const webInfo = record.xdt_api__v1__media__shortcode__web_info;
+  if (webInfo && typeof webInfo === 'object' && !Array.isArray(webInfo)) {
+    const items = (webInfo as Record<string, unknown>).items;
+    if (Array.isArray(items) && items[0] && typeof items[0] === 'object') {
+      return items[0] as InstagramWebInfoItem;
+    }
+  }
+
+  for (const key of Object.keys(record)) {
+    const found = findInstagramWebInfoItem(record[key]);
+    if (found) return found;
+  }
+  return null;
+}
+
 async function scrapeInstagramPost({
   videoUrl,
   shortcode,
+  maxComments,
 }: {
   videoUrl: string;
   shortcode: string;
+  maxComments: number;
 }): Promise<{
   video: VideoMetadata;
   comments: CommentRecord[];
@@ -117,6 +232,27 @@ async function scrapeInstagramPost({
   return withPage(async (page) => {
     await page.goto(videoUrl, { waitUntil: 'domcontentloaded', timeout: 60_000 });
     await page.waitForTimeout(4_000);
+
+    const bodyText = await page.locator('body').innerText().catch(() => '');
+
+    const webInfoRaw = await page.evaluate(() => {
+      const scripts = Array.from(
+        document.querySelectorAll('script[type="application/json"]'),
+      ) as HTMLScriptElement[];
+      const hit = scripts.find((s) =>
+        (s.textContent ?? '').includes('xdt_api__v1__media__shortcode__web_info'),
+      );
+      return hit?.textContent ?? null;
+    });
+
+    let webInfoItem: InstagramWebInfoItem | null = null;
+    if (webInfoRaw) {
+      try {
+        webInfoItem = findInstagramWebInfoItem(JSON.parse(webInfoRaw) as unknown);
+      } catch {
+        webInfoItem = null;
+      }
+    }
 
     const ogTitle = await page
       .locator('meta[property="og:title"]')
@@ -131,10 +267,12 @@ async function scrapeInstagramPost({
     }
 
     const displayNameMatch = ogTitle.match(/^(.*?)\s+on\s+Instagram/i);
-    const displayName = displayNameMatch?.[1]?.trim() ?? '';
+    const displayName =
+      webInfoItem?.user?.full_name?.trim() ?? displayNameMatch?.[1]?.trim() ?? '';
     const handleMatch = ogDescription?.match(/-\s+([^\s]+)\s+on\s+/i);
-    const handle = handleMatch?.[1]?.trim() ?? '';
-    const caption = extractQuotedCaption(ogTitle);
+    const handle =
+      webInfoItem?.user?.username?.trim() ?? handleMatch?.[1]?.trim() ?? '';
+    const caption = webInfoItem?.caption?.text?.trim() ?? extractQuotedCaption(ogTitle);
 
     if (!handle) {
       throw new Error('Failed to scrape Instagram author handle from og:title.');
@@ -143,7 +281,10 @@ async function scrapeInstagramPost({
       throw new Error('Failed to scrape Instagram caption from og:title.');
     }
 
-    const publishedAt = await tryFetchPublishedAt({ shortcode });
+    const publishedAt =
+      typeof webInfoItem?.taken_at === 'number' && Number.isFinite(webInfoItem.taken_at)
+        ? new Date(webInfoItem.taken_at * 1000).toISOString()
+        : await tryFetchPublishedAt({ shortcode });
 
     const thumbPath = thumbnailPublicPath('instagram', shortcode);
     await ensureDir(path.dirname(thumbPath));
@@ -174,8 +315,33 @@ async function scrapeInstagramPost({
       thumbnailUrl: thumbnailUrl('instagram', shortcode),
     };
 
-    // Instagram comment scraping typically requires an authenticated session.
     const comments: CommentRecord[] = [];
+    if (maxComments > 0) {
+      const previewByKey = new Map<string, { id: string }>();
+      for (const comment of webInfoItem?.preview_comments ?? []) {
+        const id = comment.pk?.trim() ?? '';
+        const authorName = comment.user?.username?.trim() ?? '';
+        const text = normalizeCommentText(comment.text ?? '');
+        if (!id || !authorName || !text) continue;
+        previewByKey.set(`${authorName}\u0000${text}`, { id });
+      }
+
+      const parsed = parseCommentsFromBodyText(bodyText, maxComments);
+      for (const entry of parsed) {
+        const key = `${entry.authorName}\u0000${entry.text}`;
+        const preview = previewByKey.get(key);
+
+        comments.push({
+          id:
+            preview?.id ??
+            `ig_synth_${stableSyntheticId(['instagram', shortcode, entry.authorName, entry.text])}`,
+          authorName: entry.authorName,
+          text: entry.text,
+        });
+
+        if (comments.length >= maxComments) break;
+      }
+    }
 
     return { video, comments, thumbnailFilePath: thumbPath };
   });
@@ -195,7 +361,11 @@ async function main(): Promise<void> {
       ? normalizeOriginPath(inputUrl)
       : buildInstagramUrl(shortcode);
 
-  const scraped = await scrapeInstagramPost({ videoUrl, shortcode });
+  const scraped = await scrapeInstagramPost({
+    videoUrl,
+    shortcode,
+    maxComments: args.maxComments,
+  });
 
   const normalizedHandle = (args.channelId ?? scraped.video.channel.channelId).startsWith(
     '@',
