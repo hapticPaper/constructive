@@ -46,13 +46,10 @@ function syntheticIdStable(fields: {
   return `synthetic_${hash}`;
 }
 
-function ensureUniqueSyntheticId(
-  baseId: string,
-  existing: Set<string>,
-  idx: number,
-): string {
-  if (!existing.has(baseId)) return baseId;
-  return `${baseId}_${idx}`;
+function nextSyntheticId(baseId: string, counts: Map<string, number>): string {
+  const next = (counts.get(baseId) ?? 0) + 1;
+  counts.set(baseId, next);
+  return next === 1 ? baseId : `${baseId}_${next}`;
 }
 
 function pickText(rec: Record<string, unknown>): string | null {
@@ -149,7 +146,7 @@ export async function readCommentExportFile(
     );
   }
 
-  const syntheticIds = new Set<string>();
+  const syntheticCounts = new Map<string, number>();
   const out: CommentRecord[] = [];
   for (let i = 0; i < entries.length; i++) {
     const entry = entries[i];
@@ -157,8 +154,7 @@ export async function readCommentExportFile(
       const text = normalizeCommentText(entry);
       if (!text) continue;
       const baseId = syntheticIdStable({ text });
-      const id = ensureUniqueSyntheticId(baseId, syntheticIds, i);
-      syntheticIds.add(id);
+      const id = nextSyntheticId(baseId, syntheticCounts);
       out.push({ id, syntheticId: true, text });
       continue;
     }
@@ -182,8 +178,7 @@ export async function readCommentExportFile(
     const baseId = isSynthetic
       ? syntheticIdStable({ text, authorName, publishedAt })
       : rawId;
-    const id = isSynthetic ? ensureUniqueSyntheticId(baseId, syntheticIds, i) : baseId;
-    if (isSynthetic) syntheticIds.add(id);
+    const id = isSynthetic ? nextSyntheticId(baseId, syntheticCounts) : baseId;
 
     out.push({
       id,

@@ -7,19 +7,7 @@ import { buildInstagramUrl, extractInstagramShortcode } from '../src/lib/instagr
 import { writeJsonFile } from './fs';
 import { commentsJsonPath, videoJsonPath } from './paths';
 import { readCommentExportFile } from './ingest-import';
-
-function tryParseUrl(raw: string): URL | null {
-  try {
-    return new URL(raw.trim());
-  } catch {
-    return null;
-  }
-}
-
-function isInstagramHost(url: URL): boolean {
-  const hostname = url.hostname.toLowerCase();
-  return hostname === 'instagram.com' || hostname.endsWith('.instagram.com');
-}
+import { isHostOrSubdomain, normalizeOriginPath, tryParseUrl } from './url-utils';
 
 type Args = {
   input: string;
@@ -95,8 +83,8 @@ async function main(): Promise<void> {
 
   const inputUrl = tryParseUrl(args.input);
   const videoUrl =
-    inputUrl && isInstagramHost(inputUrl)
-      ? `${inputUrl.origin}${inputUrl.pathname}`
+    inputUrl && isHostOrSubdomain(inputUrl, 'instagram.com')
+      ? normalizeOriginPath(inputUrl)
       : buildInstagramUrl(shortcode);
 
   const normalizedHandle = args.channelId.startsWith('@')

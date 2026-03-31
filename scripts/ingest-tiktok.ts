@@ -7,19 +7,7 @@ import { extractTikTokVideoId } from '../src/lib/tiktok';
 import { writeJsonFile } from './fs';
 import { commentsJsonPath, videoJsonPath } from './paths';
 import { readCommentExportFile } from './ingest-import';
-
-function tryParseUrl(raw: string): URL | null {
-  try {
-    return new URL(raw.trim());
-  } catch {
-    return null;
-  }
-}
-
-function isTikTokHost(url: URL): boolean {
-  const hostname = url.hostname.toLowerCase();
-  return hostname === 'tiktok.com' || hostname.endsWith('.tiktok.com');
-}
+import { isHostOrSubdomain, normalizeOriginPath, tryParseUrl } from './url-utils';
 
 type Args = {
   input: string;
@@ -91,7 +79,7 @@ async function main(): Promise<void> {
   const inputUrl = tryParseUrl(args.input);
   const flagUrl = args.videoUrl ? tryParseUrl(args.videoUrl) : null;
   const chosen = [inputUrl, flagUrl].find((url): url is URL =>
-    Boolean(url && isTikTokHost(url)),
+    Boolean(url && isHostOrSubdomain(url, 'tiktok.com')),
   );
   if (!chosen) {
     throw new Error(
@@ -99,7 +87,7 @@ async function main(): Promise<void> {
     );
   }
 
-  const videoUrl = `${chosen.origin}${chosen.pathname}`;
+  const videoUrl = normalizeOriginPath(chosen);
 
   const videoId = extractTikTokVideoId(videoUrl);
   if (!videoId) {
