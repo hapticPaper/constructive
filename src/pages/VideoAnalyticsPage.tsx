@@ -1,6 +1,6 @@
 import { MDXProvider } from '@mdx-js/react';
 import type { MDXComponents } from 'mdx/types';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
 import { getVideoContent, getVideoReportComponent } from '../content/content';
@@ -8,8 +8,6 @@ import { getValidRadarFromAnalytics } from '../content/radar';
 import { parsePlatform, platformLabel } from '../content/platform';
 import { Hero, type BreadcrumbItem } from '../components/Hero';
 import { HeroActionLink } from '../components/HeroActionLink';
-import { canRunAnalysis, isVideoUnlocked, unlockVideo } from '../lib/freemium';
-import { Button } from '../components/ui/Button';
 import { SignalBreakdown } from '../components/ui/SignalBreakdown';
 import * as Widgets from '../widgets';
 
@@ -19,21 +17,11 @@ export function VideoAnalyticsPage(): JSX.Element {
   const videoId = params.videoId ?? '';
   const key = `${platform}:${videoId}`;
 
-  const [unlockError, setUnlockError] = useState<string | null>(null);
-  const [unlocking, setUnlocking] = useState(false);
-  const [unlocked, setUnlocked] = useState(() => isVideoUnlocked(key));
-
   const content = useMemo(() => getVideoContent(platform, videoId), [platform, videoId]);
   const Report = useMemo(
     () => getVideoReportComponent(platform, videoId),
     [platform, videoId],
   );
-
-  useEffect(() => {
-    setUnlockError(null);
-    setUnlocking(false);
-    setUnlocked(isVideoUnlocked(key));
-  }, [key]);
 
   if (!content) {
     return (
@@ -106,57 +94,6 @@ export function VideoAnalyticsPage(): JSX.Element {
 
   const analytics = content.analytics;
   const radar = getValidRadarFromAnalytics(analytics);
-
-  if (!unlocked) {
-    const gate = canRunAnalysis();
-
-    return (
-      <div>
-        <Hero
-          breadcrumbs={breadcrumbs}
-          heading={gate.ok ? 'Unlock this report' : 'Daily limit reached'}
-          description={
-            gate.ok
-              ? 'Unlocking uses 1 run from your daily quota. Re-opening this same video won’t consume again.'
-              : gate.reason
-          }
-          actions={headerActions}
-        />
-        <div className="panel" style={{ marginTop: 18 }}>
-          <h2>Access</h2>
-          <p className="muted" style={{ marginTop: 6 }}>
-            Unlocks are stored in your browser for this device.
-          </p>
-          <div style={{ marginTop: 12, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-            <Button
-              variant="primary"
-              disabled={!gate.ok || unlocking}
-              onClick={() => {
-                if (unlocking) return;
-                setUnlocking(true);
-                setUnlockError(null);
-                const unlockedNow = unlockVideo(key);
-                if (!unlockedNow.ok) {
-                  setUnlockError(unlockedNow.reason);
-                  setUnlocking(false);
-                  return;
-                }
-                setUnlocked(true);
-                setUnlocking(false);
-              }}
-            >
-              Unlock report
-            </Button>
-          </div>
-          {unlockError ? (
-            <div style={{ marginTop: 10 }} className="callout">
-              <strong>Heads up:</strong> <span className="muted">{unlockError}</span>
-            </div>
-          ) : null}
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div>
