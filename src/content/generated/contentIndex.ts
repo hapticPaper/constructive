@@ -33,6 +33,14 @@ import youtube_tvq4nsaWRCY_comments from '../../../content/platforms/youtube/vid
 import youtube_tvq4nsaWRCY_analytics from '../../../content/platforms/youtube/videos/tvq4nsaWRCY/analytics.json';
 import youtube_tvq4nsaWRCY_reach from '../../../content/platforms/youtube/videos/tvq4nsaWRCY/reach.json';
 
+import instagram_DVMq4TBEtiF_video from '../../../content/platforms/instagram/videos/DVMq4TBEtiF/video.json';
+import instagram_DVMq4TBEtiF_comments from '../../../content/platforms/instagram/videos/DVMq4TBEtiF/comments.json';
+import instagram_DVMq4TBEtiF_analytics from '../../../content/platforms/instagram/videos/DVMq4TBEtiF/analytics.json';
+
+import tiktok_7586047200111627534_video from '../../../content/platforms/tiktok/videos/7586047200111627534/video.json';
+import tiktok_7586047200111627534_comments from '../../../content/platforms/tiktok/videos/7586047200111627534/comments.json';
+import tiktok_7586047200111627534_analytics from '../../../content/platforms/tiktok/videos/7586047200111627534/analytics.json';
+
 export const VIDEO_CONTENT: Record<string, VideoContent> = {
   'youtube:1oTcaRbSxuM': {
     video: youtube_1oTcaRbSxuM_video as VideoContent['video'],
@@ -69,5 +77,17 @@ export const VIDEO_CONTENT: Record<string, VideoContent> = {
     comments: youtube_tvq4nsaWRCY_comments,
     analytics: youtube_tvq4nsaWRCY_analytics as VideoContent['analytics'],
     reach: youtube_tvq4nsaWRCY_reach as VideoContent['reach'],
+  },
+  'instagram:DVMq4TBEtiF': {
+    video: instagram_DVMq4TBEtiF_video as VideoContent['video'],
+    comments: instagram_DVMq4TBEtiF_comments,
+    analytics: instagram_DVMq4TBEtiF_analytics as VideoContent['analytics'],
+    reach: undefined,
+  },
+  'tiktok:7586047200111627534': {
+    video: tiktok_7586047200111627534_video as VideoContent['video'],
+    comments: tiktok_7586047200111627534_comments,
+    analytics: tiktok_7586047200111627534_analytics as VideoContent['analytics'],
+    reach: undefined,
   },
 };

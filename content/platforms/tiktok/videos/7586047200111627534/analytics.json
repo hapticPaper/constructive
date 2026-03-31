@@ -1,0 +1,77 @@
+{
+  "schema": "constructive.comment-analytics@v3",
+  "commentCount": 5,
+  "analyzedAt": "2026-03-31T00:12:03.503Z",
+  "sentimentBreakdown": {
+    "positive": 1,
+    "neutral": 4,
+    "negative": 0
+  },
+  "toxicCount": 0,
+  "questionCount": 1,
+  "suggestionCount": 1,
+  "radar": {
+    "praise": 1,
+    "criticism": 0,
+    "question": 1,
+    "suggestion": 1,
+    "toxic": 0,
+    "people": 0
+  },
+  "themes": {
+    "topics": [
+      {
+        "label": "appreciate",
+        "count": 1
+      },
+      {
+        "label": "camera",
+        "count": 1
+      },
+      {
+        "label": "disagree",
+        "count": 1
+      },
+      {
+        "label": "energy",
+        "count": 1
+      },
+      {
+        "label": "explanation",
+        "count": 1
+      },
+      {
+        "label": "laugh",
+        "count": 1
+      },
+      {
+        "label": "loud",
+        "count": 1
+      },
+      {
+        "label": "made",
+        "count": 1
+      }
+    ],
+    "people": []
+  },
+  "highlights": {
+    "questions": [
+      "What camera are you using?"
+    ],
+    "suggestions": [
+      "More of this please."
+    ],
+    "quotes": [
+      "This made me laugh out loud.",
+      "More of this please.",
+      "What camera are you using?"
+    ]
+  },
+  "takeaways": [
+    {
+      "title": "What people latched onto",
+      "detail": "Most discussion clusters around: appreciate, camera, disagree."
+    }
+  ]
+}

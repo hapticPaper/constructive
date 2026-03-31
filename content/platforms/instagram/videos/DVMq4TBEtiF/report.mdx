@@ -1,0 +1,93 @@
+export const report = {
+  "schema": "constructive.comment-report@v2",
+  "generatedAt": "2026-03-31T00:12:03.571Z",
+  "video": {
+    "platform": "instagram",
+    "videoId": "DVMq4TBEtiF",
+    "title": "Instagram post DVMq4TBEtiF",
+    "channelTitle": "unknown",
+    "videoUrl": "https://www.instagram.com/p/DVMq4TBEtiF/"
+  },
+  "snapshot": {
+    "commentCount": 5,
+    "sentimentBreakdown": {
+      "positive": 3,
+      "neutral": 2,
+      "negative": 0
+    },
+    "toxicCount": 0,
+    "questionCount": 1,
+    "suggestionCount": 2
+  },
+  "core": {
+    "takeaways": [
+      {
+        "title": "Sentiment is strongly positive",
+        "detail": "Positive sentiment appears in 60% of comments. Lean into the angle that’s resonating (and repeat the format)."
+      },
+      {
+        "title": "There are clear improvement requests",
+        "detail": "Suggestions show up in 40% of comments (2 total)."
+      },
+      {
+        "title": "What people latched onto",
+        "detail": "Most discussion clusters around: context, last, please."
+      }
+    ],
+    "topics": [
+      {
+        "label": "context",
+        "count": 1
+      },
+      {
+        "label": "last",
+        "count": 1
+      },
+      {
+        "label": "please",
+        "count": 1
+      },
+      {
+        "label": "point",
+        "count": 1
+      },
+      {
+        "label": "share",
+        "count": 1
+      },
+      {
+        "label": "source",
+        "count": 1
+      },
+      {
+        "label": "super",
+        "count": 1
+      },
+      {
+        "label": "sure",
+        "count": 1
+      }
+    ],
+    "questions": [
+      "Can you share the source?"
+    ],
+    "suggestions": [
+      "Can you share the source?",
+      "More context please"
+    ]
+  },
+  "optional": {
+    "people": [],
+    "quotes": [
+      "Love this.",
+      "Can you share the source?",
+      "Not sure I agree with the last point."
+    ]
+  }
+}
+
+{typeof Report !== "undefined" ? <Report report={report} /> : (
+  <div className="callout">
+    <strong>Missing widget:</strong> Report
+  </div>
+)}
