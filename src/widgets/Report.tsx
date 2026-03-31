@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react';
 
-import type { CreatorTakeaway, Sentiment, ThemeBucket } from '../content/types';
+import type { CreatorTakeaway, Platform, Sentiment, ThemeBucket } from '../content/types';
+import { platformLabel } from '../content/platform';
 
 import { BarList } from '../components/ui/BarList';
 import { barListItemsFromCounts } from '../components/ui/barListItems';
@@ -17,7 +18,7 @@ export type CommentReport = {
   schema: typeof REPORT_SCHEMA;
   generatedAt: string;
   video: {
-    platform: string;
+    platform: Platform;
     videoId: string;
     title: string;
     channelTitle: string;
@@ -159,7 +160,7 @@ export function Report({ report }: { report: CommentReport }): JSX.Element {
   return (
     <div>
       <p className="muted" style={{ marginTop: 0 }}>
-        Generated from a snapshot of YouTube comments for{' '}
+        Generated from a snapshot of {platformLabel(report.video.platform)} comments for{' '}
         <strong>{report.video.title}</strong>.
       </p>
       <Callout title="Tone filter">

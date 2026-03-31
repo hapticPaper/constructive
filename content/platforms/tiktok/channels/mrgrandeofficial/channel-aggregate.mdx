@@ -1,0 +1,65 @@
+export const channelAggregate = {
+  schema: 'constructive.channel-aggregate@v1',
+  generatedAt: '2026-03-31T00:12:03.614Z',
+  channel: {
+    platform: 'tiktok',
+    channelId: 'mrgrandeofficial',
+    channelTitle: 'mrgrandeofficial',
+    channelUrl: 'https://www.tiktok.com/@mrgrandeofficial',
+  },
+  videoCount: 1,
+  totalComments: 5,
+  sentimentBreakdown: {
+    positive: 1,
+    neutral: 4,
+    negative: 0,
+  },
+  topTopics: [
+    {
+      label: 'appreciate',
+      count: 1,
+    },
+    {
+      label: 'camera',
+      count: 1,
+    },
+    {
+      label: 'disagree',
+      count: 1,
+    },
+    {
+      label: 'energy',
+      count: 1,
+    },
+    {
+      label: 'explanation',
+      count: 1,
+    },
+    {
+      label: 'laugh',
+      count: 1,
+    },
+    {
+      label: 'loud',
+      count: 1,
+    },
+    {
+      label: 'made',
+      count: 1,
+    },
+  ],
+  takeaways: [
+    {
+      title: 'Channel-wide topic patterns',
+      detail:
+        'Across 1 videos, viewers consistently discuss: appreciate, camera, disagree.',
+    },
+  ],
+};
+
+{typeof ChannelAggregate !== "undefined" ? <ChannelAggregate channelAggregate={channelAggregate} /> : (
+
+  <div className="callout">
+    <strong>Missing widget:</strong> ChannelAggregate
+  </div>
+)}

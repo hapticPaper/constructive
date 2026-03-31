@@ -1,0 +1,81 @@
+export const report = {
+  schema: 'constructive.comment-report@v2',
+  generatedAt: '2026-03-31T00:12:03.503Z',
+  video: {
+    platform: 'tiktok',
+    videoId: '7586047200111627534',
+    title: 'mrgrandeofficial TikTok 7586047200111627534',
+    channelTitle: 'mrgrandeofficial',
+    videoUrl: 'https://www.tiktok.com/@mrgrandeofficial/video/7586047200111627534',
+  },
+  snapshot: {
+    commentCount: 5,
+    sentimentBreakdown: {
+      positive: 1,
+      neutral: 4,
+      negative: 0,
+    },
+    toxicCount: 0,
+    questionCount: 1,
+    suggestionCount: 1,
+  },
+  core: {
+    takeaways: [
+      {
+        title: 'What people latched onto',
+        detail: 'Most discussion clusters around: appreciate, camera, disagree.',
+      },
+    ],
+    topics: [
+      {
+        label: 'appreciate',
+        count: 1,
+      },
+      {
+        label: 'camera',
+        count: 1,
+      },
+      {
+        label: 'disagree',
+        count: 1,
+      },
+      {
+        label: 'energy',
+        count: 1,
+      },
+      {
+        label: 'explanation',
+        count: 1,
+      },
+      {
+        label: 'laugh',
+        count: 1,
+      },
+      {
+        label: 'loud',
+        count: 1,
+      },
+      {
+        label: 'made',
+        count: 1,
+      },
+    ],
+    questions: ['What camera are you using?'],
+    suggestions: ['More of this please.'],
+  },
+  optional: {
+    people: [],
+    quotes: [
+      'This made me laugh out loud.',
+      'More of this please.',
+      'What camera are you using?',
+    ],
+  },
+};
+
+{typeof Report !== "undefined" ? <Report report={report} /> : (
+
+  <div className="callout">
+    <strong>Missing widget:</strong> Report
+  </div>
+)}

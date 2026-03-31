@@ -15,6 +15,10 @@ import youtube_gf8LP9XvgeY_report from '../../../content/platforms/youtube/video
 
 import youtube_tvq4nsaWRCY_report from '../../../content/platforms/youtube/videos/tvq4nsaWRCY/report.mdx';
 
+import instagram_DVMq4TBEtiF_report from '../../../content/platforms/instagram/videos/DVMq4TBEtiF/report.mdx';
+
+import tiktok_7586047200111627534_report from '../../../content/platforms/tiktok/videos/7586047200111627534/report.mdx';
+
 export const VIDEO_REPORTS: Record<string, ComponentType | undefined> = {
   'youtube:1oTcaRbSxuM': youtube_1oTcaRbSxuM_report,
   'youtube:IPsu4pMpIjk': youtube_IPsu4pMpIjk_report,
@@ -22,4 +26,6 @@ export const VIDEO_REPORTS: Record<string, ComponentType | undefined> = {
   'youtube:KXPhaAsnrfs': youtube_KXPhaAsnrfs_report,
   'youtube:gf8LP9XvgeY': youtube_gf8LP9XvgeY_report,
   'youtube:tvq4nsaWRCY': youtube_tvq4nsaWRCY_report,
+  'instagram:DVMq4TBEtiF': instagram_DVMq4TBEtiF_report,
+  'tiktok:7586047200111627534': tiktok_7586047200111627534_report,
 };

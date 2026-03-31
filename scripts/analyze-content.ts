@@ -9,6 +9,8 @@ import type {
   VideoMetadata,
 } from '../src/content/types';
 
+import { parsePlatform } from '../src/content/platform';
+
 import { RADAR_CATEGORIES, emptyRadarCounts } from '../src/content/radar';
 
 import { writeJsonFile, writeTextFile } from './fs';
@@ -36,7 +38,9 @@ function parseArgs(argv: string[]): Args {
 
   const videoRaw = argv[videoIndex + 1];
   if (!videoRaw || videoRaw.startsWith('-')) {
-    throw new Error('Invalid usage: --video requires a value (e.g. youtube:<videoId>).');
+    throw new Error(
+      'Invalid usage: --video requires a value (e.g. youtube:<videoId>, instagram:<videoId>, tiktok:<videoId>).',
+    );
   }
 
   const normalized = videoRaw.trim();
@@ -52,14 +56,18 @@ function parseArgs(argv: string[]): Args {
   }
 
   if (parts.length !== 2) {
-    throw new Error('Invalid --video value. Use youtube:<videoId> (or <videoId>).');
+    throw new Error(
+      'Invalid --video value. Use youtube:<videoId>, instagram:<videoId>, or tiktok:<videoId> (or <videoId> for YouTube).',
+    );
   }
 
   const [platformRaw, videoIdRaw] = parts;
-  const platform = platformRaw.trim() === 'youtube' ? 'youtube' : null;
+  const platform = parsePlatform(platformRaw.trim());
   const videoId = videoIdRaw.trim();
   if (!platform || !videoId) {
-    throw new Error('Invalid --video value. Use youtube:<videoId>');
+    throw new Error(
+      'Invalid --video value. Use youtube:<videoId>, instagram:<videoId>, or tiktok:<videoId>.',
+    );
   }
 
   return { overwrite, video: { platform, videoId } };
@@ -128,10 +136,11 @@ function toCommentRecords(value: unknown[], absolutePath: string): CommentRecord
 function toVideoMetadata(
   value: Record<string, unknown>,
   absolutePath: string,
+  expectedPlatform: Platform,
 ): VideoMetadata {
-  if (value.platform !== 'youtube') {
+  if (value.platform !== expectedPlatform) {
     throw new Error(
-      `Invalid video.json at ${absolutePath}: expected platform 'youtube'.`,
+      `Invalid video.json at ${absolutePath}: expected platform '${expectedPlatform}'.`,
     );
   }
 
@@ -154,9 +163,9 @@ function toVideoMetadata(
     throw new Error(`Invalid video.json at ${absolutePath}: expected channel object.`);
   }
 
-  if (channel.platform !== 'youtube') {
+  if (channel.platform !== expectedPlatform) {
     throw new Error(
-      `Invalid video.json at ${absolutePath}: expected channel.platform 'youtube'.`,
+      `Invalid video.json at ${absolutePath}: expected channel.platform '${expectedPlatform}'.`,
     );
   }
 
@@ -173,13 +182,13 @@ function toVideoMetadata(
   }
 
   return {
-    platform: 'youtube',
+    platform: expectedPlatform,
     videoId: value.videoId,
     videoUrl: value.videoUrl,
     title: value.title,
     description: typeof value.description === 'string' ? value.description : undefined,
     channel: {
-      platform: 'youtube',
+      platform: expectedPlatform,
       channelId: channel.channelId as string,
       channelTitle: channel.channelTitle as string,
       channelUrl: typeof channel.channelUrl === 'string' ? channel.channelUrl : undefined,
@@ -888,10 +897,11 @@ async function main(): Promise<void> {
     targets.push(args.video);
   } else {
     for (const platformName of await listDirs(CONTENT_PLATFORMS_ROOT)) {
-      if (platformName !== 'youtube') continue;
+      const platform = parsePlatform(platformName);
+      if (!platform) continue;
       const videosRoot = path.join(CONTENT_PLATFORMS_ROOT, platformName, 'videos');
       for (const videoId of await listDirs(videosRoot)) {
-        targets.push({ platform: 'youtube', videoId });
+        targets.push({ platform, videoId });
       }
     }
   }
@@ -913,7 +923,7 @@ async function main(): Promise<void> {
     if (!args.overwrite && hasAnalytics && hasReport) continue;
 
     const videoRaw = await readJsonObjectFile(videoPath);
-    const video = toVideoMetadata(videoRaw, videoPath);
+    const video = toVideoMetadata(videoRaw, videoPath, platform);
 
     const commentsRaw = await readJsonArrayFile(commentsPath);
     const comments = toCommentRecords(commentsRaw, commentsPath);

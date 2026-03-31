@@ -33,41 +33,61 @@ import youtube_tvq4nsaWRCY_comments from '../../../content/platforms/youtube/vid
 import youtube_tvq4nsaWRCY_analytics from '../../../content/platforms/youtube/videos/tvq4nsaWRCY/analytics.json';
 import youtube_tvq4nsaWRCY_reach from '../../../content/platforms/youtube/videos/tvq4nsaWRCY/reach.json';
 
+import instagram_DVMq4TBEtiF_video from '../../../content/platforms/instagram/videos/DVMq4TBEtiF/video.json';
+import instagram_DVMq4TBEtiF_comments from '../../../content/platforms/instagram/videos/DVMq4TBEtiF/comments.json';
+import instagram_DVMq4TBEtiF_analytics from '../../../content/platforms/instagram/videos/DVMq4TBEtiF/analytics.json';
+
+import tiktok_7586047200111627534_video from '../../../content/platforms/tiktok/videos/7586047200111627534/video.json';
+import tiktok_7586047200111627534_comments from '../../../content/platforms/tiktok/videos/7586047200111627534/comments.json';
+import tiktok_7586047200111627534_analytics from '../../../content/platforms/tiktok/videos/7586047200111627534/analytics.json';
+
 export const VIDEO_CONTENT: Record<string, VideoContent> = {
   'youtube:1oTcaRbSxuM': {
     video: youtube_1oTcaRbSxuM_video as VideoContent['video'],
-    comments: youtube_1oTcaRbSxuM_comments,
+    comments: youtube_1oTcaRbSxuM_comments as VideoContent['comments'],
     analytics: youtube_1oTcaRbSxuM_analytics as VideoContent['analytics'],
     reach: youtube_1oTcaRbSxuM_reach as VideoContent['reach'],
   },
   'youtube:IPsu4pMpIjk': {
     video: youtube_IPsu4pMpIjk_video as VideoContent['video'],
-    comments: youtube_IPsu4pMpIjk_comments,
+    comments: youtube_IPsu4pMpIjk_comments as VideoContent['comments'],
     analytics: youtube_IPsu4pMpIjk_analytics as VideoContent['analytics'],
     reach: youtube_IPsu4pMpIjk_reach as VideoContent['reach'],
   },
   'youtube:JBeTnhChWd0': {
     video: youtube_JBeTnhChWd0_video as VideoContent['video'],
-    comments: youtube_JBeTnhChWd0_comments,
+    comments: youtube_JBeTnhChWd0_comments as VideoContent['comments'],
     analytics: youtube_JBeTnhChWd0_analytics as VideoContent['analytics'],
     reach: youtube_JBeTnhChWd0_reach as VideoContent['reach'],
   },
   'youtube:KXPhaAsnrfs': {
     video: youtube_KXPhaAsnrfs_video as VideoContent['video'],
-    comments: youtube_KXPhaAsnrfs_comments,
+    comments: youtube_KXPhaAsnrfs_comments as VideoContent['comments'],
     analytics: youtube_KXPhaAsnrfs_analytics as VideoContent['analytics'],
     reach: youtube_KXPhaAsnrfs_reach as VideoContent['reach'],
   },
   'youtube:gf8LP9XvgeY': {
     video: youtube_gf8LP9XvgeY_video as VideoContent['video'],
-    comments: youtube_gf8LP9XvgeY_comments,
+    comments: youtube_gf8LP9XvgeY_comments as VideoContent['comments'],
     analytics: youtube_gf8LP9XvgeY_analytics as VideoContent['analytics'],
     reach: youtube_gf8LP9XvgeY_reach as VideoContent['reach'],
   },
   'youtube:tvq4nsaWRCY': {
     video: youtube_tvq4nsaWRCY_video as VideoContent['video'],
-    comments: youtube_tvq4nsaWRCY_comments,
+    comments: youtube_tvq4nsaWRCY_comments as VideoContent['comments'],
     analytics: youtube_tvq4nsaWRCY_analytics as VideoContent['analytics'],
     reach: youtube_tvq4nsaWRCY_reach as VideoContent['reach'],
+  },
+  'instagram:DVMq4TBEtiF': {
+    video: instagram_DVMq4TBEtiF_video as VideoContent['video'],
+    comments: instagram_DVMq4TBEtiF_comments as VideoContent['comments'],
+    analytics: instagram_DVMq4TBEtiF_analytics as VideoContent['analytics'],
+    reach: undefined,
+  },
+  'tiktok:7586047200111627534': {
+    video: tiktok_7586047200111627534_video as VideoContent['video'],
+    comments: tiktok_7586047200111627534_comments as VideoContent['comments'],
+    analytics: tiktok_7586047200111627534_analytics as VideoContent['analytics'],
+    reach: undefined,
   },
 };

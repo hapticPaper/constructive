@@ -45,7 +45,7 @@ export function LibraryPage(): JSX.Element {
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search title or channel"
+          placeholder="Search title or creator"
           className="input input-fluid"
         />
       </div>
@@ -67,7 +67,8 @@ export function LibraryPage(): JSX.Element {
                     </div>
                   </Link>
                   <div className="muted" style={{ fontSize: 13, marginTop: 2 }}>
-                    {channelVideos.length} {channelVideos.length === 1 ? 'video' : 'videos'}
+                    {channelVideos.length}{' '}
+                    {channelVideos.length === 1 ? 'video' : 'videos'}
                   </div>
                 </div>
                 <Link
@@ -75,7 +76,7 @@ export function LibraryPage(): JSX.Element {
                   className="btn btn-ghost"
                   style={{ textDecoration: 'none' }}
                 >
-                  View Channel
+                  View Creator
                 </Link>
               </div>
               <div className="cards">

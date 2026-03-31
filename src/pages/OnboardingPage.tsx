@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import { parsePlatform } from '../content/platform';
 import { getVideoContent } from '../content/content';
 import { getCuratedVideos, ONBOARDING_SAMPLE_VIDEOS } from '../content/collections';
 import type { Platform } from '../content/types';
@@ -8,12 +9,13 @@ import {
   hydrateLocalLibraryVideoMetadata,
   upsertLocalLibraryVideo,
 } from '../lib/localLibrary';
-import { extractYouTubeVideoId } from '../lib/youtube';
+import { parseVideoInput } from '../lib/videoInput';
 import { VideoCard } from '../components/VideoCard';
 import { Button } from '../components/ui/Button';
 
 export function OnboardingPage(): JSX.Element {
   const navigate = useNavigate();
+  const [platform, setPlatform] = useState<Platform>('youtube');
   const [input, setInput] = useState('');
   const [error, setError] = useState<string | null>(null);
 
@@ -21,24 +23,26 @@ export function OnboardingPage(): JSX.Element {
 
   function goToVideoByInput(): void {
     setError(null);
-    const videoId = extractYouTubeVideoId(input);
-    if (!videoId) {
-      setError('Paste a YouTube link or an 11-character video id.');
+    const parsed = parseVideoInput(platform, input);
+    if (!parsed.ok) {
+      setError(parsed.error);
       return;
     }
 
-    const platform: Platform = 'youtube';
-    const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
-    upsertLocalLibraryVideo({ platform, videoId, videoUrl });
-    void hydrateLocalLibraryVideoMetadata(platform, videoId);
+    upsertLocalLibraryVideo({
+      platform,
+      videoId: parsed.videoId,
+      videoUrl: parsed.videoUrl,
+    });
+    void hydrateLocalLibraryVideoMetadata(platform, parsed.videoId);
 
-    const content = getVideoContent(platform, videoId);
+    const content = getVideoContent(platform, parsed.videoId);
     if (content?.analytics) {
-      navigate(`/video/${platform}/${videoId}`);
+      navigate(`/video/${platform}/${parsed.videoId}`);
       return;
     }
 
-    navigate(`/jobs?video=${platform}:${videoId}`);
+    navigate(`/jobs?video=${platform}:${parsed.videoId}`);
   }
 
   return (
@@ -53,15 +57,33 @@ export function OnboardingPage(): JSX.Element {
 
       <div className="section">
         <div className="panel">
-          <h2>Analyze a YouTube video</h2>
+          <h2>Analyze a video</h2>
           <p className="muted" style={{ marginTop: 6 }}>
             Paste a link to add it to your library and start capture + analysis.
           </p>
           <div style={{ marginTop: 16, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <select
+              value={platform}
+              onChange={(e) => {
+                const next = parsePlatform(e.target.value);
+                if (next) setPlatform(next);
+              }}
+              className="input"
+            >
+              <option value="youtube">YouTube</option>
+              <option value="tiktok">TikTok</option>
+              <option value="instagram">Instagram</option>
+            </select>
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="https://www.youtube.com/watch?v=..."
+              placeholder={
+                platform === 'youtube'
+                  ? 'https://www.youtube.com/watch?v=...'
+                  : platform === 'tiktok'
+                    ? 'https://www.tiktok.com/@user/video/...'
+                    : 'https://www.instagram.com/reel/...'
+              }
               className="input input-fluid"
             />
             <Button variant="primary" onClick={goToVideoByInput}>
@@ -83,13 +105,13 @@ export function OnboardingPage(): JSX.Element {
         <div className="panel">
           <h2>Platform Support</h2>
           <p className="muted" style={{ marginTop: 6 }}>
-            This MVP is wired for YouTube (no API key required for ingestion).
-            TikTok/Instagram are treated as fast follows via the connector interfaces.
+            All platforms share the same report + analytics format. YouTube has a built-in
+            connector; TikTok and Instagram are supported via JSON import.
           </p>
           <div style={{ marginTop: 12, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-            <span className="pill">YouTube (enabled)</span>
-            <span className="pill">TikTok (stub)</span>
-            <span className="pill">Instagram (stub)</span>
+            <span className="pill">YouTube (connector)</span>
+            <span className="pill">TikTok (import)</span>
+            <span className="pill">Instagram (import)</span>
           </div>
         </div>
       </div>
@@ -103,7 +125,7 @@ export function OnboardingPage(): JSX.Element {
           <div className="cards">
             {sampleVideos.map((video) => (
               <VideoCard
-                key={video.videoId}
+                key={`${video.platform}:${video.videoId}`}
                 video={video}
                 ctaLabel="View analytics"
               />

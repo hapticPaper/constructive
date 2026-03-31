@@ -5,7 +5,7 @@ import { Link, useParams } from 'react-router-dom';
 
 import { getVideoContent, getVideoReportComponent } from '../content/content';
 import { getValidRadarFromAnalytics } from '../content/radar';
-import type { Platform } from '../content/types';
+import { parsePlatform, platformLabel } from '../content/platform';
 import { Hero, type BreadcrumbItem } from '../components/Hero';
 import { HeroActionLink } from '../components/HeroActionLink';
 import { SignalBreakdown } from '../components/ui/SignalBreakdown';
@@ -13,15 +13,40 @@ import * as Widgets from '../widgets';
 
 export function VideoAnalyticsPage(): JSX.Element {
   const params = useParams();
-  const platform = (params.platform as Platform | undefined) ?? 'youtube';
+  const parsedPlatform = parsePlatform(params.platform ?? '');
+  const platform = parsedPlatform ?? 'youtube';
   const videoId = params.videoId ?? '';
+
   const key = `${platform}:${videoId}`;
 
-  const content = useMemo(() => getVideoContent(platform, videoId), [platform, videoId]);
-  const Report = useMemo(
-    () => getVideoReportComponent(platform, videoId),
-    [platform, videoId],
+  const content = useMemo(
+    () => (parsedPlatform ? getVideoContent(platform, videoId) : null),
+    [parsedPlatform, platform, videoId],
   );
+  const Report = useMemo(
+    () => (parsedPlatform ? getVideoReportComponent(platform, videoId) : undefined),
+    [parsedPlatform, platform, videoId],
+  );
+
+  if (!parsedPlatform) {
+    return (
+      <div className="panel">
+        <h2>Invalid video URL</h2>
+        <p className="muted" style={{ marginTop: 6 }}>
+          This link doesn’t include a valid platform.
+        </p>
+        <div style={{ marginTop: 12 }}>
+          <Link
+            to="/library"
+            className="btn btn-primary"
+            style={{ textDecoration: 'none' }}
+          >
+            Back to Library
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   if (!content) {
     return (
@@ -49,8 +74,10 @@ export function VideoAnalyticsPage(): JSX.Element {
 
   const headerActions = (
     <>
-      <HeroActionLink href={content.video.videoUrl}>Open on YouTube</HeroActionLink>
-      <HeroActionLink to={channelHref}>View channel</HeroActionLink>
+      <HeroActionLink href={content.video.videoUrl}>
+        Open on {platformLabel(content.video.platform)}
+      </HeroActionLink>
+      <HeroActionLink to={channelHref}>View creator</HeroActionLink>
       <HeroActionLink to="/library">Back to Library</HeroActionLink>
     </>
   );

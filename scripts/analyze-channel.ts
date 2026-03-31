@@ -12,6 +12,8 @@ import type {
   VideoMetadata,
 } from '../src/content/types';
 
+import { parsePlatform } from '../src/content/platform';
+
 import { writeTextFile } from './fs';
 import { channelAggregateMdxPath, analyticsJsonPath, videoJsonPath } from './paths';
 
@@ -24,31 +26,39 @@ const CONTENT_PLATFORMS_ROOT = path.resolve(process.cwd(), 'content', 'platforms
 function parseArgs(argv: string[]): Args {
   const channelIndex = argv.indexOf('--channel');
   if (channelIndex === -1) {
-    throw new Error('Missing required argument: --channel (e.g. youtube:<channelId>)');
+    throw new Error(
+      'Missing required argument: --channel (e.g. youtube:<channelId>, instagram:<channelId>, tiktok:<channelId>)',
+    );
   }
 
   const channelRaw = argv[channelIndex + 1];
   if (!channelRaw || channelRaw.startsWith('-')) {
-    throw new Error('Invalid usage: --channel requires a value (e.g. youtube:<channelId>).');
+    throw new Error(
+      'Invalid usage: --channel requires a value (e.g. youtube:<channelId>, instagram:<channelId>, tiktok:<channelId>).',
+    );
   }
 
   const normalized = channelRaw.trim();
   if (!normalized) {
     throw new Error(
-      'Invalid usage: --channel requires a non-empty value (e.g. youtube:<channelId>).',
+      'Invalid usage: --channel requires a non-empty value (e.g. youtube:<channelId>, instagram:<channelId>, tiktok:<channelId>).',
     );
   }
 
   const parts = normalized.split(':');
   if (parts.length !== 2) {
-    throw new Error('Invalid --channel value. Use youtube:<channelId>');
+    throw new Error(
+      'Invalid --channel value. Use youtube:<channelId>, instagram:<channelId>, or tiktok:<channelId>.',
+    );
   }
 
   const [platformRaw, channelIdRaw] = parts;
-  const platform = platformRaw.trim() === 'youtube' ? 'youtube' : null;
+  const platform = parsePlatform(platformRaw.trim());
   const channelId = channelIdRaw.trim();
   if (!platform || !channelId) {
-    throw new Error('Invalid --channel value. Use youtube:<channelId>');
+    throw new Error(
+      'Invalid --channel value. Use youtube:<channelId>, instagram:<channelId>, or tiktok:<channelId>.',
+    );
   }
 
   return { channel: { platform, channelId } };
@@ -86,10 +96,11 @@ async function readJsonObjectFile(
 function toVideoMetadata(
   value: Record<string, unknown>,
   absolutePath: string,
+  expectedPlatform: Platform,
 ): VideoMetadata {
-  if (value.platform !== 'youtube') {
+  if (value.platform !== expectedPlatform) {
     throw new Error(
-      `Invalid video.json at ${absolutePath}: expected platform 'youtube'.`,
+      `Invalid video.json at ${absolutePath}: expected platform '${expectedPlatform}'.`,
     );
   }
 
@@ -112,9 +123,9 @@ function toVideoMetadata(
     throw new Error(`Invalid video.json at ${absolutePath}: expected channel object.`);
   }
 
-  if (channel.platform !== 'youtube') {
+  if (channel.platform !== expectedPlatform) {
     throw new Error(
-      `Invalid video.json at ${absolutePath}: expected channel.platform 'youtube'.`,
+      `Invalid video.json at ${absolutePath}: expected channel.platform '${expectedPlatform}'.`,
     );
   }
 
@@ -131,13 +142,13 @@ function toVideoMetadata(
   }
 
   return {
-    platform: 'youtube',
+    platform: expectedPlatform,
     videoId: value.videoId,
     videoUrl: value.videoUrl,
     title: value.title,
     description: typeof value.description === 'string' ? value.description : undefined,
     channel: {
-      platform: 'youtube',
+      platform: expectedPlatform,
       channelId: channel.channelId as string,
       channelTitle: channel.channelTitle as string,
       channelUrl: typeof channel.channelUrl === 'string' ? channel.channelUrl : undefined,
@@ -233,7 +244,7 @@ async function main(): Promise<void> {
     if (!hasVideo || !hasAnalytics) continue;
 
     const videoRaw = await readJsonObjectFile(videoPath);
-    const video = toVideoMetadata(videoRaw, videoPath);
+    const video = toVideoMetadata(videoRaw, videoPath, platform);
 
     // Check if this video belongs to the target channel
     if (video.channel.channelId !== channelId) continue;
@@ -297,7 +308,10 @@ async function main(): Promise<void> {
 
     // Most discussed topics
     if (topTopics.length > 0) {
-      const topThree = topTopics.slice(0, 3).map((t) => t.label).join(', ');
+      const topThree = topTopics
+        .slice(0, 3)
+        .map((t) => t.label)
+        .join(', ');
       takeaways.push({
         title: 'Channel-wide topic patterns',
         detail: `Across ${videoCount} videos, viewers consistently discuss: ${topThree}.`,

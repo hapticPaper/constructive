@@ -28,7 +28,7 @@ export function PaletteMediaPage(): JSX.Element {
       <div className="cards">
         {videos.map((video) => (
           <VideoCard
-            key={video.videoId}
+            key={`${video.platform}:${video.videoId}`}
             video={video}
             ctaLabel="View analytics"
           />

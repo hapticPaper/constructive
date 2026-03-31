@@ -1,4 +1,4 @@
-export type Platform = 'youtube';
+export type Platform = 'youtube' | 'instagram' | 'tiktok';
 
 export type VideoKey = {
   platform: Platform;

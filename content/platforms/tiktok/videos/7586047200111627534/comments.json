@@ -1,0 +1,33 @@
+[
+  {
+    "id": "tt_1",
+    "authorName": "alex",
+    "publishedAt": "2026-03-20T12:34:56Z",
+    "likeCount": 12,
+    "text": "This made me laugh out loud."
+  },
+  {
+    "id": "synthetic_600e41e5d327",
+    "syntheticId": true,
+    "authorName": "sam",
+    "publishedAt": "2026-03-20T12:40:00Z",
+    "likeCount": 3,
+    "text": "What camera are you using?"
+  },
+  {
+    "id": "3",
+    "authorName": "taylor",
+    "publishedAt": "2025-03-20T12:50:00.000Z",
+    "likeCount": 5,
+    "text": "More of this please."
+  },
+  {
+    "id": "synthetic_b0499eb1d1d9",
+    "syntheticId": true,
+    "text": "Great energy"
+  },
+  {
+    "id": "tt_5",
+    "text": "I disagree, but appreciate the explanation."
+  }
+]
